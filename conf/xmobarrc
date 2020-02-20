@@ -1,0 +1,73 @@
+Config {
+       font = "xft:monospace:size=9.5:bold:antialias=true"
+       additionalFonts= ["xft:monospace:size=12:normal:antialias=true"]
+       , bgColor = "#282828"
+       , fgColor = "#ebdbb2"
+       , position = TopW L 94
+       , alpha = 150
+       , commands = [ Run Cpu           [ "-t", "<fn=1><fc=#83a598>\xe266</fc></fn> <total>%"
+                                        , "-L", "3","-H","50"
+                                        , "-l", "#ebdbb2"
+                                        , "-n", "#ebdbb2"
+                                        , "-h", "#fb4934"
+                                        , "-p", "2"
+                                        , "-c", "0"
+                                        ] 10
+                    , Run Memory        [ "-t", "<fn=1><fc=#458588>\xf85a</fc></fn> <usedratio>%"
+                                        , "-H", "80"
+                                        , "-L", "10"
+                                        , "-l" ,"#ebdbb2"
+                                        , "-n", "#ebdbb2"
+                                        , "-h", "#fb4934"
+                                        , "-p", "2"
+                                        , "-c", "0"
+                                        ] 10
+                    , Run Date          "%a %b %_d %k:%M"
+                                        "date"
+                                        10
+                    , Run DynNetwork    [ "-t", "<fn=1><fc=#8ec07c>\xf6d9</fc></fn> <rx> <fn=1><fc=#d3869b>\xfa51</fc></fn> <tx>"
+                                        , "-H", "200"
+                                        , "-L", "10"
+                                        , "-h", "#ebdbb2"
+                                        , "-l", "#ebdbb2"
+                                        , "-n", "#ebdbb2"
+                                        , "-S", "True"
+                                        , "-p", "3"
+                                        , "-c", "0"
+                                        ] 10
+                    , Run CoreTemp      [ "-t", "<fn=1><fc=#fabd2f>\xf2c8</fc></fn> <core0>°"
+                                        , "-L", "30"
+                                        , "-H", "75"
+                                        , "-l", "lightblue"
+                                        , "-n", "#ebdbb2"
+                                        , "-h", "#aa4450"
+                                        , "-p", "2"
+                                        , "-c", "0"
+                                        ] 50
+                    , Run Com           ".xmonad/scripts/mpd_status.sh"
+                                        []
+                                        "mpdstatus"
+                                        10
+                    --, Run Com "network-check.sh" [] "netcheck" 5
+                    , Run BatteryP      [ "BAT0" ]
+                                        [ "--template" , "<fn=1><fc=#b8bb26>\xf240</fc></fn> <acstatus>"
+                                        , "--Low"      , "10"        -- units: %
+                                        , "--High"     , "80"        -- units: %
+                                        , "--low"      , "#fb4934" -- #ff5555
+                                        , "--normal"   , "#ebdbb2"
+                                        , "--high"     , "#98be65"
+
+                                        , "--" -- battery specific options
+                                                  -- discharging status
+                                                  , "-o"   , "<left>% (<timeleft>)"
+                                                  -- AC "on" status
+                                                  , "-O"   , "<left>% (<fc=#98be65>Charging</fc>)" -- 50fa7b
+                                                  -- charged status
+                                                  , "-i"   , "<fc=#98be65>Charged</fc>"
+                                        ] 50
+                    , Run StdinReader
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = "%StdinReader% }{%dynnetwork%  %mpdstatus%  %cpu%  %coretemp%  %memory%  %battery%  <fc=#fabd2f>%date%</fc> "   -- #69DFFA
+       }
