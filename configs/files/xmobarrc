@@ -1,6 +1,6 @@
 Config {
-       font = "xft:monospace:size=9.5:bold:antialias=true"
-       additionalFonts= ["xft:monospace:size=12:normal:antialias=true"]
+       font = "xft:monospace:size=11.5:bold:antialias=true"
+       additionalFonts= ["xft:monospace:size=14:normal:antialias=true"]
        , bgColor = "#282828"
        , fgColor = "#ebdbb2"
        , position = TopW L 94

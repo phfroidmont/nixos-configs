@@ -2,7 +2,8 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../main.nix
+    ../../configs/system.nix
+    ../../configs/user.nix
   ];
 
   fileSystems."/home/froidmpa/Nextcloud" = {
