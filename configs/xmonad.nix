@@ -43,6 +43,20 @@
   services.mpd = {
     enable = true;
     musicDirectory = "${config.home.homeDirectory}/Nextcloud/Media/Music";
+    extraConfig = ''
+    max_output_buffer_size "16384"
+    auto_update "yes"
+    audio_output {
+            type            "alsa"
+            name            "alsa"
+    }
+    audio_output {
+        type            "fifo"
+        name            "toggle_visualizer"
+        path            "/tmp/mpd.fifo"
+        format          "44100:16:2"
+    }
+    '';
   };
   programs.rofi = {
     enable = true;
