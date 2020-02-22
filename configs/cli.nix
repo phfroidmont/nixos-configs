@@ -2,6 +2,7 @@
 {
   home.packages = with pkgs; [
     zsh-syntax-highlighting
+    ranger
   ];
   programs.neovim = {
     enable = true;
@@ -69,5 +70,16 @@
         src = "${pkgs.zsh-syntax-highlighting}";
       }
     ];
+  };
+  home.file.".config/ranger" = {
+    source = ./files/ranger;
+    recursive = true;
+  };
+  home.file.".config/ranger/plugins" = {
+    source = builtins.fetchGit {
+        url = "git://github.com/alexanderjeurissen/ranger_devicons.git";
+        rev = "1fa1d0f29047979b9ffd541eb330756ac4b348ab";
+    };
+    recursive = true;
   };
 }
