@@ -39,5 +39,9 @@
     layout = "fr";
     desktopManager.xterm.enable = false;
     windowManager.xmonad.enable = true;
+    displayManager.lightdm = {
+      enable = true;
+      background = "/etc/nixos/configs/files/wallpaper.png";
+    };
   };
 }

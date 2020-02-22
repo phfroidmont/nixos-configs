@@ -135,4 +135,5 @@ myLayout = smartSpacing 5
 
 myStartupHook xmproc = do
     setWMName "LG3D"
+    spawn "feh --no-fehbg --bg-fill ~/.wallpaper.png"
     return () >> checkKeymap (myConfig xmproc) myAdditionalKeys

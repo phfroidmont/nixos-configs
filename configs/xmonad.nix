@@ -26,6 +26,7 @@
     layout = "fr";
     options = ["caps:escape"];
   };
+  home.file.".wallpaper.png".source = ./files/wallpaper.png;
   home.file.".xmonad/xmobarrc".source = ./files/xmobarrc;
   home.file.".config/ncmpcpp" = {
     source = ./files/ncmpcpp;
