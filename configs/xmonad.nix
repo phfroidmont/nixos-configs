@@ -21,6 +21,7 @@
     xorg.xwininfo
     xorg.xkill
     scrot
+    i3lock
   ];
   home.keyboard = {
     layout = "fr";
@@ -155,5 +156,10 @@
         timeout = 10;
       };
     };
+  };
+  services.screen-locker = {
+    enable = true;
+    inactiveInterval = 5;
+    lockCmd = "\${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ~/.wallpaper.png";
   };
 }
