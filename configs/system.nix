@@ -8,6 +8,7 @@
 
     vim
     git
+    unzip
 
     htop
     ncdu
