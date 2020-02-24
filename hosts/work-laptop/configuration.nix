@@ -10,7 +10,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking = {
-    hostName = "thebeast";
+    hostName = "froidmpa-linux";
     networkmanager.enable = true;
   };
 
@@ -35,9 +35,14 @@
   services.openssh.enable = true;
   services.openssh.permitRootLogin = "yes";
 
+  services.blueman.enable = true;
 
   home-manager.users.froidmpa = {pkgs, config, ...}: {
+    home.packages = with pkgs; [
+      slack-dark
+    ];
     services.network-manager-applet.enable = true;
+    services.blueman-applet.enable = true;
   };
   # Enable touchpad support.
   services.xserver.libinput.enable = true;

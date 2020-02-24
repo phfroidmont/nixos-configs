@@ -17,6 +17,7 @@
     mpc_cli
     pulsemixer
     feh
+    xorg.xbacklight
     xorg.xinit
     xorg.xwininfo
     xorg.xkill
