@@ -7,10 +7,20 @@
       enableContribAndExtras = true;
       config = ./files/xmonad.hs;
     };
+    initExtra = ''
+      keepassxc &
+    '';
+    numlock.enable = true;
   };
   nixpkgs.config.packageOverrides = pkgs: {
     ncmpcpp = pkgs.ncmpcpp.override {visualizerSupport = true;};
   };
+
+  home.sessionVariables = {
+    EDITOR = "vim";
+    QT_AUTO_SCREEN_SCALE_FACTOR = "0";
+  };
+
   home.packages = with pkgs; [
     haskellPackages.xmobar
     ncmpcpp
@@ -37,11 +47,6 @@
   home.file.".xmonad/scripts" = {
     source = ./files/scripts;
     recursive = true;
-  };
-  services.gpg-agent = { enable = true; enableSshSupport = true; };
-  services.gnome-keyring = {
-    enable = true;
-    components = ["pkcs11" "secrets"];
   };
   services.mpd = {
     enable = true;

@@ -35,6 +35,7 @@
     shell = pkgs.zsh;
   };
 
+  programs.ssh.startAgent = true;
   services.xserver = {
     enable = true;
     layout = "fr";
