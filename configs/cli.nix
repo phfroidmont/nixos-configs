@@ -3,6 +3,7 @@
   home.packages = with pkgs; [
     zsh-syntax-highlighting
     ranger
+    linuxPackages.perf
   ];
   programs.neovim = {
     enable = true;

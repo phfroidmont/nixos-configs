@@ -6,6 +6,9 @@
     ../../configs/user.nix
   ];
 
+  # Use older kernel thanks to Intel
+  boot.kernelPackages = pkgs.linuxPackages_4_19;
+  boot.kernelParams = [ "intel_idle.max_cstate=1" ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
@@ -31,10 +34,20 @@
   environment.systemPackages = with pkgs; [
   ];
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-  services.openssh.permitRootLogin = "yes";
+  hardware.bluetooth = {
+    enable = true;
+    # Enable A2DP Sink
+    extraConfig = "
+      [General]
+      Enable=Source,Sink,Media,Socket
+    ";
+  };
+  hardware.pulseaudio = {
+    enable = true;
 
+    # Use full build to have Bluetooth support
+    package = pkgs.pulseaudioFull;
+  };
   services.blueman.enable = true;
 
   home-manager.users.froidmpa = {pkgs, config, ...}: {
