@@ -3,6 +3,9 @@
   home.packages = with pkgs; [
     zsh-syntax-highlighting
     ranger
+    R
+    tldr
+    thefuck
     linuxPackages.perf
   ];
   programs.neovim = {
@@ -36,6 +39,20 @@
       " Run xrdb whenever Xdefaults or Xresources are updated.
       autocmd BufWritePost ~/.Xresources,~/.Xdefaults !xrdb %
     '';
+  };
+  programs.bat.enable = true;
+  programs.jq.enable = true;
+  programs.fzf.enable = true;
+  programs.lesspipe.enable = true;
+  programs.zathura.enable = true;
+  programs.pazi.enable = true;
+  programs.htop = {
+    enable = true;
+    hideUserlandThreads = true;
+    highlightBaseName = true;
+    fields = [ "PID" "USER" "M_RESIDENT" "M_SHARE" "STATE" "PERCENT_CPU" "PERCENT_MEM" "IO_RATE" "TIME" "COMM" ];
+    meters.left =  [ "LeftCPUs" "Memory" "Swap" ] ;
+    meters.right = [ "RightCPUs" "Tasks" "LoadAverage" "Uptime" ];
   };
   programs.broot = {
     enable = true;

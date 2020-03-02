@@ -6,12 +6,16 @@
 
     man
 
+    dos2unix
+
     vim
     git
+    zip
     unzip
 
     htop
     ncdu
+    nload
     pciutils
   ];
   fonts = {
