@@ -59,6 +59,23 @@
     ];
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;
+    services.grobi = {
+      enable = true;
+      executeAfter = ["${pkgs.systemd}/bin/systemctl --user restart stalonetray" "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png"];
+      rules = [
+        {
+          name = "Work HDMI";
+          outputs_connected = [ "HDMI-1" ];
+          configure_single = "HDMI-1";
+          primary = true;
+          atomic = true;
+        }
+        {
+          name = "Fallback";
+          configure_single = "eDP-1";
+        }
+      ];
+    };
   };
   # Enable touchpad support.
   services.xserver.libinput.enable = true;
