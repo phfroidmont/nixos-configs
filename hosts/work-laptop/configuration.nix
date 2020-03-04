@@ -61,5 +61,30 @@
   };
   # Enable touchpad support.
   services.xserver.libinput.enable = true;
+
+  fileSystems."/home/froidmpa/Projectlib" = {
+    device = "//fs-common.aris-lux.lan/projectlib";
+    fsType = "cifs";
+    options = let
+      # this line prevents hanging on network split
+      automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s";
+    in ["${automount_opts},credentials=/etc/nixos/smb-secrets"];
+  };
+  fileSystems."/home/froidmpa/Projectlib2" = {
+    device = "//fs-projects.aris-lux.lan/projectlib2";
+    fsType = "cifs";
+    options = let
+      # this line prevents hanging on network split
+      automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s";
+    in ["${automount_opts},credentials=/etc/nixos/smb-secrets"];
+  };
+  fileSystems."/home/froidmpa/NetworkDrive" = {
+    device = "//fs-users.aris-lux.lan/users/froidmpa";
+    fsType = "cifs";
+    options = let
+      # this line prevents hanging on network split
+      automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s";
+    in ["${automount_opts},credentials=/etc/nixos/smb-secrets"];
+  };
 }
 
