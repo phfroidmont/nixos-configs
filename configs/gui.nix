@@ -14,6 +14,7 @@
     steam
     mpv
     mumble
+    libreoffice-fresh
   ];
   programs.firefox = {
     enable = true;
