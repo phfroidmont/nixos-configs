@@ -62,8 +62,8 @@
   programs.zsh = {
     enable = true;
     history = {
-      save = 10000;
-      size = 10000;
+      save = 50000;
+      size = 50000;
     };
     enableAutosuggestions = true;
     initExtra = ''
