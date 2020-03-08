@@ -11,7 +11,6 @@
     keepassxc
     krita
     riot-desktop
-    steam
     mpv
     mumble
     libreoffice-fresh
@@ -20,10 +19,10 @@
     enable = true;
     extensions = with pkgs.nur.repos.rycee.firefox-addons; [
       keepassxc-browser
-    ublock-origin
-    umatrix
-    cookie-autodelete
-    dark-night-mode
+      ublock-origin
+      umatrix
+      cookie-autodelete
+      dark-night-mode
     ];
   };
 

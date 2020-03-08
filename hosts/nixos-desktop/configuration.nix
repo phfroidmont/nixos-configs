@@ -4,6 +4,7 @@
     ./hardware-configuration.nix
     ../../configs/system.nix
     ../../configs/user.nix
+    ../../configs/games.nix
   ];
 
   fileSystems."/home/froidmpa/Nextcloud" = {
