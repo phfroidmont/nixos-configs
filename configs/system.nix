@@ -49,4 +49,7 @@
       background = "/etc/nixos/configs/files/wallpaper.png";
     };
   };
+
+  # Required for custom GTK themes
+  services.dbus.packages = with pkgs; [ gnome3.dconf ];
 }

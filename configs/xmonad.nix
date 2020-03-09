@@ -33,6 +33,7 @@
     xorg.xkill
     scrot
     i3lock
+    numix-gtk-theme
   ];
   home.keyboard = {
     layout = "fr";
@@ -47,6 +48,19 @@
   home.file.".xmonad/scripts" = {
     source = ./files/scripts;
     recursive = true;
+  };
+  home.file.".themes/oomox-gruvmox-dark-medium-default" = {
+    source = ./files/oomox-gruvmox-dark-medium-default;
+    recursive = true;
+  };
+  gtk = {
+    enable = true;
+    theme.name = "oomox-gruvmox-dark-medium-default";
+    iconTheme.name = "oomox-gruvmox-dark-medium-default";
+  };
+  qt = {
+    enable = true;
+    platformTheme = "gtk";
   };
   services.mpd = {
     enable = true;
