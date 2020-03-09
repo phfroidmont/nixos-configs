@@ -16,6 +16,7 @@
       steam
       lutris
       vulkan-tools
+      dolphinEmu
     ];
   };
 }
