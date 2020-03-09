@@ -4,6 +4,7 @@
     ./hardware-configuration.nix
     ../../configs/system.nix
     ../../configs/user.nix
+    ../../configs/virtualisation.nix
     ../../configs/games.nix
   ];
 
