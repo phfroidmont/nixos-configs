@@ -34,6 +34,11 @@
     scrot
     i3lock
     numix-gtk-theme
+
+    # Ranger preview utils
+    w3m
+    xclip
+    odt2txt
   ];
   home.keyboard = {
     layout = "fr";
@@ -88,12 +93,18 @@
 
   programs.urxvt = {
     enable = true;
+    package = pkgs.rxvt_unicode-with-plugins;
     fonts = ["xft:monospace:size=12:antialias=true"];
     scroll = {
       bar.enable = false;
       lines = 65535;
     };
+    keybindings = {
+      "Shift-Control-C" = "eval:selection_to_clipboard";
+      "Shift-Control-V" = "eval:paste_clipboard";
+    };
     extraConfig = {
+      "perl-ext-common" = "default,clipboard,matcher,resize-font";
       "background" =     "rgba:28ff/28ff/28ff/cf00";
       "foreground" =     "#ebdbb2";
       "color0" =         "#282828";
@@ -116,6 +127,8 @@
       "letterSpace" =    "-1";
       "internalBorder" = "10";
       "depth" =          "32";
+      "resize-font.smaller" = "C-Down";
+      "resize-font.bigger" = "C-Up";
     };
   };
 
