@@ -73,6 +73,8 @@
 
       [[ -n "$key[Up]"   ]] && bindkey -- "$key[Up]"   up-line-or-beginning-search
       [[ -n "$key[Down]" ]] && bindkey -- "$key[Down]" down-line-or-beginning-search
+
+      eval $(thefuck --alias)
     '';
     oh-my-zsh = {
       enable = true;
