@@ -4,6 +4,7 @@
     ./hardware-configuration.nix
     ../../configs/system.nix
     ../../configs/user.nix
+    ../../configs/dev.nix
     ../../configs/virtualisation.nix
   ];
 
@@ -54,8 +55,6 @@
   home-manager.users.froidmpa = {pkgs, config, ...}: {
     home.packages = with pkgs; [
       slack-dark
-      maven
-      jdk
     ];
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;

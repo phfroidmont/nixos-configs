@@ -5,6 +5,7 @@
     ../../configs/system.nix
     ../../configs/user.nix
     ../../configs/virtualisation.nix
+    ../../configs/dev.nix
     ../../configs/games.nix
   ];
 
@@ -31,6 +32,7 @@
   time.timeZone = "Europe/Amsterdam";
 
   services.xserver.videoDrivers = ["amdgpu"];
+  services.sshd.enable = true;
   environment.systemPackages = with pkgs; [
   ];
 }
