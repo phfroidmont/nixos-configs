@@ -13,6 +13,8 @@
     mpv
     mumble
     libreoffice-fresh
+    slack
+    zoom-us
   ];
   programs.firefox = {
     enable = true;
