@@ -6,6 +6,7 @@
       jdk
       jetbrains.idea-ultimate
       maven
+      geckodriver
     ];
   };
 }
