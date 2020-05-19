@@ -132,7 +132,7 @@
     };
   };
 
-  services.compton.enable = true;
+  services.picom.enable = true;
   services.stalonetray = {
     enable = true;
     config = {

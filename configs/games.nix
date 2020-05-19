@@ -14,8 +14,6 @@
     };
     home.packages = with pkgs; [
       steam
-      lutris
-      vulkan-tools
       dolphinEmu
     ];
   };
