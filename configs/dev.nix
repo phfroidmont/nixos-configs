@@ -3,7 +3,7 @@
   home-manager.users.froidmpa = {pkgs, config, ...}: {
     nixpkgs.config.allowUnfree = true;
     home.packages = with pkgs; [
-      jdk
+      jdk11
       jetbrains.idea-ultimate
       maven
       sbt
