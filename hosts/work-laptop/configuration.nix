@@ -3,6 +3,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../configs/system.nix
+    ../../configs/network.nix
     ../../configs/user.nix
     ../../configs/dev.nix
     ../../configs/virtualisation.nix
