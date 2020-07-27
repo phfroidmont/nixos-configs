@@ -14,6 +14,7 @@
     mumble
     libreoffice-fresh
     slack
+    thunderbird
     zoom-us
   ];
   programs.firefox = {
@@ -23,7 +24,6 @@
       ublock-origin
       umatrix
       cookie-autodelete
-      dark-night-mode
     ];
   };
 
