@@ -3,6 +3,8 @@
   environment.systemPackages = with pkgs; [
     wget
     inetutils
+    openvpn
+    openfortivpn
 
     man
 

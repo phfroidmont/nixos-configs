@@ -71,6 +71,13 @@
           atomic = true;
         }
         {
+          name = "Work USBC";
+          outputs_connected = [ "DP-1" ];
+          configure_single = "DP-1";
+          primary = true;
+          atomic = true;
+        }
+        {
           name = "Fallback";
           configure_single = "eDP-1";
         }
