@@ -9,7 +9,7 @@
   home.packages = with pkgs; [
     keepassxc
     krita
-    riot-desktop
+    element-desktop
     mpv
     mumble
     libreoffice-fresh
