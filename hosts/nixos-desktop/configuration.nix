@@ -1,14 +1,22 @@
 { config, lib, pkgs, ... }:
 {
   imports = [
+    <home-manager/nixos>
     ./hardware-configuration.nix
     ../../configs/system.nix
-    ../../configs/user.nix
     ../../configs/network.nix
     ../../configs/virtualisation.nix
-    ../../configs/dev.nix
     ../../configs/games.nix
   ];
+
+   home-manager.users.froidmpa = {pkgs, config, ...}: {
+     imports = [
+       ../../configs/home-cli.nix
+       ../../configs/home-xmonad.nix
+       ../../configs/home-gui.nix
+       ../../configs/home-dev.nix
+     ];
+   };
 
   fileSystems."/home/froidmpa/Nextcloud" = {
     device = "/dev/disk/by-uuid/a4ba8b21-ea33-4487-b6f6-9bb7470a0acb";
@@ -36,4 +44,5 @@
   services.sshd.enable = true;
   environment.systemPackages = with pkgs; [
   ];
+  system.stateVersion = "19.09";
 }

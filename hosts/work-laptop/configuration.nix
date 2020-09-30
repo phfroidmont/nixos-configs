@@ -1,11 +1,10 @@
 { config, lib, pkgs, ... }:
 {
   imports = [
+    <home-manager/nixos>
     ./hardware-configuration.nix
     ../../configs/system.nix
     ../../configs/network.nix
-    ../../configs/user.nix
-    ../../configs/dev.nix
     ../../configs/virtualisation.nix
   ];
 
@@ -54,8 +53,11 @@
   services.blueman.enable = true;
 
   home-manager.users.froidmpa = {pkgs, config, ...}: {
-    home.packages = with pkgs; [
-      slack-dark
+    imports = [
+      ../../configs/home-cli.nix
+      ../../configs/home-xmonad.nix
+      ../../configs/home-gui.nix
+      ../../configs/home-dev.nix
     ];
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;
@@ -111,5 +113,7 @@
       automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s";
     in ["${automount_opts},credentials=/etc/nixos/smb-secrets"];
   };
+
+  system.stateVersion = "19.09";
 }
 
