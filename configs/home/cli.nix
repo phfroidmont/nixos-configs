@@ -6,7 +6,10 @@
     R
     tldr
     thefuck
+    atool
     linuxPackages.perf
+    meslo-lg
+    nerdfonts
   ];
   programs.neovim = {
     enable = true;
@@ -98,7 +101,7 @@
   home.file.".config/ranger/plugins" = {
     source = builtins.fetchGit {
         url = "git://github.com/alexanderjeurissen/ranger_devicons.git";
-        rev = "1fa1d0f29047979b9ffd541eb330756ac4b348ab";
+        rev = "68ffbffd086b0e9bb98c74705abe891b756b9e11";
     };
     recursive = true;
   };

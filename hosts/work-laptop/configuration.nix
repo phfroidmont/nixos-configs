@@ -54,10 +54,7 @@
 
   home-manager.users.froidmpa = {pkgs, config, ...}: {
     imports = [
-      ../../configs/home-cli.nix
-      ../../configs/home-xmonad.nix
-      ../../configs/home-gui.nix
-      ../../configs/home-dev.nix
+      ../../configs/home/full.nix
     ];
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;

@@ -124,7 +124,8 @@ myAdditionalKeys = [
     ("<XF86AudioPlay>"               ,spawn "mpc toggle"),
     ("M-p"                           ,spawn "mpc toggle"),
     ("<XF86AudioPrev>"               ,spawn "mpc prev"),
-    ("<XF86AudioNext>"               ,spawn "mpc next")
+    ("<XF86AudioNext>"               ,spawn "mpc next"),
+    ("<XF86Sleep>"                   ,spawn "systemctl suspend")
     ]
 
 myLayout = smartSpacing 5

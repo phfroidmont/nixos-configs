@@ -11,10 +11,7 @@
 
    home-manager.users.froidmpa = {pkgs, config, ...}: {
      imports = [
-       ../../configs/home-cli.nix
-       ../../configs/home-xmonad.nix
-       ../../configs/home-gui.nix
-       ../../configs/home-dev.nix
+       ../../configs/home/full.nix
      ];
    };
 
@@ -42,7 +39,11 @@
 
   services.xserver.videoDrivers = ["amdgpu"];
   services.sshd.enable = true;
-  environment.systemPackages = with pkgs; [
-  ];
+  programs.git = {
+    enable = true;
+    userName  = "Paul-Henri Froidmont";
+    userEmail = "git.contact-57n2p@froidmont.org";
+  };
+
   system.stateVersion = "19.09";
 }

@@ -7,6 +7,7 @@
     };
   };
   home.packages = with pkgs; [
+    firefox
     keepassxc
     krita
     element-desktop
@@ -17,15 +18,5 @@
     thunderbird
     zoom-us
   ];
-  programs.firefox = {
-    enable = true;
-    extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-      keepassxc-browser
-      ublock-origin
-      umatrix
-      cookie-autodelete
-    ];
-  };
-
   services.nextcloud-client.enable = true;
 }
