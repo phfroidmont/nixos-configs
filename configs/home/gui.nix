@@ -16,7 +16,8 @@
     libreoffice-fresh
     slack
     thunderbird
-    zoom-us
+    portfolio
+    transmission-remote-gtk
   ];
   services.nextcloud-client.enable = true;
   services.udiskie.enable = true;
