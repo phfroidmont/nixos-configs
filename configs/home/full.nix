@@ -11,6 +11,4 @@
   home.packages = with pkgs; [
     i3lock
   ];
-
-  picom.enable = true;
 }
