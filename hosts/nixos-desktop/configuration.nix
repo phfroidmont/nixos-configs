@@ -13,6 +13,12 @@
      imports = [
        ../../configs/home/full.nix
      ];
+
+     programs.git = {
+       enable = true;
+       userName  = "Paul-Henri Froidmont";
+       userEmail = "git.contact-57n2p@froidmont.org";
+     };
    };
 
   fileSystems."/home/froidmpa/Nextcloud" = {
@@ -39,11 +45,6 @@
 
   services.xserver.videoDrivers = ["amdgpu"];
   services.sshd.enable = true;
-  programs.git = {
-    enable = true;
-    userName  = "Paul-Henri Froidmont";
-    userEmail = "git.contact-57n2p@froidmont.org";
-  };
 
   system.stateVersion = "19.09";
 }
