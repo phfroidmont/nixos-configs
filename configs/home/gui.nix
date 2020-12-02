@@ -19,4 +19,5 @@
     zoom-us
   ];
   services.nextcloud-client.enable = true;
+  services.udiskie.enable = true;
 }
