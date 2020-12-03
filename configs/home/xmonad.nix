@@ -83,10 +83,6 @@
           mixer_type      "hardware"
       }
       audio_output {
-          type            "alsa"
-          name            "alsa"
-      }
-      audio_output {
           type            "fifo"
           name            "toggle_visualizer"
           path            "/tmp/mpd.fifo"
