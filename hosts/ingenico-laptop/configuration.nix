@@ -89,10 +89,6 @@
         server=1.1.1.1
         server=/~./1.0.0.1
         server=1.0.0.1
-        server=/~./8.8.8.8
-        server=8.8.8.8
-        server=/~./8.8.4.4
-        server=8.8.4.4
       '';
     "docker/daemon.json".text = ''
         {
@@ -157,8 +153,8 @@
       };
       gpg-agent = {
         enable = true;
-        enableSshSupport = true;
-        #pinentryFlavor = "tty";
+        enableSshSupport = false;
+        pinentryFlavor = "gtk2";
       };
     };
 
