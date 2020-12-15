@@ -14,6 +14,7 @@
   };
   nixpkgs.config.packageOverrides = pkgs: {
     ncmpcpp = pkgs.ncmpcpp.override {visualizerSupport = true;};
+    firefox = pkgs.firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; };
   };
 
   home = {

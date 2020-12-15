@@ -9,17 +9,21 @@
     ../../configs/games.nix
   ];
 
-   home-manager.users.froidmpa = {pkgs, config, ...}: {
-     imports = [
-       ../../configs/home/full.nix
-     ];
+  home-manager.users.froidmpa = {pkgs, config, ...}: {
+    imports = [
+      ../../configs/home/full.nix
+    ];
 
-     programs.git = {
-       enable = true;
-       userName  = "Paul-Henri Froidmont";
-       userEmail = "git.contact-57n2p@froidmont.org";
-     };
-   };
+    programs.git = {
+      enable = true;
+      userName  = "Paul-Henri Froidmont";
+      userEmail = "git.contact-57n2p@froidmont.org";
+    };
+  };
+
+  environment.systemPackages = with pkgs; [
+    eid-mw
+  ];
 
   fileSystems."/home/froidmpa/Nextcloud" = {
     device = "/dev/disk/by-uuid/a4ba8b21-ea33-4487-b6f6-9bb7470a0acb";
@@ -45,6 +49,7 @@
 
   services.xserver.videoDrivers = ["amdgpu"];
   services.sshd.enable = true;
+  services.pcscd.enable = true;
 
   system.stateVersion = "19.09";
 }
