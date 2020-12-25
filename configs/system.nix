@@ -12,6 +12,7 @@
 
     vim
     git
+    git-lfs
     zip
     unzip
 
