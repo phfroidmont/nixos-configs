@@ -2,7 +2,8 @@
 {
   nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
-    jdk11
+    jdk14
+    jetbrains.idea-community
     jetbrains.idea-ultimate
     maven
     sbt
