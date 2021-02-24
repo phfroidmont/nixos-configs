@@ -39,10 +39,11 @@
   hardware.bluetooth = {
     enable = true;
     # Enable A2DP Sink
-    extraConfig = "
-      [General]
-      Enable=Source,Sink,Media,Socket
-    ";
+    settings = {
+      General = {
+        Enable = "Source,Sink,Media,Socket";
+      };
+    };
   };
   hardware.pulseaudio = {
     enable = true;
