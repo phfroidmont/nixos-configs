@@ -8,6 +8,7 @@
   };
   home.packages = with pkgs; [
     firefox
+    brave
     keepassxc
     krita
     element-desktop
@@ -18,6 +19,7 @@
     thunderbird
     portfolio
     transmission-remote-gtk
+    monero-gui
   ];
   services.nextcloud-client.enable = true;
   services.udiskie.enable = true;
