@@ -151,7 +151,7 @@
     screen-locker = {
       enable = true;
       inactiveInterval = 5;
-      lockCmd = "\${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ~/.wallpaper.png";
+      lockCmd = "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ~/.wallpaper.png";
     };
   };
   programs = {
