@@ -35,9 +35,11 @@
   hardware.pulseaudio.enable = true;
   hardware.pulseaudio.support32Bit = true;
 
+  programs.adb.enable = true;
+
   users.users.froidmpa = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "adbusers" ];
     shell = pkgs.zsh;
   };
 
