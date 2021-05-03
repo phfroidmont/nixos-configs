@@ -2,7 +2,7 @@
 {
   nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
-    openjdk15
+    jdk
     jetbrains.idea-community
     jetbrains.idea-ultimate
     maven
