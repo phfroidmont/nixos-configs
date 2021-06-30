@@ -8,8 +8,6 @@
     thefuck
     atool
     linuxPackages.perf
-    meslo-lg
-    nerdfonts
   ];
 
   programs = {

@@ -23,8 +23,7 @@
   ];
   fonts = {
     fonts = with pkgs; [
-      meslo-lg
-      nerdfonts
+      (nerdfonts.override { fonts = [ "Meslo" ]; })
     ];
     fontconfig.defaultFonts = {
       monospace = [ "MesloLGMDZ Nerd Font Mono" ];
