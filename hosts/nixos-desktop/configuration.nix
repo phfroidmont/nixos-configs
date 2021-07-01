@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 {
   imports = [
-    <home-manager/nixos>
     ./hardware-configuration.nix
     ../../configs/system.nix
     ../../configs/network.nix

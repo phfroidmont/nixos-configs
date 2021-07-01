@@ -1,0 +1,18 @@
+== Build a config and switch to it
+[source,bash]
+----
+sudo nixos-rebuild switch --flake .#thehostname
+----
+If `#thehostname` is not provided, it defaults to the current hostname
+
+== Try to build a configuration
+[source,bash]
+----
+nix build .#nixosConfigurations.thehostname.config.system.build.toplevel
+----
+
+== Update lock file to the latest inputs
+[source,bash]
+----
+nix flake update
+----
