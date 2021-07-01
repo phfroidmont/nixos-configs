@@ -1,6 +1,18 @@
 { config, lib, pkgs, ... }:
 {
+
+  nix = {
+    package = pkgs.nixUnstable;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+  };
+
   environment.systemPackages = with pkgs; [
+    (pkgs.writeShellScriptBin "nixFlakes" ''
+       exec ${pkgs.nixUnstable}/bin/nix --experimental-features "nix-command flakes" "$@"
+    '')
+
     wget
     inetutils
     openvpn
