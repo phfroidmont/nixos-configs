@@ -106,11 +106,11 @@
     recursive = true;
   };
 
-  home.file.".config/ranger/plugins" = {
-    source = builtins.fetchGit {
-        url = "git://github.com/alexanderjeurissen/ranger_devicons.git";
-        rev = "68ffbffd086b0e9bb98c74705abe891b756b9e11";
-    };
-    recursive = true;
-  };
+#  home.file.".config/ranger/plugins" = {
+#    source = builtins.fetchGit {
+#        url = "git://github.com/alexanderjeurissen/ranger_devicons.git";
+#        rev = "68ffbffd086b0e9bb98c74705abe891b756b9e11";
+#    };
+#    recursive = true;
+#  };
 }

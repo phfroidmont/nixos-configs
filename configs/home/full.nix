@@ -5,7 +5,7 @@
     ./xmonad.nix
     ./gui.nix
     ./dev.nix
-    ./email.nix
+#    ./email.nix
   ];
 
   home.packages = with pkgs; [
