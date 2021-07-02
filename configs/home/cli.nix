@@ -98,6 +98,10 @@
       enable = true;
       enableNixDirenvIntegration = true;
       enableZshIntegration = true;
+      nix-direnv = {
+        enable = true;
+        enableFlakes = true;
+      };
     };
   };
 
@@ -106,11 +110,11 @@
     recursive = true;
   };
 
-#  home.file.".config/ranger/plugins" = {
-#    source = builtins.fetchGit {
-#        url = "git://github.com/alexanderjeurissen/ranger_devicons.git";
-#        rev = "68ffbffd086b0e9bb98c74705abe891b756b9e11";
-#    };
-#    recursive = true;
-#  };
+  home.file.".config/ranger/plugins" = {
+    source = builtins.fetchGit {
+        url = "git://github.com/phfroidmont/ranger_devicons.git";
+        rev = "e02b6a3203411b76616a0e4328245bf8b47c5dcc";
+    };
+    recursive = true;
+  };
 }
