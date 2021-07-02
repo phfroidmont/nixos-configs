@@ -92,5 +92,7 @@
   # Enable touchpad support.
   services.xserver.libinput.enable = true;
 
+  services.logind.lidSwitch = "ignore";
+
   system.stateVersion = "21.05"; # Did you read the comment?
 }
