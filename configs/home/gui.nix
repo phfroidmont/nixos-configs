@@ -15,7 +15,6 @@
     mpv
     mumble
     libreoffice-fresh
-    slack
     thunderbird
     portfolio
     transmission-remote-gtk
