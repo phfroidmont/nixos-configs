@@ -73,7 +73,9 @@
   services = {
     mpd = {
       enable = true;
+      network.listenAddress = "any";
       musicDirectory = "${config.home.homeDirectory}/Nextcloud/Media/Music";
+      playlistDirectory = "${config.home.homeDirectory}/Nextcloud/Playlists";
       extraConfig = ''
       max_output_buffer_size "16384"
       auto_update "yes"

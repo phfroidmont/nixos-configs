@@ -44,6 +44,9 @@
   networking.hostName = "nixos-desktop";
   networking.interfaces.enp31s0.useDHCP = true;
 
+  # Allow to externally control MPD
+  networking.firewall.allowedTCPPorts = [ 6600 ];
+
   console = {
     font = "Lat2-Terminus16";
     keyMap = "fr";
