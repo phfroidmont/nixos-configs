@@ -9,4 +9,11 @@
     sbt
     geckodriver
   ];
+
+  services.gpg-agent = {
+    enable = true;
+    enableSshSupport = false;
+    pinentryFlavor = "gtk2";
+  };
+  programs.gpg.enable = true;
 }

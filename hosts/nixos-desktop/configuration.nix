@@ -17,6 +17,10 @@
       enable = true;
       userName  = "Paul-Henri Froidmont";
       userEmail = "git.contact-57n2p@froidmont.org";
+      signing = {
+        key = "3AC6F170F01133CE393BCD94BE948AFD7E7873BE";
+        signByDefault = true;
+      };
     };
   };
 
