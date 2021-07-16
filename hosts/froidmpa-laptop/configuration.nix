@@ -53,20 +53,20 @@
   };
   services.blueman.enable = true;
 
-  home-manager.users.froidmpa = {pkgs, config, ...}: {
+  home-manager.users.froidmpa = { pkgs, config, ... }: {
     imports = [
       ../../configs/home/full.nix
     ];
     programs.git = {
       enable = true;
-      userName  = "Paul-Henri Froidmont";
+      userName = "Paul-Henri Froidmont";
       userEmail = "git.contact-57n2p@froidmont.org";
     };
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;
     services.grobi = {
       enable = true;
-      executeAfter = ["${pkgs.systemd}/bin/systemctl --user restart stalonetray" "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png"];
+      executeAfter = [ "${pkgs.systemd}/bin/systemctl --user restart stalonetray" "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png" ];
       rules = [
         {
           name = "Work HDMI";

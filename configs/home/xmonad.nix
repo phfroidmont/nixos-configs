@@ -13,7 +13,7 @@
     numlock.enable = true;
   };
   nixpkgs.config.packageOverrides = pkgs: {
-    ncmpcpp = pkgs.ncmpcpp.override {visualizerSupport = true;};
+    ncmpcpp = pkgs.ncmpcpp.override { visualizerSupport = true; };
     firefox = pkgs.firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; };
   };
 
@@ -42,7 +42,7 @@
     ];
     keyboard = {
       layout = "fr";
-      options = ["caps:escape"];
+      options = [ "caps:escape" ];
     };
     file = {
       ".wallpaper.png".source = ./files/wallpaper.png;
@@ -77,20 +77,20 @@
       musicDirectory = "${config.home.homeDirectory}/Nextcloud/Media/Music";
       playlistDirectory = "${config.home.homeDirectory}/Nextcloud/Playlists";
       extraConfig = ''
-      max_output_buffer_size "16384"
-      auto_update "yes"
-      audio_output {
-          type  "pulse"
-          name  "pulse audio"
-          device         "pulse"
-          mixer_type      "hardware"
-      }
-      audio_output {
-          type            "fifo"
-          name            "toggle_visualizer"
-          path            "/tmp/mpd.fifo"
-          format          "44100:16:2"
-      }
+        max_output_buffer_size "16384"
+        auto_update "yes"
+        audio_output {
+            type  "pulse"
+            name  "pulse audio"
+            device         "pulse"
+            mixer_type      "hardware"
+        }
+        audio_output {
+            type            "fifo"
+            name            "toggle_visualizer"
+            path            "/tmp/mpd.fifo"
+            format          "44100:16:2"
+        }
       '';
     };
     stalonetray = {
@@ -98,11 +98,11 @@
       config = {
         geometry = "1x1-5+0";
         background = "#000000";
-      transparent = true;
-      grow_gravity = "E";
-      icon_gravity = "E";
-      icon_size = "24";
-      kludges =  "force_icons_size";
+        transparent = true;
+        grow_gravity = "E";
+        icon_gravity = "E";
+        icon_size = "24";
+        kludges = "force_icons_size";
       };
     };
     unclutter.enable = true;
@@ -111,7 +111,7 @@
       enable = true;
       settings = {
         global = {
-        monitor = 0;
+          monitor = 0;
           geometry = "350x5-30+50";
           transparency = 10;
           font = "monospace 14";
@@ -124,7 +124,7 @@
           sort = "yes";
         };
         frame = {
-            width = 3;
+          width = 3;
           color = "#ebdbb2";
         };
         shortcuts = {
@@ -165,7 +165,7 @@
     urxvt = {
       enable = true;
       package = pkgs.rxvt_unicode-with-plugins;
-      fonts = ["xft:monospace:size=12:antialias=true"];
+      fonts = [ "xft:monospace:size=12:antialias=true" ];
       scroll = {
         bar.enable = false;
         lines = 65535;
@@ -175,31 +175,31 @@
         "Shift-Control-V" = "eval:paste_clipboard";
       };
       extraConfig = {
-        "perl-ext-common" =     "default,clipboard,matcher,resize-font";
-        "background" =          "rgba:28ff/28ff/28ff/cf00";
-        "foreground" =          "#ebdbb2";
-        "color0" =              "#282828";
-        "color8" =              "#928374";
-        "color1" =              "#cc241d";
-        "color9" =              "#fb4934";
-        "color2" =              "#98971a";
-        "color10" =             "#b8bb26";
-        "color3" =              "#d79921";
-        "color11" =             "#fabd2f";
-        "color4" =              "#458588";
-        "color12" =             "#83a598";
-        "color5" =              "#b16286";
-        "color13" =             "#d3869b";
-        "color6" =              "#689d6a";
-        "color14" =             "#8ec07c";
-        "color7" =              "#a89984";
-        "color15" =             "#ebdbb2";
-        "termName" =            "rxvt-256color";
-        "letterSpace" =         "-1";
-        "internalBorder" =      "10";
-        "depth" =               "32";
+        "perl-ext-common" = "default,clipboard,matcher,resize-font";
+        "background" = "rgba:28ff/28ff/28ff/cf00";
+        "foreground" = "#ebdbb2";
+        "color0" = "#282828";
+        "color8" = "#928374";
+        "color1" = "#cc241d";
+        "color9" = "#fb4934";
+        "color2" = "#98971a";
+        "color10" = "#b8bb26";
+        "color3" = "#d79921";
+        "color11" = "#fabd2f";
+        "color4" = "#458588";
+        "color12" = "#83a598";
+        "color5" = "#b16286";
+        "color13" = "#d3869b";
+        "color6" = "#689d6a";
+        "color14" = "#8ec07c";
+        "color7" = "#a89984";
+        "color15" = "#ebdbb2";
+        "termName" = "rxvt-256color";
+        "letterSpace" = "-1";
+        "internalBorder" = "10";
+        "depth" = "32";
         "resize-font.smaller" = "C-Down";
-        "resize-font.bigger" =  "C-Up";
+        "resize-font.bigger" = "C-Up";
       };
     };
   };

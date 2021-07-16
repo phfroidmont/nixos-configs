@@ -8,7 +8,7 @@
     ../../configs/games.nix
   ];
 
-  home-manager.users.froidmpa = {pkgs, config, ...}: {
+  home-manager.users.froidmpa = { pkgs, config, ... }: {
     imports = [
       ../../configs/home/full.nix
     ];
@@ -17,7 +17,7 @@
 
     programs.git = {
       enable = true;
-      userName  = "Paul-Henri Froidmont";
+      userName = "Paul-Henri Froidmont";
       userEmail = "git.contact-57n2p@froidmont.org";
       signing = {
         key = "3AC6F170F01133CE393BCD94BE948AFD7E7873BE";
@@ -27,12 +27,12 @@
   };
 
   hardware.opengl = {
-     driSupport = true;
-     driSupport32Bit = true;
-     extraPackages = with pkgs; [
-        rocm-opencl-icd
-        rocm-opencl-runtime
-     ];
+    driSupport = true;
+    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      rocm-opencl-icd
+      rocm-opencl-runtime
+    ];
   };
 
   environment.systemPackages = with pkgs; [
@@ -64,7 +64,7 @@
 
   time.timeZone = "Europe/Amsterdam";
 
-  services.xserver.videoDrivers = ["amdgpu"];
+  services.xserver.videoDrivers = [ "amdgpu" ];
   services.sshd.enable = true;
   services.pcscd.enable = true;
 

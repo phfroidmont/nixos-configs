@@ -54,7 +54,7 @@
       hideUserlandThreads = true;
       highlightBaseName = true;
       fields = [ "PID" "USER" "M_RESIDENT" "M_SHARE" "STATE" "PERCENT_CPU" "PERCENT_MEM" "IO_RATE" "TIME" "COMM" ];
-      meters.left =  [ "LeftCPUs" "Memory" "Swap" ] ;
+      meters.left = [ "LeftCPUs" "Memory" "Swap" ];
       meters.right = [ "RightCPUs" "Tasks" "LoadAverage" "Uptime" ];
     };
     broot = {
@@ -112,8 +112,8 @@
 
   home.file.".config/ranger/plugins" = {
     source = builtins.fetchGit {
-        url = "git://github.com/phfroidmont/ranger_devicons.git";
-        rev = "e02b6a3203411b76616a0e4328245bf8b47c5dcc";
+      url = "git://github.com/phfroidmont/ranger_devicons.git";
+      rev = "e02b6a3203411b76616a0e4328245bf8b47c5dcc";
     };
     recursive = true;
   };
