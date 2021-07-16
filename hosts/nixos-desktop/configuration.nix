@@ -13,6 +13,8 @@
       ../../configs/home/full.nix
     ];
 
+    home.stateVersion = "20.09";
+
     programs.git = {
       enable = true;
       userName  = "Paul-Henri Froidmont";
