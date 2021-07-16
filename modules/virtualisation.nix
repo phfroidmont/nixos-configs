@@ -8,9 +8,7 @@
   };
   users.users.froidmpa.extraGroups = [ "docker" "vboxusers" ];
 
-  home-manager.users.froidmpa = { pkgs, config, ... }: {
-    home.packages = with pkgs; [
-      docker-compose
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    docker-compose
+  ];
 }

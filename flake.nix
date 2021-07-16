@@ -11,14 +11,18 @@
       modules =
         [
           home-manager.nixosModules.home-manager
-          {
-            imports = [
-              ./hosts/nixos-desktop/configuration.nix
-            ];
+          ./hardware/desktop.nix
+          ./profiles/base.nix
+          ./users
+          ({
+            networking.hostName = "nixos-desktop";
+            # Allow to externally control MPD
+            networking.firewall.allowedTCPPorts = [ 6600 ];
 
-            system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
             nix.registry.nixpkgs.flake = nixpkgs;
-          }
+
+            system.stateVersion = "19.09";
+          })
         ];
     };
 
