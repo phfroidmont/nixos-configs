@@ -1,0 +1,64 @@
+{ config, lib, pkgs, modulesPath, ... }:
+
+{
+  imports =
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
+    ];
+
+  boot = {
+    initrd.availableKernelModules = [ "nvme" "xhci_pci" "usb_storage" "sd_mod" "sdhci_pci" ];
+    initrd.kernelModules = [ "dm-snapshot" ];
+    kernelModules = [ "kvm-amd" ];
+    # Required, otherwise the kernel freezes on boot
+    kernelParams = [ "nomodeset" ];
+    extraModulePackages = [ ];
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
+    initrd.luks.devices."crypted".device = "/dev/disk/by-uuid/1e900b2e-daea-4558-b18f-3d3a5843de61";
+  };
+
+  fileSystems."/" =
+    {
+      device = "/dev/disk/by-uuid/a8abad9b-5615-4887-8431-3d80b78d073e";
+      fsType = "ext4";
+    };
+
+
+  fileSystems."/boot" =
+    {
+      device = "/dev/disk/by-uuid/077C-758A";
+      fsType = "vfat";
+    };
+
+  swapDevices =
+    [{ device = "/dev/disk/by-uuid/bb8fa9ef-9b8f-413d-913a-6c891649a954"; }];
+
+  hardware = {
+    bluetooth = {
+      enable = true;
+      # Enable A2DP Sink
+      settings = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+        };
+      };
+    };
+    pulseaudio = {
+      enable = true;
+
+      # Use full build to have Bluetooth support
+      package = pkgs.pulseaudioFull;
+    };
+  };
+
+  networking.networkmanager.enable = true;
+
+  # Enable touchpad support.
+  services.xserver.libinput.enable = true;
+
+  services.blueman.enable = true;
+
+  services.logind.lidSwitch = "ignore";
+
+}

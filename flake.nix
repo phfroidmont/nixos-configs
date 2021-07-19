@@ -31,14 +31,39 @@
       modules =
         [
           home-manager.nixosModules.home-manager
-          {
-            imports = [
-              ./hosts/froidmpa-laptop/configuration.nix
-            ];
+          ./hardware/clevo-nl51ru.nix
+          ./profiles/base.nix
+          ./users
+          ({
+            networking.hostName = "froidmpa-laptop";
 
-            system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
             nix.registry.nixpkgs.flake = nixpkgs;
-          }
+
+            home-manager.users.froidmpa = { pkgs, config, ... }: {
+              services.network-manager-applet.enable = true;
+              services.blueman-applet.enable = true;
+              services.grobi = {
+                enable = true;
+                executeAfter = [ "${pkgs.systemd}/bin/systemctl --user restart stalonetray" "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png" ];
+                rules = [
+                  {
+                    name = "Work HDMI";
+                    outputs_connected = [ "HDMI-1" ];
+                    configure_single = "HDMI-1";
+                    primary = true;
+                    atomic = true;
+                  }
+                  {
+                    name = "Fallback";
+                    configure_single = "eDP-1";
+                  }
+                ];
+              };
+            };
+
+            system.stateVersion = "21.05";
+          })
+
         ];
     };
 
