@@ -5,7 +5,9 @@
     save = 50000;
     size = 50000;
   };
+  enableCompletion = true;
   enableAutosuggestions = true;
+  enableSyntaxHighlighting = true;
   initExtra = ''
     autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
     zle -N up-line-or-beginning-search
@@ -25,9 +27,12 @@
   };
   plugins = [
     {
-      name = "zsh-syntax-highlighting";
-      file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
-      src = "${pkgs.zsh-syntax-highlighting}";
+      name = "nix-zsh-completions";
+      src = pkgs.nix-zsh-completions;
+    }
+    {
+      name = "zsh-completions";
+      src = pkgs.zsh-completions;
     }
   ];
 }

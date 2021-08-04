@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 {
 
+  environment.pathsToLink = [ "/share/zsh" ];
   home-manager.users.froidmpa = { pkgs, config, ... }: {
     nixpkgs.config = {
       allowUnfree = true;
