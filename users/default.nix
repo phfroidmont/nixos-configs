@@ -86,11 +86,33 @@
       pazi.enable = true;
       htop = {
         enable = true;
-        hideUserlandThreads = true;
-        highlightBaseName = true;
-        fields = [ "PID" "USER" "M_RESIDENT" "M_SHARE" "STATE" "PERCENT_CPU" "PERCENT_MEM" "IO_RATE" "TIME" "COMM" ];
-        meters.left = [ "LeftCPUs" "Memory" "Swap" ];
-        meters.right = [ "RightCPUs" "Tasks" "LoadAverage" "Uptime" ];
+        settings = {
+          hide_userland_threads = true;
+          highlight_base_name = true;
+          vim_mode = true;
+          fields = with config.lib.htop.fields;[
+            PID
+            USER
+            M_RESIDENT
+            M_SHARE
+            STATE
+            PERCENT_CPU
+            PERCENT_MEM
+            IO_RATE
+            TIME
+            COMM
+          ];
+        } // (with config.lib.htop; leftMeters [
+          (bar "LeftCPUs2")
+          (bar "CPU")
+          (bar "Memory")
+          (bar "Swap")
+        ]) // (with config.lib.htop; rightMeters [
+          (bar "RightCPUs2")
+          (text "Tasks")
+          (text "LoadAverage")
+          (text "Uptime")
+        ]);
       };
       broot = {
         enable = true;
@@ -100,7 +122,6 @@
       zsh = import ./froidmpa/zsh.nix { inherit pkgs; };
       direnv = {
         enable = true;
-        enableNixDirenvIntegration = true;
         enableZshIntegration = true;
         nix-direnv = {
           enable = true;
