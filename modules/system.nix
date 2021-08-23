@@ -9,9 +9,11 @@
   };
 
   environment.systemPackages = with pkgs; [
-    (pkgs.writeShellScriptBin "nixFlakes" ''
-      exec ${pkgs.nixUnstable}/bin/nix --experimental-features "nix-command flakes" "$@"
-    '')
+    (
+      pkgs.writeShellScriptBin "nixFlakes" ''
+        exec ${pkgs.nixUnstable}/bin/nix --experimental-features "nix-command flakes" "$@"
+      ''
+    )
 
     wget
     inetutils
@@ -35,6 +37,7 @@
   ];
   fonts = {
     fonts = with pkgs; [
+      corefonts # Microsoft free fonts
       (nerdfonts.override { fonts = [ "Meslo" ]; })
     ];
     fontconfig.defaultFonts = {
