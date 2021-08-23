@@ -139,6 +139,7 @@
         package = pkgs.vscodium;
         extensions = (
           with pkgs.vscode-extensions; [
+            pkief.material-icon-theme
             jnoortheen.nix-ide
             arrterian.nix-env-selector
             scala-lang.scala
