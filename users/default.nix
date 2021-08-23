@@ -147,6 +147,30 @@
             hashicorp.terraform
           ]
         );
+        userSettings = {
+          "editor.formatOnSave" = true;
+          "files.autoSave" = "onFocusChange";
+          "files.watcherExclude" = {
+            "**/.bloop" = true;
+            "**/.metals" = true;
+            "**/.ammonite" = true;
+          };
+          "gruvboxMaterial.darkContrast" = "hard";
+          "metals.millScript" = "mill";
+          "nix.enableLanguageServer" = true;
+          "terminal.integrated.confirmOnExit" = "hasChildProcesses";
+          "terraform.languageServer" = {
+            "external" = true;
+            "pathToBinary" = "";
+            "args" = [
+              "serve"
+            ];
+            "maxNumberOfProblems" = 100;
+            "trace.server" = "off";
+          };
+          "workbench.colorTheme" = "Gruvbox Material Dark";
+          "workbench.iconTheme" = "material-icon-theme";
+        };
       };
     };
 
