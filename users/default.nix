@@ -8,11 +8,13 @@
       packageOverrides = pkgs: {
         ncmpcpp = pkgs.ncmpcpp.override { visualizerSupport = true; };
         firefox = pkgs.firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; };
-        lutris-unwrapped = pkgs.lutris-unwrapped.overridePythonAttrs (oldAttrs: rec {
-          patches = [
-            ./lutris_sort_new_with_model_fix.patch
-          ];
-        });
+        lutris-unwrapped = pkgs.lutris-unwrapped.overridePythonAttrs (
+          oldAttrs: rec {
+            patches = [
+              ./lutris_sort_new_with_model_fix.patch
+            ];
+          }
+        );
       };
     };
 
@@ -52,7 +54,7 @@
       };
       unclutter.enable = true;
       pasystray.enable = true;
-      dunst = import ./froidmpa/dunst.nix { };
+      dunst = import ./froidmpa/dunst.nix {};
       screen-locker = {
         enable = true;
         inactiveInterval = 5;
@@ -102,17 +104,21 @@
             TIME
             COMM
           ];
-        } // (with config.lib.htop; leftMeters [
-          (bar "LeftCPUs2")
-          (bar "CPU")
-          (bar "Memory")
-          (bar "Swap")
-        ]) // (with config.lib.htop; rightMeters [
-          (bar "RightCPUs2")
-          (text "Tasks")
-          (text "LoadAverage")
-          (text "Uptime")
-        ]);
+        } // (
+          with config.lib.htop; leftMeters [
+            (bar "LeftCPUs2")
+            (bar "CPU")
+            (bar "Memory")
+            (bar "Swap")
+          ]
+        ) // (
+          with config.lib.htop; rightMeters [
+            (bar "RightCPUs2")
+            (text "Tasks")
+            (text "LoadAverage")
+            (text "Uptime")
+          ]
+        );
       };
       broot = {
         enable = true;
@@ -131,13 +137,15 @@
       vscode = {
         enable = true;
         package = pkgs.vscodium;
-        extensions = (with pkgs.vscode-extensions; [
-          bbenoist.nix
-          arrterian.nix-env-selector
-          scala-lang.scala
-          scalameta.metals
-          hashicorp.terraform
-        ]);
+        extensions = (
+          with pkgs.vscode-extensions; [
+            jnoortheen.nix-ide
+            arrterian.nix-env-selector
+            scala-lang.scala
+            scalameta.metals
+            hashicorp.terraform
+          ]
+        );
       };
     };
 
@@ -231,6 +239,9 @@
         mill
         sbt
         geckodriver
+
+        rnix-lsp
+        nixpkgs-fmt
 
         zsh-syntax-highlighting
         ranger
