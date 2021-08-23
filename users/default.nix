@@ -128,6 +128,17 @@
           enableFlakes = true;
         };
       };
+      vscode = {
+        enable = true;
+        package = pkgs.vscodium;
+        extensions = (with pkgs.vscode-extensions; [
+          bbenoist.nix
+          arrterian.nix-env-selector
+          scala-lang.scala
+          scalameta.metals
+          hashicorp.terraform
+        ]);
+      };
     };
 
     gtk = {
@@ -213,10 +224,11 @@
         transmission-remote-gtk
         monero-gui
 
-        jdk
+        jdk11
         jetbrains.idea-community
         jetbrains.idea-ultimate
         maven
+        mill
         sbt
         geckodriver
 
