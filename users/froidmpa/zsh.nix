@@ -22,6 +22,7 @@
     enable = true;
     plugins = [
       "git"
+      "terraform"
     ];
     theme = "robbyrussell";
   };
