@@ -72,6 +72,9 @@
           key = lib.mkDefault "3AC6F170F01133CE393BCD94BE948AFD7E7873BE";
           signByDefault = true;
         };
+        extraConfig = {
+          init.defaultBranch = "master";
+        };
       };
       rofi = {
         enable = true;
