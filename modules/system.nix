@@ -3,6 +3,9 @@
 
   nix = {
     package = pkgs.nixUnstable;
+    sandboxPaths = [
+      "/etc/nixos/var/netrc"
+    ];
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
