@@ -4,7 +4,7 @@
   nix = {
     package = pkgs.nixUnstable;
     sandboxPaths = [
-      "/etc/nixos/var/netrc"
+      "/var/keys/netrc"
     ];
     extraOptions = ''
       experimental-features = nix-command flakes
@@ -12,12 +12,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    (
-      pkgs.writeShellScriptBin "nixFlakes" ''
-        exec ${pkgs.nixUnstable}/bin/nix --experimental-features "nix-command flakes" "$@"
-      ''
-    )
-
     wget
     inetutils
     openvpn
