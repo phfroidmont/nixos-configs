@@ -267,6 +267,7 @@
         mill
         sbt
         geckodriver
+        httpie
 
         rnix-lsp
         nixpkgs-fmt
