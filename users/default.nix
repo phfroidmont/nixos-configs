@@ -148,10 +148,21 @@
             scala-lang.scala
             scalameta.metals
             hashicorp.terraform
+            bradlc.vscode-tailwindcss
           ]
         );
         userSettings = {
           "editor.formatOnSave" = true;
+          "editor.quickSuggestions" = {
+            "strings" = true;
+          };
+          "tailwindCSS.includeLanguages" = {
+            "scala" = "html";
+          };
+          "tailwindCSS.experimental.classRegex" = [
+            [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
+          ];
+
           "files.autoSave" = "onFocusChange";
           "files.watcherExclude" = {
             "**/.bloop" = true;
