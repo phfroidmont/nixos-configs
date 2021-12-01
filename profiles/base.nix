@@ -5,7 +5,6 @@
     ./../modules/network.nix
     ./../modules/virtualisation.nix
     ./../modules/belgian-eid.nix
-    ./../modules/games.nix
   ];
 
   time.timeZone = lib.mkDefault "Europe/Amsterdam";

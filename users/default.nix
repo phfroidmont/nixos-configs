@@ -54,7 +54,7 @@
       };
       unclutter.enable = true;
       pasystray.enable = true;
-      dunst = import ./froidmpa/dunst.nix {};
+      dunst = import ./froidmpa/dunst.nix { };
       screen-locker = {
         enable = true;
         inactiveInterval = 5;
@@ -132,10 +132,8 @@
       direnv = {
         enable = true;
         enableZshIntegration = true;
-        nix-direnv = {
-          enable = true;
-          enableFlakes = true;
-        };
+        nix-direnv.enable = true;
+
       };
       vscode = {
         enable = true;
