@@ -1,14 +1,13 @@
 { config, lib, pkgs, ... }:
 {
-  nixpkgs.config.allowUnfree = true;
   virtualisation = {
-    virtualbox.host.enable = true;
-    virtualbox.host.enableExtensionPack = true;
+    libvirtd.enable = true;
     docker.enable = true;
   };
-  users.users.froidmpa.extraGroups = [ "docker" "vboxusers" ];
+  users.users.froidmpa.extraGroups = [ "docker" "libvirtd" ];
 
   environment.systemPackages = with pkgs; [
     docker-compose
+    virt-manager
   ];
 }

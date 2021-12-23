@@ -32,6 +32,7 @@
     nload
     pciutils
   ];
+  nixpkgs.config.allowUnfree = true;
   fonts = {
     fonts = with pkgs; [
       corefonts # Microsoft free fonts
