@@ -262,6 +262,7 @@
         krita
         element-desktop
         mpv
+        jellyfin-mpv-shim
         mumble
         libreoffice-fresh
         thunderbird
