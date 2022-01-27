@@ -68,5 +68,5 @@
   };
 
   # Required for custom GTK themes
-  services.dbus.packages = with pkgs; [ gnome3.dconf ];
+  services.dbus.packages = with pkgs; [ dconf ];
 }
