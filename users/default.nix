@@ -270,13 +270,7 @@
         transmission-remote-gtk
         monero-gui
 
-        jdk11
-        jetbrains.idea-community
-        jetbrains.idea-ultimate
-        maven
-        mill
-        sbt
-        geckodriver
+        jdk
         httpie
 
         rnix-lsp
