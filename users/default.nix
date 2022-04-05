@@ -8,13 +8,6 @@
       packageOverrides = pkgs: {
         ncmpcpp = pkgs.ncmpcpp.override { visualizerSupport = true; };
         firefox = pkgs.firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; };
-        lutris-unwrapped = pkgs.lutris-unwrapped.overridePythonAttrs (
-          oldAttrs: rec {
-            patches = [
-              ./lutris_sort_new_with_model_fix.patch
-            ];
-          }
-        );
       };
     };
 
@@ -285,6 +278,7 @@
         linuxPackages.perf
 
         steam
+        lutris
         dolphinEmu
       ];
     };
