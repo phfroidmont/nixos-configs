@@ -277,6 +277,7 @@
         atool
         linuxPackages.perf
 
+        glxinfo
         steam
         lutris
         dolphinEmu

@@ -67,6 +67,8 @@
     };
   };
 
+  systemd.packages = [ pkgs.dconf ];
+
   # Required for custom GTK themes
   services.dbus.packages = with pkgs; [ dconf ];
 }
