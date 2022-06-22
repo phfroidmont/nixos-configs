@@ -262,6 +262,7 @@
         portfolio
         transmission-remote-gtk
         monero-gui
+        exodus
 
         jdk
         httpie
