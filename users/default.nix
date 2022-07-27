@@ -58,7 +58,7 @@
       unclutter.enable = true;
       pasystray.enable = true;
       screen-locker = {
-        enable = true;
+        enable = false;
         inactiveInterval = 5;
         lockCmd = "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ~/.wallpaper.png";
       };
