@@ -34,7 +34,7 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/f714775c-b5af-4c0c-8330-999b43db4794"; }];
 
-  nix.maxJobs = lib.mkDefault 16;
+  nix.settings.max-jobs = lib.mkDefault 16;
   networking.interfaces.enp31s0.useDHCP = true;
 
   services.xserver.videoDrivers = [ "amdgpu" ];

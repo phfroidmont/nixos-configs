@@ -3,9 +3,12 @@
 
   nix = {
     package = pkgs.nixUnstable;
-    sandboxPaths = [
-      "/var/keys/netrc"
-    ];
+    settings = {
+      extra-sandbox-paths = [
+        "/var/keys/netrc"
+      ];
+    };
+
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
