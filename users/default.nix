@@ -4,7 +4,15 @@
   environment.pathsToLink = [ "/share/zsh" ];
   home-manager.users.froidmpa = { pkgs, config, ... }: {
 
-    imports = [ ./froidmpa/alacritty.nix ];
+    imports = [
+      ./froidmpa/alacritty.nix
+      ./froidmpa/neovim.nix
+      ./froidmpa/mpd.nix
+      ./froidmpa/dunst.nix
+      ./froidmpa/htop.nix
+      ./froidmpa/zsh.nix
+      ./froidmpa/vscode.nix
+    ];
 
     nixpkgs.config = {
       allowUnfree = true;
@@ -35,7 +43,6 @@
         enableSshSupport = false;
         pinentryFlavor = "gtk2";
       };
-      mpd = import ./froidmpa/mpd.nix { inherit config; };
       stalonetray = {
         enable = true;
         config = {
@@ -50,7 +57,6 @@
       };
       unclutter.enable = true;
       pasystray.enable = true;
-      dunst = import ./froidmpa/dunst.nix { };
       screen-locker = {
         enable = true;
         inactiveInterval = 5;
@@ -77,107 +83,22 @@
         theme = "gruvbox-dark";
         terminal = "alacritty";
       };
-      neovim = import ./froidmpa/neovim.nix { inherit pkgs; };
       bat.enable = true;
       jq.enable = true;
       fzf.enable = true;
       lesspipe.enable = true;
       zathura.enable = true;
       pazi.enable = true;
-      htop = {
-        enable = true;
-        settings = {
-          hide_userland_threads = true;
-          highlight_base_name = true;
-          vim_mode = true;
-          fields = with config.lib.htop.fields;[
-            PID
-            USER
-            M_RESIDENT
-            M_SHARE
-            STATE
-            PERCENT_CPU
-            PERCENT_MEM
-            IO_RATE
-            TIME
-            COMM
-          ];
-        } // (
-          with config.lib.htop; leftMeters [
-            (bar "LeftCPUs2")
-            (bar "CPU")
-            (bar "Memory")
-            (bar "Swap")
-          ]
-        ) // (
-          with config.lib.htop; rightMeters [
-            (bar "RightCPUs2")
-            (text "Tasks")
-            (text "LoadAverage")
-            (text "Uptime")
-          ]
-        );
-      };
+
       broot = {
         enable = true;
         enableZshIntegration = true;
       };
       command-not-found.enable = true;
-      zsh = import ./froidmpa/zsh.nix { inherit pkgs; };
       direnv = {
         enable = true;
         enableZshIntegration = true;
         nix-direnv.enable = true;
-
-      };
-      vscode = {
-        enable = true;
-        package = pkgs.vscodium;
-        extensions = (
-          with pkgs.vscode-extensions; [
-            pkief.material-icon-theme
-            jnoortheen.nix-ide
-            arrterian.nix-env-selector
-            scala-lang.scala
-            scalameta.metals
-            hashicorp.terraform
-            bradlc.vscode-tailwindcss
-          ]
-        );
-        userSettings = {
-          "editor.formatOnSave" = true;
-          "editor.quickSuggestions" = {
-            "strings" = true;
-          };
-          "tailwindCSS.includeLanguages" = {
-            "scala" = "html";
-          };
-          "tailwindCSS.experimental.classRegex" = [
-            [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
-          ];
-
-          "files.autoSave" = "onFocusChange";
-          "files.watcherExclude" = {
-            "**/.bloop" = true;
-            "**/.metals" = true;
-            "**/.ammonite" = true;
-          };
-          "gruvboxMaterial.darkContrast" = "hard";
-          "metals.millScript" = "mill";
-          "nix.enableLanguageServer" = true;
-          "terminal.integrated.confirmOnExit" = "hasChildProcesses";
-          "terraform.languageServer" = {
-            "external" = true;
-            "pathToBinary" = "";
-            "args" = [
-              "serve"
-            ];
-            "maxNumberOfProblems" = 100;
-            "trace.server" = "off";
-          };
-          "workbench.colorTheme" = "Gruvbox Material Dark";
-          "workbench.iconTheme" = "material-icon-theme";
-        };
       };
     };
 
