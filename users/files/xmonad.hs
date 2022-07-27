@@ -43,7 +43,7 @@ import XMonad.Util.WorkspaceCompare
 import XMonad.Util.Run
 import XMonad.Util.EZConfig
 
-myTerminal = "urxvt"
+myTerminal = "alacritty"
 mySelectScreenshot = "scrot -s"
 myScreenshot = "scrot"
 

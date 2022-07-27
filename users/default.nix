@@ -3,6 +3,9 @@
 
   environment.pathsToLink = [ "/share/zsh" ];
   home-manager.users.froidmpa = { pkgs, config, ... }: {
+
+    imports = [ ./froidmpa/alacritty.nix ];
+
     nixpkgs.config = {
       allowUnfree = true;
       packageOverrides = pkgs: {
@@ -72,9 +75,8 @@
       rofi = {
         enable = true;
         theme = "gruvbox-dark";
-        terminal = "urxvt";
+        terminal = "alacritty";
       };
-      urxvt = import ./froidmpa/urxvt.nix { inherit pkgs; };
       neovim = import ./froidmpa/neovim.nix { inherit pkgs; };
       bat.enable = true;
       jq.enable = true;
