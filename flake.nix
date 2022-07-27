@@ -8,6 +8,7 @@
 
     nixosConfigurations.nixos-desktop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      specialArgs = { inherit nixpkgs; };
       modules =
         [
           home-manager.nixosModules.home-manager
@@ -30,6 +31,7 @@
 
     nixosConfigurations.froidmpa-laptop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      specialArgs = { inherit nixpkgs; };
       modules =
         [
           home-manager.nixosModules.home-manager

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, nixpkgs, ... }:
 {
 
   nix = {
@@ -9,6 +9,9 @@
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
+    nixPath = [
+      "nixpkgs=${nixpkgs}"
+    ];
   };
 
   environment.systemPackages = with pkgs; [
