@@ -12,6 +12,7 @@
         scalameta.metals
         hashicorp.terraform
         bradlc.vscode-tailwindcss
+        asciidoctor.asciidoctor-vscode
       ]
     );
     userSettings = {
@@ -24,6 +25,7 @@
       };
       "tailwindCSS.experimental.classRegex" = [
         [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
+        [ "cls\\s*:=\\s*\\(?([^,^\\n^\\)]*)" "\"([^']*)\"" ]
       ];
 
       "files.autoSave" = "onFocusChange";
@@ -47,6 +49,7 @@
       };
       "workbench.colorTheme" = "Gruvbox Material Dark";
       "workbench.iconTheme" = "material-icon-theme";
+      "asciidoc.use_kroki" = true;
     };
   };
 }
