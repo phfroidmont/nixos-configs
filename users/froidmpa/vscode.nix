@@ -50,6 +50,8 @@
       "workbench.colorTheme" = "Gruvbox Material Dark";
       "workbench.iconTheme" = "material-icon-theme";
       "asciidoc.use_kroki" = true;
+      "explorer.confirmDelete" = false;
+      "explorer.confirmDragAndDrop" = false;
     };
   };
 }
