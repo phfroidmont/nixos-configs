@@ -181,6 +181,7 @@
         jellyfin-mpv-shim
         mumble
         libreoffice-fresh
+        onlyoffice-bin
         thunderbird
         portfolio
         transmission-remote-gtk
