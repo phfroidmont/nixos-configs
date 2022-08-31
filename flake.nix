@@ -52,15 +52,15 @@
                   executeAfter = [ "${pkgs.systemd}/bin/systemctl --user restart stalonetray" "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png" ];
                   rules = [
                     {
-                      name = "Work HDMI";
+                      name = "External HDMI";
                       outputs_connected = [ "HDMI-1" ];
                       configure_single = "HDMI-1";
                       primary = true;
                       atomic = true;
                     }
                     {
-                      name = "Fallback";
-                      configure_single = "eDP-1";
+                      name = "Primary";
+                      configure_single = "eDP";
                     }
                   ];
                 };

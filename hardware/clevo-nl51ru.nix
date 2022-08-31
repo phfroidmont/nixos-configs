@@ -7,16 +7,18 @@
     ];
 
   boot = {
-    initrd.availableKernelModules = [ "nvme" "xhci_pci" "usb_storage" "sd_mod" "sdhci_pci" ];
+    initrd.availableKernelModules = [ "nvme" "xhci_pci" "sdhci_pci" ];
     initrd.kernelModules = [ "dm-snapshot" ];
     kernelModules = [ "kvm-amd" ];
     # Required, otherwise the kernel freezes on boot
-    kernelParams = [ "nomodeset" ];
+    kernelParams = [ "amd_iommu=on" "iommu=pt" "pci=noats" ];
     extraModulePackages = [ ];
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
     initrd.luks.devices."crypted".device = "/dev/disk/by-uuid/1e900b2e-daea-4558-b18f-3d3a5843de61";
   };
+
+  hardware.cpu.amd.updateMicrocode = true;
 
   fileSystems."/" =
     {
