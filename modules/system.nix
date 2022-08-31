@@ -73,6 +73,8 @@
     };
   };
 
+  services.udisks2.enable = true;
+
   systemd.packages = [ pkgs.dconf ];
 
   # Required for custom GTK themes
