@@ -72,5 +72,51 @@
 
         ];
     };
+
+    nixosConfigurations.rpi3 = nixpkgs.lib.nixosSystem {
+      system = "aarch64-linux";
+      modules =
+        [
+          (
+            { pkgs, ... }: {
+              networking.hostName = "rpi3";
+
+              nix.registry.nixpkgs.flake = nixpkgs;
+
+              boot.loader.grub.enable = false;
+              boot.loader.generic-extlinux-compatible.enable = true;
+              boot.kernelParams = [ "cma=256M" ];
+
+              fileSystems."/" =
+                {
+                  device = "/dev/disk/by-label/NIXOS_SD";
+                  fsType = "ext4";
+                };
+
+              swapDevices = [{ device = "/swapfile"; size = 1024; }];
+
+              services.openssh.enable = true;
+              users.users.root.openssh.authorizedKeys.keyFiles = [
+                ./ssh_keys/phfroidmont-desktop.pub
+                ./ssh_keys/phfroidmont-laptop.pub
+              ];
+
+              services.adguardhome = {
+                enable = true;
+              };
+
+              networking.firewall.allowedTCPPorts = [ 53 80 ];
+              networking.firewall.allowedUDPPorts = [ 53 ];
+
+              environment.systemPackages = with pkgs; [
+                vim
+                htop
+              ];
+
+              system.stateVersion = "22.05";
+            }
+          )
+        ];
+    };
   };
 }
