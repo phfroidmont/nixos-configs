@@ -103,9 +103,27 @@
 
               services.adguardhome = {
                 enable = true;
+
+                host = "0.0.0.0";
+                port = 80;
+                openFirewall = true;
+
+                settings = {
+                  auth_attempts = 5;
+                  block_auth_min = 15;
+                  dns = {
+                    bind_host = "0.0.0.0";
+                    port = 53;
+                    statistics_interval = 90;
+                    querylog_enabled = true;
+                    querylog_interval = 90;
+                    upstream_dns = [ "tls://doh.mullvad.net" ];
+                    bootstrap_dns = "9.9.9.10";
+                  };
+                };
               };
 
-              networking.firewall.allowedTCPPorts = [ 53 80 ];
+              networking.firewall.allowedTCPPorts = [ 53 ];
               networking.firewall.allowedUDPPorts = [ 53 ];
 
               environment.systemPackages = with pkgs; [
