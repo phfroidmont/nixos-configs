@@ -78,6 +78,13 @@
           init.defaultBranch = "master";
         };
       };
+      ssh = {
+        enable = true;
+        extraConfig = ''
+          # Force IPv4 otherwise git will try to use IPv6 which doesn't play well through a VPN
+          AddressFamily inet
+        '';
+      };
       rofi = {
         enable = true;
         theme = "gruvbox-dark";
