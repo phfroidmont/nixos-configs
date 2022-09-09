@@ -52,6 +52,7 @@
       "asciidoc.use_kroki" = true;
       "explorer.confirmDelete" = false;
       "explorer.confirmDragAndDrop" = false;
+      "terminal.integrated.shellIntegration.enabled" = false;
     };
   };
 }
