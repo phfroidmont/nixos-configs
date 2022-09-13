@@ -108,6 +108,8 @@
                 port = 80;
                 openFirewall = true;
 
+                mutableSettings = false;
+
                 settings = {
                   auth_attempts = 5;
                   block_auth_min = 15;
@@ -117,8 +119,25 @@
                     statistics_interval = 90;
                     querylog_enabled = true;
                     querylog_interval = 90;
-                    upstream_dns = [ "tls://doh.mullvad.net" ];
+                    upstream_dns = [
+                      "tls://doh.mullvad.net"
+                      "[/lan/]192.168.1.1"
+                      "[//]192.168.1.1"
+                    ];
+                    local_ptr_upstreams = [ "192.168.1.1" ];
+                    use_private_ptr_resolvers = true;
+                    resolve_clients = true;
                     bootstrap_dns = "9.9.9.10";
+                    rewrites = [
+                      {
+                        domain = "rpi3";
+                        answer = "192.168.1.2";
+                      }
+                      {
+                        domain = "rpi3.lan";
+                        answer = "192.168.1.2";
+                      }
+                    ];
                   };
                 };
               };
