@@ -7,6 +7,13 @@
       extra-sandbox-paths = [
         "/var/keys/netrc"
       ];
+      substituters = [
+        "http://cache.banditlair.com"
+        "https://cache.nixos.org/"
+      ];
+      trusted-public-keys = [
+        "cache.banditlair.com:4zk7iDvzKh6VN+LxzKIGcVPKgL5dLeyEt2ydrgx4o8c="
+      ];
     };
 
     extraOptions = ''
