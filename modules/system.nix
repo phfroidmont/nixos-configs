@@ -87,5 +87,5 @@
   # Required for custom GTK themes
   services.dbus.packages = with pkgs; [ dconf ];
 
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
 }

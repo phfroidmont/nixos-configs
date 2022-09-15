@@ -1,10 +1,11 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-22.05";
     home-manager.url = "github:nix-community/home-manager";
   };
 
-  outputs = { self, home-manager, nixpkgs }: {
+  outputs = { self, home-manager, nixpkgs, nixpkgs-stable }: {
 
     nixosConfigurations.nixos-desktop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -155,5 +156,25 @@
           )
         ];
     };
+
+    nixosConfigurations.rpi2 = nixpkgs-stable.lib.nixosSystem {
+      system = "armv7l-linux";
+      modules = [
+        "${nixpkgs-stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
+        {
+          networking.hostName = "rpi2";
+          nixpkgs.config.allowUnsupportedSystem = true;
+          nixpkgs.crossSystem.system = "armv7l-linux";
+
+          services.openssh.enable = true;
+          users.users.root.openssh.authorizedKeys.keyFiles = [
+            ./ssh_keys/phfroidmont-desktop.pub
+            ./ssh_keys/phfroidmont-laptop.pub
+          ];
+          system.stateVersion = "22.05";
+        }
+      ];
+    };
+    images.rpi2 = self.nixosConfigurations.rpi2.config.system.build.sdImage;
   };
 }
