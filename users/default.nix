@@ -14,11 +14,10 @@
       ./froidmpa/vscode.nix
     ];
 
-    nixpkgs.config = {
-      allowUnfree = true;
-      packageOverrides = pkgs: {
-        ncmpcpp = pkgs.ncmpcpp.override { visualizerSupport = true; };
-        firefox = pkgs.firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; };
+    nixpkgs = {
+      overlays = [ (import ../overlay.nix { }) ];
+      config = {
+        allowUnfree = true;
       };
     };
 
@@ -214,6 +213,32 @@
         lutris
         dolphinEmu
       ];
+    };
+
+
+    systemd.user.services.activitywatch = {
+      Unit.Description = "Start ActivityWatch";
+      Service.Type = "simple";
+      Service.ExecStart = "${pkgs.activitywatch-bin}/bin/aw-server";
+      Install.WantedBy = [ "default.target" ];
+      Service.Restart = "on-failure";
+      Service.RestartSec = 5;
+    };
+    systemd.user.services.activitywatch-afk = {
+      Unit.Description = "Start ActivityWatch AFK";
+      Service.Type = "simple";
+      Service.ExecStart = "${pkgs.activitywatch-bin}/bin/aw-watcher-afk";
+      Install.WantedBy = [ "default.target" ];
+      Service.Restart = "on-failure";
+      Service.RestartSec = 5;
+    };
+    systemd.user.services.activitywatch-window = {
+      Unit.Description = "Start ActivityWatch Window";
+      Service.Type = "simple";
+      Service.ExecStart = "${pkgs.activitywatch-bin}/bin/aw-watcher-window";
+      Install.WantedBy = [ "default.target" ];
+      Service.Restart = "on-failure";
+      Service.RestartSec = 5;
     };
   };
 }

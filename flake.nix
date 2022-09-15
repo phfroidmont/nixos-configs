@@ -17,6 +17,7 @@
           ./users
           (
             {
+              nixpkgs.overlays = [ (import ./overlay.nix { }) ];
               networking.hostName = "nixos-desktop";
               # Allow to externally control MPD
               networking.firewall.allowedTCPPorts = [ 6600 ];
@@ -40,6 +41,7 @@
           ./users
           (
             {
+              nixpkgs.overlays = [ (import ./overlay.nix { }) ];
               networking.hostName = "froidmpa-laptop";
 
               nix.registry.nixpkgs.flake = nixpkgs;

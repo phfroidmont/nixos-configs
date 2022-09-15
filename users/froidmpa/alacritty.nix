@@ -31,6 +31,7 @@
         };
       };
       window = {
+        title = "Alacritty";
         padding = {
           x = 5;
           y = 5;

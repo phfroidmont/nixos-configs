@@ -55,7 +55,7 @@ myFocusFollowsMouse = True
 
 main = do
     xmproc <- spawnPipe "xmobar .xmonad/xmobarrc"
-    xmonad $ docks $ myConfig xmproc
+    xmonad $ ewmh . docks $ myConfig xmproc
 
 myConfig xmproc = azertyConfig {
     terminal            = myTerminal,
