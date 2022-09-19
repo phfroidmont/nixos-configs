@@ -2,6 +2,7 @@
 {
   virtualisation = {
     libvirtd.enable = true;
+    spiceUSBRedirection.enable = true;
     docker.enable = true;
   };
   users.users.froidmpa.extraGroups = [ "docker" "libvirtd" ];
