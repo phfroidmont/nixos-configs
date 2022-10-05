@@ -49,10 +49,10 @@
   fonts = {
     fonts = with pkgs; [
       corefonts # Microsoft free fonts
-      (nerdfonts.override { fonts = [ "Meslo" ]; })
+      meslo-lgs-nf
     ];
     fontconfig.defaultFonts = {
-      monospace = [ "MesloLGMDZ Nerd Font Mono" ];
+      monospace = [ "MesloLGS NF" ];
     };
   };
 
