@@ -53,6 +53,8 @@
       "explorer.confirmDelete" = false;
       "explorer.confirmDragAndDrop" = false;
       "terminal.integrated.shellIntegration.enabled" = false;
+      "terminal.external.linuxExec" = "alacritty";
+      "terminal.integrated.scrollback" = 65535;
     };
   };
 }
