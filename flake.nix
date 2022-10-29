@@ -120,7 +120,7 @@
                     port = 53;
                     statistics_interval = 90;
                     querylog_enabled = true;
-                    querylog_interval = 90;
+                    querylog_interval = "2160h";
                     upstream_dns = [
                       "tls://doh.mullvad.net"
                       "[/lan/]192.168.1.1"
@@ -129,7 +129,7 @@
                     local_ptr_upstreams = [ "192.168.1.1" ];
                     use_private_ptr_resolvers = true;
                     resolve_clients = true;
-                    bootstrap_dns = "9.9.9.10";
+                    bootstrap_dns = [ "9.9.9.10" ];
                     rewrites = [
                       {
                         domain = "rpi3";
@@ -151,6 +151,12 @@
                 vim
                 htop
               ];
+
+              nix = {
+                nixPath = [
+                  "nixpkgs=${nixpkgs}"
+                ];
+              };
 
               system.stateVersion = "22.05";
             }
