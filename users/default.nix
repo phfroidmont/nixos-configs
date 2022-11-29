@@ -273,6 +273,7 @@
         exodus
 
         jdk
+        jetbrains.idea-community
         httpie
 
         rnix-lsp
