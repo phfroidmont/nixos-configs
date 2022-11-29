@@ -44,6 +44,8 @@
     ncdu
     nload
     pciutils
+    lsof
+    dnsutils
   ];
   nixpkgs.config.allowUnfree = true;
   fonts = {
