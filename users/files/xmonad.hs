@@ -66,9 +66,9 @@ myConfig xmproc = azertyConfig {
     normalBorderColor   = "#474646",
     focusedBorderColor  = "#83a598",
     layoutHook          = myLayout,
-    manageHook          = manageDocks <+> (isFullscreen --> doFullFloat) <+> manageHook defaultConfig,
-    --handleEventHook     = myEventHook <+> handleEventHook defaultConfig,
-    logHook             = (myLogHook xmproc) <+> logHook defaultConfig,
+    manageHook          = manageDocks <+> (isFullscreen --> doFullFloat) <+> manageHook def,
+    --handleEventHook     = myEventHook <+> handleEventHook def,
+    logHook             = (myLogHook xmproc) <+> logHook def,
     --keys                = \c -> mkKeymap c myAdditionalKeys,
     startupHook         = myStartupHook xmproc
 } `removeKeysP` myRemoveKeys `additionalKeysP` myAdditionalKeys
@@ -77,7 +77,7 @@ myLogHook xmproc = dynamicLogWithPP xmobarPP {
     ppOutput    = hPutStrLn xmproc,
     ppCurrent = xmobarColor "#83a598" "" . wrap "[" "]",   -- #9BC1B2 #69DFFA
     ppTitle = xmobarColor "#d3869b" "" . shorten 100,       -- #9BC1B2 #69DFFA
-    ppSort = fmap (.namedScratchpadFilterOutWorkspace) getSortByTag
+    ppSort = fmap (. filterOutWs [scratchpadWorkspaceTag]) getSortByTag
     --ppLayout = xmobarColor "#fabd2f" "" . myIcons
 } >> updatePointer (0.75, 0.75) (0.75, 0.75)
 
@@ -129,10 +129,10 @@ myAdditionalKeys = [
     ]
 
 myLayout = smartSpacing 5
-	$ smartBorders
+    $ smartBorders
         $ mkToggle (NOBORDERS ?? FULL ?? EOT)
         $ avoidStruts
-        $ layoutHook defaultConfig
+        $ layoutHook def
 
 myStartupHook xmproc = do
     setWMName "LG3D"

@@ -1,9 +1,9 @@
 Config {
-       font = "xft:monospace:size=11.5:bold:antialias=true"
-       additionalFonts= ["xft:monospace:size=14:normal:antialias=true"]
+       font = "monospace Bold 12"
+       additionalFonts= ["monospace Normal 14"]
        , bgColor = "#282828"
        , fgColor = "#ebdbb2"
-       , position = TopW L 94
+       , position = TopSize L 94 24
        , alpha = 150
        , commands = [ Run Cpu           [ "-t", "<fn=1><fc=#83a598>\xe266</fc></fn> <total>%"
                                         , "-L", "3","-H","50"
