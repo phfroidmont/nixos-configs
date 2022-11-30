@@ -121,6 +121,7 @@
           { title = "DistroTube"; tags = [ "video" "linux" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCVls1GmFKf6WlTraIb_IaJg"; }
           { title = "Domain of Science"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCxqAWLTk1CmBvZFPzeZMd9A"; }
           { title = "Grand Angle"; tags = [ "video" "finance" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCWtD8JN9hkxL5TJL_ktaNZA"; }
+          { title = "Hygiène Mentale"; tags = [ "video" "philosophy" "zetetic" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCMFcMhePnH4onVHt2-ItPZw"; }
           { title = "Institut des Libertés"; tags = [ "video" "finance" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCaqUCTIgFDtMhBeKeeejrkA"; }
           { title = "Juste Milieu"; tags = [ "video" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCXh5HwvbyfD-GUVHLng9aGQ"; }
           { title = "J'suis pas content TV"; tags = [ "video" "politics" "humor" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9NB2nXjNtRabu3YLPB16Hg"; }
@@ -129,6 +130,7 @@
           { title = "La Gauloiserie"; tags = [ "video" "guns" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC5Ph48LXovwS2hyAGfWwE9A"; }
           { title = "La Pistolerie"; tags = [ "video" "guns" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCvAZXkucE9CVVxb5K8xTjPA"; }
           { title = "Le Précepteur"; tags = [ "video" "philosophy" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCvRgiAmogg7a_BgQ_Ftm6fA"; }
+          { title = "La Tronche en Biais"; tags = [ "video" "philosophy" "zetetic" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCq-8pBMM3I40QlrhM9ExXJQ"; }
           { title = "Luke Smith"; tags = [ "video" "linux" "philosophy" ]; url = "https://videos.lukesmith.xyz/feeds/videos.atom"; }
           { title = "Maitre Luger"; tags = [ "video" "guns" "history" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC570onl32MV5vjAnmnjeycg"; }
           { title = "Mental Outlaw"; tags = [ "video" "linux" ]; url = "https://odysee.com/$/rss/@AlphaNerd:8"; }
