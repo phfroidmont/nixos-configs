@@ -34,6 +34,8 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/f714775c-b5af-4c0c-8330-999b43db4794"; }];
 
+  zramSwap.enable = true;
+
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
   nix.settings.max-jobs = lib.mkDefault 16;

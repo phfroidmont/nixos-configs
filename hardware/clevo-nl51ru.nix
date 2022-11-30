@@ -36,6 +36,8 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/bb8fa9ef-9b8f-413d-913a-6c891649a954"; }];
 
+  zramSwap.enable = true;
+
   hardware = {
     bluetooth = {
       enable = true;
