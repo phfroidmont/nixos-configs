@@ -118,7 +118,6 @@
           { title = "code- Reinho"; tags = [ "video" "guns" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCNWs0QTTHm7yiPMwl0aynsg"; }
           { title = "Computerphile"; tags = [ "video" "programming" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9-y-6csu5WGm29I7JiwpnA"; }
           { title = "Chronik Fiction"; tags = [ "video" "cinema" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCeah3nqu_v6KfpXrCzEARQw"; }
-          { title = "DistroTube"; tags = [ "video" "linux" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCVls1GmFKf6WlTraIb_IaJg"; }
           { title = "Domain of Science"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCxqAWLTk1CmBvZFPzeZMd9A"; }
           { title = "Grand Angle"; tags = [ "video" "finance" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCWtD8JN9hkxL5TJL_ktaNZA"; }
           { title = "Hygiène Mentale"; tags = [ "video" "philosophy" "zetetic" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCMFcMhePnH4onVHt2-ItPZw"; }
@@ -126,6 +125,7 @@
           { title = "Juste Milieu"; tags = [ "video" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCXh5HwvbyfD-GUVHLng9aGQ"; }
           { title = "J'suis pas content TV"; tags = [ "video" "politics" "humor" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9NB2nXjNtRabu3YLPB16Hg"; }
           { title = "Kriss Papillon"; tags = [ "video" "culture" "philosophy" ]; url = "https://odysee.com/$/rss/@Kriss-Papillon:c"; }
+          { title = "Kruggsmash"; tags = [ "video" "storytelling" "gaming" ]; url = "https://www.youtube.com/@kruggsmash"; }
           { title = "Kurzgesagt"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCsXVk37bltHxD1rDPwtNM8Q"; }
           { title = "La Gauloiserie"; tags = [ "video" "guns" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC5Ph48LXovwS2hyAGfWwE9A"; }
           { title = "La Pistolerie"; tags = [ "video" "guns" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCvAZXkucE9CVVxb5K8xTjPA"; }
@@ -145,7 +145,6 @@
           { title = "Richard sur Terre"; tags = [ "video" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCZIR19yr81nmaP0pMfiMwxw"; }
           { title = "Stevius"; tags = [ "video" "history" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCkWzOALDNDee3t9IfYoB2uQ"; }
           { title = "Tom Scott"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCBa659QWEk1AI4Tg--mrJ2A"; }
-          { title = "The Linux Experiment"; tags = [ "video" "linux" ]; url = "https://odysee.com/$/rss/@TheLinuxExperiment:e"; }
           { title = "Victor Ferry"; tags = [ "video" "rhetoric" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCcueC-4NWGuPFQKzQWn5heA"; }
           { title = "videogamedunkey"; tags = [ "video" "humor" "gaming" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCsvn_Po0SmunchJYOWpOxMg"; }
           { title = "Vilebrequin"; tags = [ "video" "humor" "cars" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCC9mlCpyisiIpp9YA9xV-QA"; }
