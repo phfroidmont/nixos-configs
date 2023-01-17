@@ -1,4 +1,4 @@
-{ config, lib, pkgs, nixpkgs, ... }:
+{ config, lib, pkgs, nixpkgs, pkgs-unstable, nixpkgs-unstable, ... }:
 {
 
   nix = {
@@ -20,11 +20,11 @@
       experimental-features = nix-command flakes
     '';
     nixPath = [
-      "nixpkgs=${nixpkgs}"
+      "nixpkgs=${nixpkgs-unstable}"
     ];
   };
 
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs-unstable; [
     wget
     inetutils
     openvpn
@@ -47,9 +47,8 @@
     lsof
     dnsutils
   ];
-  nixpkgs.config.allowUnfree = true;
   fonts = {
-    fonts = with pkgs; [
+    fonts = with pkgs-unstable; [
       corefonts # Microsoft free fonts
       meslo-lgs-nf
     ];

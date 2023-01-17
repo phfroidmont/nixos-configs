@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, pkgs-unstable, ... }:
 {
 
   environment.pathsToLink = [ "/share/zsh" ];
@@ -16,9 +16,6 @@
 
     nixpkgs = {
       overlays = [ (import ../overlay.nix { }) ];
-      config = {
-        allowUnfree = true;
-      };
     };
 
     xsession = {
@@ -242,7 +239,7 @@
         };
       };
 
-      packages = with pkgs; [
+      packages = with pkgs-unstable; [
         haskellPackages.xmobar
         i3lock
         ncmpcpp
@@ -275,7 +272,6 @@
         portfolio
         transmission-remote-gtk
         monero-gui
-        exodus
 
         jdk
         jetbrains.idea-community
