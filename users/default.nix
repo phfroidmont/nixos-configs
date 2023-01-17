@@ -119,7 +119,9 @@
           { title = "Computerphile"; tags = [ "video" "programming" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9-y-6csu5WGm29I7JiwpnA"; }
           { title = "Chronik Fiction"; tags = [ "video" "cinema" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCeah3nqu_v6KfpXrCzEARQw"; }
           { title = "Domain of Science"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCxqAWLTk1CmBvZFPzeZMd9A"; }
+          { title = "Forged Alliance Forever"; tags = [ "video" "gaming" "faf" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCkAWiUu4QE172kv"; }
           { title = "Grand Angle"; tags = [ "video" "finance" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCWtD8JN9hkxL5TJL_ktaNZA"; }
+          { title = "Gyle"; tags = [ "video" "gaming" "cast" "faf" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCzY7MBSgNLZOMxMIFwtf2bw"; }
           { title = "Hygiène Mentale"; tags = [ "video" "philosophy" "zetetic" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCMFcMhePnH4onVHt2-ItPZw"; }
           { title = "Institut des Libertés"; tags = [ "video" "finance" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCaqUCTIgFDtMhBeKeeejrkA"; }
           { title = "Juste Milieu"; tags = [ "video" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCXh5HwvbyfD-GUVHLng9aGQ"; }
@@ -144,12 +146,14 @@
           { title = "Real Science"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC176GAQozKKjhz62H8u9vQQ"; }
           { title = "Richard sur Terre"; tags = [ "video" "politics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCZIR19yr81nmaP0pMfiMwxw"; }
           { title = "Stevius"; tags = [ "video" "history" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCkWzOALDNDee3t9IfYoB2uQ"; }
+          { title = "TheDuelist"; tags = [ "video" "gaming" "cast" "faf" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCDDNS1XW0-o1FRPvaR9-pKA"; }
           { title = "Tom Scott"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCBa659QWEk1AI4Tg--mrJ2A"; }
           { title = "Victor Ferry"; tags = [ "video" "rhetoric" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCcueC-4NWGuPFQKzQWn5heA"; }
           { title = "videogamedunkey"; tags = [ "video" "humor" "gaming" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCsvn_Po0SmunchJYOWpOxMg"; }
           { title = "Vilebrequin"; tags = [ "video" "humor" "cars" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCC9mlCpyisiIpp9YA9xV-QA"; }
           { title = "Vsauce"; tags = [ "video" "science" "philosophy" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC6nSFpj9HTCZ5t-N3Rm3-HA"; }
           { title = "Wendover Productions"; tags = [ "video" "finance" "logistics" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9RM-iSvTu1uPJb8X5yp3EQ"; }
+          { title = "Willow's Duality"; tags = [ "video" "gaming" "cast" "faf" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UC8lU7OuwPGDQibMhnvSvf1w"; }
           { title = "ScienceEtonnante"; tags = [ "video" "science" ]; url = "https://www.youtube.com/feeds/videos.xml?channel_id=UCaNlbnghtwlsGF-KzAFThqA"; }
         ];
         extraConfig = ''
@@ -290,6 +294,7 @@
 
         glxinfo
         steam
+        protontricks
         lutris
         dolphinEmu
       ];
