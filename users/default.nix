@@ -14,10 +14,6 @@
       ./froidmpa/vscode.nix
     ];
 
-    nixpkgs = {
-      overlays = [ (import ../overlay.nix { }) ];
-    };
-
     xsession = {
       enable = true;
       windowManager.xmonad = {
@@ -300,7 +296,7 @@
     systemd.user.services.activitywatch = {
       Unit.Description = "Start ActivityWatch";
       Service.Type = "simple";
-      Service.ExecStart = "${pkgs.activitywatch-bin}/bin/aw-server";
+      Service.ExecStart = "${pkgs-unstable.activitywatch-bin}/bin/aw-server";
       Install.WantedBy = [ "default.target" ];
       Service.Restart = "on-failure";
       Service.RestartSec = 5;
@@ -308,7 +304,7 @@
     systemd.user.services.activitywatch-afk = {
       Unit.Description = "Start ActivityWatch AFK";
       Service.Type = "simple";
-      Service.ExecStart = "${pkgs.activitywatch-bin}/bin/aw-watcher-afk";
+      Service.ExecStart = "${pkgs-unstable.activitywatch-bin}/bin/aw-watcher-afk";
       Install.WantedBy = [ "default.target" ];
       Service.Restart = "on-failure";
       Service.RestartSec = 5;
@@ -316,7 +312,7 @@
     systemd.user.services.activitywatch-window = {
       Unit.Description = "Start ActivityWatch Window";
       Service.Type = "simple";
-      Service.ExecStart = "${pkgs.activitywatch-bin}/bin/aw-watcher-window";
+      Service.ExecStart = "${pkgs-unstable.activitywatch-bin}/bin/aw-watcher-window";
       Install.WantedBy = [ "default.target" ];
       Service.Restart = "on-failure";
       Service.RestartSec = 5;

@@ -7,10 +7,11 @@
 
   outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }:
     let
-      pkgs-unstable = nixpkgs-unstable.legacyPackages.x86_64-linux;
+      system = "x86_64-linux";
       commonModuleArgs = { pkgs, ... }: {
         _module.args.pkgs-unstable = import nixpkgs-unstable {
           inherit (pkgs.stdenv.targetPlatform) system;
+          overlays = [ (import ./overlay.nix) ];
           config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
             "corefonts"
             "steam"
@@ -22,7 +23,7 @@
     in
     {
       nixosConfigurations.nixos-desktop = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        inherit system;
         specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; };
         modules =
           [
@@ -33,7 +34,6 @@
             ./users
             (
               {
-                nixpkgs.overlays = [ (import ./overlay.nix { }) ];
                 networking.hostName = "nixos-desktop";
                 # Allow to externally control MPD
                 networking.firewall.allowedTCPPorts = [ 6600 ];
@@ -47,7 +47,7 @@
       };
 
       nixosConfigurations.froidmpa-laptop = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        inherit system;
         specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; };
         modules =
           [
@@ -58,7 +58,6 @@
             ./users
             (
               {
-                nixpkgs.overlays = [ (import ./overlay.nix { }) ];
                 networking.hostName = "froidmpa-laptop";
 
                 nix.registry.nixpkgs.flake = nixpkgs;
