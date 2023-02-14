@@ -89,4 +89,10 @@
   services.dbus.packages = with pkgs; [ dconf ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
+  services.flatpak.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  };
 }
