@@ -3,9 +3,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
+    nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
   };
 
-  outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }:
+  outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nix-doom-emacs }:
     let
       system = "x86_64-linux";
       commonModuleArgs = { pkgs, ... }: {
@@ -24,7 +25,7 @@
     {
       nixosConfigurations.nixos-desktop = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; };
+        specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; inherit nix-doom-emacs; };
         modules =
           [
             home-manager.nixosModules.home-manager
@@ -48,7 +49,7 @@
 
       nixosConfigurations.froidmpa-laptop = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; };
+        specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; inherit nix-doom-emacs; };
         modules =
           [
             home-manager.nixosModules.home-manager

@@ -40,6 +40,10 @@
     zip
     unzip
 
+    ripgrep
+    fd
+    findutils.locate
+
     htop
     ncdu
     nload

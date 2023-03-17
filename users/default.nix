@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-unstable, ... }:
+{ config, lib, pkgs, pkgs-unstable, nix-doom-emacs, ... }:
 {
 
   environment.pathsToLink = [ "/share/zsh" ];
@@ -12,6 +12,7 @@
       ./froidmpa/htop.nix
       ./froidmpa/zsh.nix
       ./froidmpa/vscode.nix
+      nix-doom-emacs.hmModule
     ];
 
     xsession = {
@@ -53,6 +54,10 @@
         enable = false;
         inactiveInterval = 5;
         lockCmd = "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ~/.wallpaper.png";
+      };
+      emacs = {
+        enable = true;
+        client.enable = true;
       };
     };
 
@@ -98,6 +103,22 @@
         enable = true;
         enableZshIntegration = true;
         nix-direnv.enable = true;
+      };
+      doom-emacs = {
+        enable = true;
+        doomPrivateDir = ./files/doom.d;
+        emacsPackagesOverlay = final: prev: {
+          ob-ammonite = with final; (trivialBuild {
+            src = pkgs.fetchFromGitHub {
+              owner = "zwild";
+              repo = "ob-ammonite";
+              rev = "39937dff395e70aff76a4224fa49cf2ec6c57cca";
+              sha256 = pkgs.lib.fakeSha256;
+            };
+            pname = "ob-ammonite";
+            packageRequires = [ s dash editorconfig ];
+          });
+        };
       };
       newsboat = {
         enable = true;
@@ -198,7 +219,6 @@
       stateVersion = "20.09";
 
       sessionVariables = {
-        EDITOR = "vim";
         QT_AUTO_SCREEN_SCALE_FACTOR = "0";
       };
 
@@ -274,6 +294,7 @@
         httpie
 
         rnix-lsp
+        metals
         nixpkgs-fmt
 
         zsh-syntax-highlighting
