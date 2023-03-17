@@ -27,9 +27,9 @@
       let NERDTreeShowHidden=1
 
       set number relativenumber
+      set ignorecase
 
-      " Run xrdb whenever Xdefaults or Xresources are updated.
-      autocmd BufWritePost ~/.Xresources,~/.Xdefaults !xrdb %
+      vnoremap . :norm.<CR>
     '';
   };
 }
