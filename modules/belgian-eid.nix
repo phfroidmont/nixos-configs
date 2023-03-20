@@ -1,7 +1,7 @@
-{ config, lib, pkgs, pkgs-unstable, ... }:
+{ config, lib, pkgs, ... }:
 {
   services.pcscd.enable = true;
-  environment.systemPackages = with pkgs-unstable; [
+  environment.systemPackages = with pkgs.unstable; [
     eid-mw
   ];
 }

@@ -6,179 +6,38 @@
     nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
   };
 
-  outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nix-doom-emacs }:
+  outputs = inputs @ { self, home-manager, nixpkgs, nixpkgs-unstable, ... }:
     let
+      inherit (lib.my) mapModules mapModulesRec mapHosts;
+
       system = "x86_64-linux";
-      commonModuleArgs = { pkgs, ... }: {
-        _module.args.pkgs-unstable = import nixpkgs-unstable {
-          inherit (pkgs.stdenv.targetPlatform) system;
-          overlays = [ (import ./overlay.nix) ];
-          config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
-            "corefonts"
-            "steam"
-            "steam-original"
-            "steam-run"
-          ];
-        };
+
+      mkPkgs = pkgs: extraOverlays: import pkgs {
+        inherit system;
+        config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
+          "corefonts"
+          "steam"
+          "steam-original"
+          "steam-run"
+        ];
+        overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
       };
+      pkgs = mkPkgs nixpkgs [ self.overlay ];
+      pkgs-unstable = mkPkgs nixpkgs-unstable [ ];
+
+      lib = nixpkgs.lib.extend
+        (self: super: { my = import ./lib { inherit pkgs inputs; lib = self; }; });
     in
     {
-      nixosConfigurations.nixos-desktop = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; inherit nix-doom-emacs; };
-        modules =
-          [
-            home-manager.nixosModules.home-manager
-            commonModuleArgs
-            ./hardware/desktop.nix
-            ./profiles/base.nix
-            ./users
-            (
-              {
-                networking.hostName = "nixos-desktop";
-                # Allow to externally control MPD
-                networking.firewall.allowedTCPPorts = [ 6600 ];
+      lib = lib.my;
 
-                nix.registry.nixpkgs.flake = nixpkgs;
-
-                system.stateVersion = "19.09";
-              }
-            )
-          ];
+      overlay = final: prev: {
+        unstable = pkgs-unstable;
       };
 
-      nixosConfigurations.froidmpa-laptop = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit nixpkgs; inherit nixpkgs-unstable; inherit nix-doom-emacs; };
-        modules =
-          [
-            home-manager.nixosModules.home-manager
-            commonModuleArgs
-            ./hardware/clevo-nl51ru.nix
-            ./profiles/base.nix
-            ./users
-            (
-              {
-                networking.hostName = "froidmpa-laptop";
+      overlays = { my = (import ./overlay.nix); };
 
-                nix.registry.nixpkgs.flake = nixpkgs;
+      nixosConfigurations = mapHosts ./hosts { };
 
-                home-manager.users.froidmpa = { pkgs, config, ... }: {
-                  services.network-manager-applet.enable = true;
-                  services.blueman-applet.enable = true;
-                  services.grobi = {
-                    enable = true;
-                    executeAfter = [ "${pkgs.systemd}/bin/systemctl --user restart stalonetray" "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png" ];
-                    rules = [
-                      {
-                        name = "External HDMI";
-                        outputs_connected = [ "HDMI-1" ];
-                        configure_single = "HDMI-1";
-                        primary = true;
-                        atomic = true;
-                      }
-                      {
-                        name = "Primary";
-                        configure_single = "eDP";
-                      }
-                    ];
-                  };
-                };
-
-                system.stateVersion = "21.05";
-              }
-            )
-
-          ];
-      };
-
-      nixosConfigurations.rpi3 = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
-        modules =
-          [
-            (
-              { pkgs, ... }: {
-                networking.hostName = "rpi3";
-
-                nix.registry.nixpkgs.flake = nixpkgs;
-
-                boot.loader.grub.enable = false;
-                boot.loader.generic-extlinux-compatible.enable = true;
-                boot.kernelParams = [ "cma=256M" ];
-
-                fileSystems."/" =
-                  {
-                    device = "/dev/disk/by-label/NIXOS_SD";
-                    fsType = "ext4";
-                  };
-
-                swapDevices = [{ device = "/swapfile"; size = 1024; }];
-
-                services.openssh.enable = true;
-                users.users.root.openssh.authorizedKeys.keyFiles = [
-                  ./ssh_keys/phfroidmont-desktop.pub
-                  ./ssh_keys/phfroidmont-laptop.pub
-                ];
-
-                services.adguardhome = {
-                  enable = true;
-
-                  host = "0.0.0.0";
-                  port = 80;
-                  openFirewall = true;
-
-                  mutableSettings = false;
-
-                  settings = {
-                    auth_attempts = 5;
-                    block_auth_min = 15;
-                    dns = {
-                      bind_host = "0.0.0.0";
-                      port = 53;
-                      statistics_interval = 90;
-                      querylog_enabled = true;
-                      querylog_interval = "2160h";
-                      upstream_dns = [
-                        "tls://doh.mullvad.net"
-                        "[/lan/]192.168.1.1"
-                        "[//]192.168.1.1"
-                      ];
-                      local_ptr_upstreams = [ "192.168.1.1" ];
-                      use_private_ptr_resolvers = true;
-                      resolve_clients = true;
-                      bootstrap_dns = [ "9.9.9.10" ];
-                      rewrites = [
-                        {
-                          domain = "rpi3";
-                          answer = "192.168.1.2";
-                        }
-                        {
-                          domain = "rpi3.lan";
-                          answer = "192.168.1.2";
-                        }
-                      ];
-                    };
-                  };
-                };
-
-                networking.firewall.allowedTCPPorts = [ 53 ];
-                networking.firewall.allowedUDPPorts = [ 53 ];
-
-                environment.systemPackages = with pkgs; [
-                  vim
-                  htop
-                ];
-
-                nix = {
-                  nixPath = [
-                    "nixpkgs=${nixpkgs}"
-                  ];
-                };
-
-                system.stateVersion = "22.05";
-              }
-            )
-          ];
-      };
     };
 }

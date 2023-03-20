@@ -1,8 +1,8 @@
-{ config, lib, pkgs, pkgs-unstable, nix-doom-emacs, ... }:
+{ inputs, config, lib, pkgs, ... }:
 {
 
   environment.pathsToLink = [ "/share/zsh" ];
-  home-manager.users.froidmpa = { pkgs, config, ... }: {
+  home-manager.users.froidmpa = { config, ... }: {
 
     imports = [
       ./froidmpa/alacritty.nix
@@ -12,7 +12,7 @@
       ./froidmpa/htop.nix
       ./froidmpa/zsh.nix
       ./froidmpa/vscode.nix
-      nix-doom-emacs.hmModule
+      inputs.nix-doom-emacs.hmModule
     ];
 
     xsession = {
@@ -255,7 +255,7 @@
         };
       };
 
-      packages = with pkgs-unstable; [
+      packages = with pkgs.unstable; [
         haskellPackages.xmobar
         i3lock
         ncmpcpp
@@ -317,7 +317,7 @@
     systemd.user.services.activitywatch = {
       Unit.Description = "Start ActivityWatch";
       Service.Type = "simple";
-      Service.ExecStart = "${pkgs-unstable.activitywatch-bin}/bin/aw-server";
+      Service.ExecStart = "${pkgs.unstable.activitywatch-bin}/bin/aw-server";
       Install.WantedBy = [ "default.target" ];
       Service.Restart = "on-failure";
       Service.RestartSec = 5;
@@ -325,7 +325,7 @@
     systemd.user.services.activitywatch-afk = {
       Unit.Description = "Start ActivityWatch AFK";
       Service.Type = "simple";
-      Service.ExecStart = "${pkgs-unstable.activitywatch-bin}/bin/aw-watcher-afk";
+      Service.ExecStart = "${pkgs.unstable.activitywatch-bin}/bin/aw-watcher-afk";
       Install.WantedBy = [ "default.target" ];
       Service.Restart = "on-failure";
       Service.RestartSec = 5;
@@ -333,7 +333,7 @@
     systemd.user.services.activitywatch-window = {
       Unit.Description = "Start ActivityWatch Window";
       Service.Type = "simple";
-      Service.ExecStart = "${pkgs-unstable.activitywatch-bin}/bin/aw-watcher-window";
+      Service.ExecStart = "${pkgs.unstable.activitywatch-bin}/bin/aw-watcher-window";
       Install.WantedBy = [ "default.target" ];
       Service.Restart = "on-failure";
       Service.RestartSec = 5;

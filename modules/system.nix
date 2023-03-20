@@ -1,42 +1,11 @@
-{ config, lib, pkgs, nixpkgs, pkgs-unstable, nixpkgs-unstable, ... }:
+{ config, lib, pkgs, nixpkgs, ... }:
 {
 
-  nix = {
-    package = pkgs.nixUnstable;
-    settings = {
-      extra-sandbox-paths = [
-        "/var/keys/netrc"
-      ];
-      substituters = [
-        "http://cache.banditlair.com"
-        "https://cache.nixos.org/"
-      ];
-      trusted-public-keys = [
-        "cache.banditlair.com:4zk7iDvzKh6VN+LxzKIGcVPKgL5dLeyEt2ydrgx4o8c="
-      ];
-    };
-
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
-    nixPath = [
-      "nixpkgs=${nixpkgs-unstable}"
-    ];
-  };
-
-  environment.systemPackages = with pkgs-unstable; [
+  environment.systemPackages = with pkgs.unstable; [
     wget
     inetutils
-    openvpn
-    openfortivpn
-
     man
 
-    dos2unix
-
-    vim
-    git
-    git-lfs
     zip
     unzip
 
@@ -52,7 +21,7 @@
     dnsutils
   ];
   fonts = {
-    fonts = with pkgs-unstable; [
+    fonts = with pkgs.unstable; [
       corefonts # Microsoft free fonts
       meslo-lgs-nf
     ];
