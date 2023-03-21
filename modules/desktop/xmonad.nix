@@ -103,7 +103,6 @@ in {
             modules-right = "mpd pad battery pad date";
 
             tray-position = "right";
-            tray-offset-y = 2;
           };
           "module/ewmh" = {
             type = "internal/xworkspaces";
