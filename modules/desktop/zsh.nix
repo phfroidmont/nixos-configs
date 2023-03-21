@@ -11,6 +11,11 @@ in {
 
     environment.pathsToLink = [ "/share/zsh" ];
 
+
+    users.users.${config.user.name} = {
+      shell = pkgs.zsh;
+    };
+
     home-manager.users.${config.user.name} = {
       programs.zsh =
         {

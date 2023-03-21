@@ -5,9 +5,7 @@ with lib.my;
 
 let cfg = config.modules.desktop.xmonad;
 in {
-  options.modules.desktop.xmonad = {
-    enable = mkBoolOpt false;
-  };
+  options.modules.desktop.xmonad = { enable = mkBoolOpt false; };
 
   config = mkIf cfg.enable {
 
@@ -18,7 +16,7 @@ in {
       windowManager.xmonad.enable = true;
       displayManager.lightdm = {
         enable = true;
-        background = "/etc/nixos/configs/files/wallpaper.png";
+        background = ./files/wallpaper.png;
         greeters.mini.enable = true;
       };
     };
@@ -31,6 +29,13 @@ in {
           config = ./files/xmonad.hs;
         };
       };
+      home.packages = with pkgs.unstable; [
+        haskellPackages.xmobar
+        i3lock
+
+        feh
+        scrot
+      ];
     };
 
   };

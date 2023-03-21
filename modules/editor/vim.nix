@@ -2,11 +2,11 @@
 
 with lib;
 with lib.my;
-let cfg = config.modules.desktop.neovim;
+
+let cfg = config.modules.editor.vim;
 in {
-  options.modules.desktop.neovim = {
-    enable = mkBoolOpt false;
-  };
+  options.modules.editor.vim = { enable = mkBoolOpt false; };
+
   config = mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
       programs.neovim = {

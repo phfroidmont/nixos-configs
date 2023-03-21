@@ -1,18 +1,14 @@
 { inputs, config, lib, pkgs, ... }:
 
 with lib;
-with lib.my;
-{
-  imports =
-    [ inputs.home-manager.nixosModules.home-manager ]
+with lib.my; {
+  imports = [ inputs.home-manager.nixosModules.home-manager ]
     ++ (mapModulesRec' (toString ./modules) import);
 
   nix = {
     package = pkgs.nixFlakes;
     extraOptions = "experimental-features = nix-command flakes";
-    nixPath = [
-      "nixpkgs=${inputs.nixpkgs-unstable}"
-    ];
+    nixPath = [ "nixpkgs=${inputs.nixpkgs-unstable}" ];
     settings = {
       substituters = [
         "https://nix-community.cachix.org"
@@ -29,17 +25,32 @@ with lib.my;
 
   system.configurationRevision = with inputs; mkIf (self ? rev) self.rev;
 
-
   time.timeZone = lib.mkDefault "Europe/Amsterdam";
 
   i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
 
-  console = {
-    keyMap = lib.mkDefault "fr";
-  };
+  console = { keyMap = lib.mkDefault "fr"; };
 
   environment.systemPackages = with pkgs; [
     git
     vim
+
+    wget
+    inetutils
+    man
+
+    htop
+    ncdu
+    nload
+    pciutils
+    lsof
+    dnsutils
+
+    unzip
   ];
+
+  networking.hosts = {
+    "127.0.0.1" = [ "localhost" "membres.yourcoop.local" ];
+  };
+  services.resolved.dnssec = "false";
 }

@@ -1,13 +1,9 @@
-{ pkgs, config, lib, ... }:
-{
-  imports = [
-    ./hardware-configuration.nix
-  ];
+{ pkgs, config, lib, ... }: {
+  imports = [ ./hardware-configuration.nix ];
 
   modules = {
     desktop = {
       xmonad.enable = true;
-      neovim.enable = true;
       alacritty.enable = true;
       zsh.enable = true;
       vscode.enable = true;
@@ -15,7 +11,20 @@
       htop.enable = true;
       mpd.enable = true;
     };
+    editor = {
+      vim.enable = true;
+      emacs.enable = true;
+    };
+    services = {
+      flatpak.enable = true;
+      belgian-eid.enable = true;
+      docker.enable = true;
+      libvirt.enable = true;
+    };
+    apps = { newsboat.enable = true; };
   };
+
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   # Allow to externally control MPD
   networking.firewall.allowedTCPPorts = [ 6600 ];
