@@ -54,10 +54,9 @@ myFocusFollowsMouse :: Bool
 myFocusFollowsMouse = True
 
 main = do
-    xmproc <- spawnPipe "xmobar .xmonad/xmobarrc"
-    xmonad $ ewmh . docks $ myConfig xmproc
+    xmonad $ ewmh . docks $ myConfig
 
-myConfig xmproc = azertyConfig {
+myConfig = azertyConfig {
     terminal            = myTerminal,
     focusFollowsMouse   = True,
     borderWidth         = 1,
@@ -68,18 +67,10 @@ myConfig xmproc = azertyConfig {
     layoutHook          = myLayout,
     manageHook          = manageDocks <+> (isFullscreen --> doFullFloat) <+> manageHook def,
     --handleEventHook     = myEventHook <+> handleEventHook def,
-    logHook             = (myLogHook xmproc) <+> logHook def,
+    logHook             =  logHook def,
     --keys                = \c -> mkKeymap c myAdditionalKeys,
-    startupHook         = myStartupHook xmproc
+    startupHook         = myStartupHook
 } `removeKeysP` myRemoveKeys `additionalKeysP` myAdditionalKeys
-
-myLogHook xmproc = dynamicLogWithPP xmobarPP {
-    ppOutput    = hPutStrLn xmproc,
-    ppCurrent = xmobarColor "#83a598" "" . wrap "[" "]",   -- #9BC1B2 #69DFFA
-    ppTitle = xmobarColor "#d3869b" "" . shorten 100,       -- #9BC1B2 #69DFFA
-    ppSort = fmap (. filterOutWs [scratchpadWorkspaceTag]) getSortByTag
-    --ppLayout = xmobarColor "#fabd2f" "" . myIcons
-} >> updatePointer (0.75, 0.75) (0.75, 0.75)
 
 myRemoveKeys = [
     ]
@@ -134,7 +125,7 @@ myLayout = smartSpacing 5
         $ avoidStruts
         $ layoutHook def
 
-myStartupHook xmproc = do
+myStartupHook = do
     setWMName "LG3D"
     spawn "feh --no-fehbg --bg-fill ~/.wallpaper.png"
-    return () >> checkKeymap (myConfig xmproc) myAdditionalKeys
+    return () >> checkKeymap myConfig myAdditionalKeys

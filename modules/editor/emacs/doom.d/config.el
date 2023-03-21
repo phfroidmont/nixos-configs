@@ -1,8 +1,8 @@
 (setq
  projectile-project-search-path '("~/Projects/")
  doom-theme 'doom-gruvbox
- doom-font (font-spec :family "MesloLGS NF" :size 16)
- doom-big-font (font-spec :family "MesloLGS NF" :size 24)
+ doom-font (font-spec :family "MesloLGS Nerd Font Mono" :size 16)
+ doom-big-font (font-spec :family "MesloLGS Nerd Font Mono" :size 24)
  treemacs-git-mode 'extended)
 
 ;; Enable nice rendering of diagnostics like compile errors.

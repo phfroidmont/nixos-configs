@@ -2,6 +2,7 @@
   imports = [ ./hardware-configuration.nix ];
 
   modules = {
+    hardware = { audio.enable = true; };
     desktop = {
       xmonad.enable = true;
       alacritty.enable = true;

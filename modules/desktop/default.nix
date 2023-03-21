@@ -9,9 +9,9 @@ in {
     fonts = {
       fonts = with pkgs.unstable; [
         corefonts # Microsoft free fonts
-        meslo-lgs-nf
+        (nerdfonts.override { fonts = [ "Meslo" ]; })
       ];
-      fontconfig.defaultFonts = { monospace = [ "MesloLGS NF" ]; };
+      fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font Mono" ]; };
     };
 
     programs.adb.enable = true;
@@ -43,20 +43,7 @@ in {
           enableSshSupport = false;
           pinentryFlavor = "gtk2";
         };
-        stalonetray = {
-          enable = true;
-          config = {
-            geometry = "1x1-5+0";
-            background = "#000000";
-            transparent = true;
-            grow_gravity = "E";
-            icon_gravity = "E";
-            icon_size = "24";
-            kludges = "force_icons_size";
-          };
-        };
         unclutter.enable = true;
-        pasystray.enable = true;
         screen-locker = {
           enable = false;
           inactiveInterval = 5;
@@ -128,7 +115,6 @@ in {
 
         file = {
           ".wallpaper.png".source = ./files/wallpaper.png;
-          ".xmonad/xmobarrc".source = ./files/xmobarrc;
           ".config/ncmpcpp" = {
             source = ./files/ncmpcpp;
             recursive = true;
@@ -163,7 +149,6 @@ in {
 
           (ncmpcpp.override { visualizerSupport = true; })
           mpc_cli
-          pulsemixer
 
           # Ranger preview utils
           w3m
