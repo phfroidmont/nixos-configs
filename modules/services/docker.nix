@@ -9,7 +9,14 @@ in {
 
   config = mkIf cfg.enable {
 
-    virtualisation.docker.enable = true;
+    virtualisation = {
+      docker = {
+        enable = true;
+        autoPrune.enable = true;
+        enableOnBoot = mkDefault false;
+      };
+    };
+
     users.users.froidmpa.extraGroups = [ "docker" ];
 
     environment.systemPackages = with pkgs; [ docker-compose ];
