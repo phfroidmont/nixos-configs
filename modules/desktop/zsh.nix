@@ -1,0 +1,66 @@
+{ config, lib, pkgs, ... }:
+
+with lib;
+with lib.my;
+let cfg = config.modules.desktop.zsh;
+in {
+  options.modules.desktop.zsh = {
+    enable = mkBoolOpt false;
+  };
+  config = mkIf cfg.enable {
+
+    environment.pathsToLink = [ "/share/zsh" ];
+
+    home-manager.users.${config.user.name} = {
+      programs.zsh =
+        {
+          enable = true;
+          history = {
+            save = 50000;
+            size = 50000;
+          };
+          enableCompletion = true;
+          enableAutosuggestions = true;
+          enableSyntaxHighlighting = true;
+          initExtra = ''
+            source ${./p10k.zsh}
+            autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+            zle -N up-line-or-beginning-search
+            zle -N down-line-or-beginning-search
+
+            [[ -n "$key[Up]"   ]] && bindkey -- "$key[Up]"   up-line-or-beginning-search
+            [[ -n "$key[Down]" ]] && bindkey -- "$key[Down]" down-line-or-beginning-search
+
+            eval $(${pkgs.thefuck}/bin/thefuck --alias)
+          '';
+          oh-my-zsh = {
+            enable = true;
+            plugins = [
+              "git"
+              "terraform"
+              "systemd"
+            ];
+          };
+          plugins = [
+            {
+              name = "powerlevel10k";
+              src = pkgs.zsh-powerlevel10k;
+              file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+            }
+            {
+              name = "powerlevel10k-config";
+              src = ./p10k.zsh;
+            }
+            {
+              name = "nix-zsh-completions";
+              src = pkgs.nix-zsh-completions;
+            }
+            {
+              name = "zsh-completions";
+              src = pkgs.zsh-completions;
+            }
+          ];
+        };
+    };
+  };
+}

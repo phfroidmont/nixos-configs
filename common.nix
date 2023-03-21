@@ -4,8 +4,8 @@ with lib;
 with lib.my;
 {
   imports =
-    [ inputs.home-manager.nixosModules.home-manager ];
-  # ++ (mapModulesRec' (toString ./modules) import);
+    [ inputs.home-manager.nixosModules.home-manager ]
+    ++ (mapModulesRec' (toString ./modules) import);
 
   nix = {
     package = pkgs.nixFlakes;
@@ -26,7 +26,17 @@ with lib.my;
       auto-optimise-store = true;
     };
   };
+
   system.configurationRevision = with inputs; mkIf (self ? rev) self.rev;
+
+
+  time.timeZone = lib.mkDefault "Europe/Amsterdam";
+
+  i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
+
+  console = {
+    keyMap = lib.mkDefault "fr";
+  };
 
   environment.systemPackages = with pkgs; [
     git

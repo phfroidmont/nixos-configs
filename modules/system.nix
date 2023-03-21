@@ -20,15 +20,6 @@
     lsof
     dnsutils
   ];
-  fonts = {
-    fonts = with pkgs.unstable; [
-      corefonts # Microsoft free fonts
-      meslo-lgs-nf
-    ];
-    fontconfig.defaultFonts = {
-      monospace = [ "MesloLGS NF" ];
-    };
-  };
 
   sound.enable = true;
   hardware.pulseaudio.enable = true;
@@ -43,16 +34,6 @@
   };
 
   programs.ssh.startAgent = true;
-  services.xserver = {
-    enable = true;
-    layout = "fr";
-    desktopManager.xterm.enable = false;
-    windowManager.xmonad.enable = true;
-    displayManager.lightdm = {
-      enable = true;
-      background = "/etc/nixos/configs/files/wallpaper.png";
-    };
-  };
 
   services.udisks2.enable = true;
 

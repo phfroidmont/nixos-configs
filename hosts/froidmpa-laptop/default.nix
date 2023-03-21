@@ -2,8 +2,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../profiles/base.nix
-    ../../users
   ];
 
   home-manager.users.froidmpa = { pkgs, config, ... }: {
