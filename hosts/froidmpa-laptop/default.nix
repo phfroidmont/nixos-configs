@@ -1,7 +1,31 @@
 { pkgs, config, lib, ... }: {
   imports = [ ./hardware-configuration.nix ];
 
-  home-manager.users.froidmpa = { pkgs, config, ... }: {
+  modules = {
+    hardware = { audio.enable = true; };
+    desktop = {
+      xmonad.enable = true;
+      alacritty.enable = true;
+      zsh.enable = true;
+      vscode.enable = true;
+      dunst.enable = true;
+      htop.enable = true;
+      mpd.enable = true;
+    };
+    editor = {
+      vim.enable = true;
+      emacs.enable = true;
+    };
+    services = {
+      flatpak.enable = true;
+      belgian-eid.enable = true;
+      docker.enable = true;
+      libvirt.enable = true;
+    };
+    apps = { newsboat.enable = true; };
+  };
+
+  home-manager.users.${config.user.name} = { pkgs, config, ... }: {
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;
     services.grobi = {
