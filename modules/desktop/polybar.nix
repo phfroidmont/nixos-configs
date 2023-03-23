@@ -3,41 +3,13 @@
 with lib;
 with lib.my;
 
-let cfg = config.modules.desktop.xmonad;
+let cfg = config.modules.desktop.polybar;
 in {
-  options.modules.desktop.xmonad = { enable = mkBoolOpt false; };
+  options.modules.desktop.polybar = { enable = mkBoolOpt false; };
 
   config = mkIf cfg.enable {
 
-    services.xserver = {
-      enable = true;
-      layout = "fr";
-      desktopManager.xterm.enable = false;
-      windowManager.xmonad.enable = true;
-      displayManager.lightdm = {
-        enable = true;
-        background = ./files/wallpaper.png;
-        greeters.mini = {
-          enable = true;
-          user = config.user.name;
-          extraConfig = ''
-            text-color = "#fbf1c7"
-            password-background-color = "#3c3836"
-            window-color = "#282828"
-            border-color = "#458588"
-          '';
-        };
-      };
-    };
-
     home-manager.users.${config.user.name} = {
-      xsession = {
-        windowManager.xmonad = {
-          enable = true;
-          enableContribAndExtras = true;
-          config = ./files/xmonad.hs;
-        };
-      };
 
       services.polybar = {
         enable = true;
@@ -97,19 +69,18 @@ in {
 
             width = "100%";
             height = "34";
-            offset-x = 0;
-            offset-y = 0;
             bottom = true;
 
-            padding-left = 2;
-            padding-right = 2;
+            padding = 2;
 
             font-0 = "MesloLGS Nerd Font Mono:pixelsize=12;2";
             font-1 = "MesloLGS Nerd Font Mono:pixelsize=20;5";
 
-            modules-left = "pulseaudio pad cpu memory pad fs pad xwindow";
+            modules-left = "pulseaudio cpu memory fs xwindow";
             modules-center = "ewmh";
-            modules-right = "mpd pad battery pad date";
+            modules-right = "mpd battery date";
+
+            separator = "  ";
 
             tray-position = "right";
           };
@@ -156,16 +127,14 @@ in {
             label-padding-left = 2;
 
           };
-          "module/pad" = {
-            type = "custom/text";
-            content = "   ";
-          };
           "module/fs" = {
             type = "internal/fs";
             mount-0 = "/";
             interval = 30;
             format-mounted = "<bar-used>";
-            format-mounted-prefix = "󰋊 ";
+            format-mounted-prefix = "󰋊";
+            format-mounted-prefix-padding = 1;
+            # format-mounted-prefix-padding-right = 0;
             format-mounted-prefix-font = 2;
             format-mounted-foreground = "\${colors.accent}";
 
@@ -174,12 +143,16 @@ in {
             label-unmounted-foreground = "\${colors.fg-alt}";
 
             bar-used-indicator = "";
-            bar-used-width = 8;
+            bar-used-width = 10;
             bar-used-foreground-0 = "\${colors.fg}";
             bar-used-foreground-1 = "\${colors.fg}";
-            bar-used-foreground-2 = "\${colors.yellow}";
-            bar-used-foreground-3 = "\${colors.red}";
-            bar-used-foreground-4 = "\${colors.red}";
+            bar-used-foreground-2 = "\${colors.fg}";
+            bar-used-foreground-3 = "\${colors.fg}";
+            bar-used-foreground-4 = "\${colors.fg}";
+            bar-used-foreground-5 = "\${colors.yellow}";
+            bar-used-foreground-6 = "\${colors.yellow}";
+            bar-used-foreground-7 = "\${colors.yellow}";
+            bar-used-foreground-8 = "\${colors.red}";
             bar-used-fill = "|";
             bar-used-empty = "¦";
             bar-used-empty-foreground = "\${colors.fg-alt}";
@@ -188,18 +161,23 @@ in {
             type = "internal/cpu";
             interval = 2;
             format = "<bar-load>";
-            format-prefix = " ";
+            format-prefix = "";
+            format-prefix-padding = 1;
+            # format-prefix-padding-right = 1;
             format-prefix-font = 2;
             format-foreground = "\${colors.accent}";
-            format-padding = 1;
 
             bar-load-indicator = "";
-            bar-load-width = 8;
+            bar-load-width = 10;
             bar-load-foreground-0 = "\${colors.fg}";
             bar-load-foreground-1 = "\${colors.fg}";
-            bar-load-foreground-2 = "\${colors.yellow}";
-            bar-load-foreground-3 = "\${colors.red}";
-            bar-load-foreground-4 = "\${colors.red}";
+            bar-load-foreground-2 = "\${colors.fg}";
+            bar-load-foreground-3 = "\${colors.fg}";
+            bar-load-foreground-4 = "\${colors.fg}";
+            bar-load-foreground-5 = "\${colors.yellow}";
+            bar-load-foreground-6 = "\${colors.yellow}";
+            bar-load-foreground-7 = "\${colors.yellow}";
+            bar-load-foreground-8 = "\${colors.red}";
             bar-load-fill = "|";
             bar-load-empty = "¦";
             bar-load-empty-foreground = "\${colors.fg-alt}";
@@ -208,18 +186,23 @@ in {
             type = "internal/memory";
             interval = 3;
             format = "<bar-used>";
-            format-prefix = " ";
+            format-prefix = "";
+            format-prefix-padding = 1;
+            # format-prefix-padding-right = 1;
             format-prefix-font = 2;
             format-prefix-foreground = "\${colors.accent}";
-            format-padding-left = 1;
 
             bar-used-indicator = "";
-            bar-used-width = 8;
+            bar-used-width = 10;
             bar-used-foreground-0 = "\${colors.fg}";
             bar-used-foreground-1 = "\${colors.fg}";
-            bar-used-foreground-2 = "\${colors.yellow}";
-            bar-used-foreground-3 = "\${colors.red}";
-            bar-used-foreground-4 = "\${colors.red}";
+            bar-used-foreground-2 = "\${colors.fg}";
+            bar-used-foreground-3 = "\${colors.fg}";
+            bar-used-foreground-4 = "\${colors.fg}";
+            bar-used-foreground-5 = "\${colors.yellow}";
+            bar-used-foreground-6 = "\${colors.yellow}";
+            bar-used-foreground-7 = "\${colors.yellow}";
+            bar-used-foreground-8 = "\${colors.red}";
             bar-used-fill = "|";
             bar-used-empty = "¦";
             bar-used-empty-foreground = "\${colors.fg-alt}";
@@ -248,28 +231,24 @@ in {
             ramp-volume-2 = "󰕾";
             ramp-volume-font = 2;
           };
-          "module/mpd" = {
+          "module/mpd" = (mkIf config.modules.media.mpd.enable {
             type = "internal/mpd";
             host = "127.0.0.1";
             port = "6600";
 
             label-song = "%artist% - %title%";
-            format-playing-prefix = "󰎈 ";
+            format-playing-prefix = "󰎈";
+            format-palying-prefix-padding = 1;
             format-playing-prefix-font = 2;
             format-playing-foreground = "\${colors.fg}";
-            format-paused-prefix = "󰎊 ";
+            format-paused-prefix = "󰎊";
+            format-paused-prefix-padding = 1;
             format-paused-prefix-font = 2;
             format-paused-foreground = "\${colors.fg-alt}";
-          };
+          });
         };
       };
 
-      home.packages = with pkgs.unstable; [
-        i3lock
-
-        feh
-        scrot
-      ];
     };
 
   };

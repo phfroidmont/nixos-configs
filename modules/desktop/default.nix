@@ -114,15 +114,7 @@ in {
         };
 
         file = {
-          ".wallpaper.png".source = ./files/wallpaper.png;
-          ".config/ncmpcpp" = {
-            source = ./files/ncmpcpp;
-            recursive = true;
-          };
-          ".xmonad/scripts" = {
-            source = ./files/scripts;
-            recursive = true;
-          };
+          ".wallpaper.png".source = ./wallpaper.png;
           ".themes/oomox-gruvmox-dark-medium-default" = {
             source = ./files/oomox-gruvmox-dark-medium-default;
             recursive = true;
@@ -145,9 +137,6 @@ in {
           xorg.xwininfo
           xorg.xkill
           numix-gtk-theme
-
-          (ncmpcpp.override { visualizerSupport = true; })
-          mpc_cli
 
           # Ranger preview utils
           w3m
@@ -180,12 +169,6 @@ in {
           thefuck
           atool
           linuxPackages.perf
-
-          glxinfo
-          steam
-          protontricks
-          lutris
-          dolphinEmu
         ];
       };
 

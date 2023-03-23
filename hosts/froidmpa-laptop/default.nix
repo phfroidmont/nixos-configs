@@ -10,7 +10,6 @@
       vscode.enable = true;
       dunst.enable = true;
       htop.enable = true;
-      mpd.enable = true;
     };
     editor = {
       vim.enable = true;
@@ -23,6 +22,10 @@
       libvirt.enable = true;
     };
     apps = { newsboat.enable = true; };
+    media = {
+      mpd.enable = true;
+      ncmpcpp.enable = true;
+    };
   };
 
   # Monitor backlight control
