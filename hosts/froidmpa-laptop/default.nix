@@ -29,6 +29,8 @@
   programs.light.enable = true;
   users.users.${config.user.name}.extraGroups = [ "video" ];
 
+  services.tlp.enable = true;
+
   home-manager.users.${config.user.name} = { pkgs, config, ... }: {
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;
