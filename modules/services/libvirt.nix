@@ -13,7 +13,8 @@ in {
       libvirtd.enable = true;
       spiceUSBRedirection.enable = true;
     };
-    users.users.froidmpa.extraGroups = [ "libvirtd" ];
+
+    users.users.${config.user.name}.extraGroups = [ "libvirtd" ];
 
     environment.systemPackages = with pkgs; [ virt-manager ];
   };

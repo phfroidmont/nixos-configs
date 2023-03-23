@@ -17,7 +17,7 @@ in {
       };
     };
 
-    users.users.froidmpa.extraGroups = [ "docker" ];
+    users.users.${config.user.name}.extraGroups = [ "docker" ];
 
     environment.systemPackages = with pkgs; [ docker-compose ];
 

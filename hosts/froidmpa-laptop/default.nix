@@ -25,6 +25,10 @@
     apps = { newsboat.enable = true; };
   };
 
+  # Monitor backlight control
+  programs.light.enable = true;
+  users.users.${config.user.name}.extraGroups = [ "video" ];
+
   home-manager.users.${config.user.name} = { pkgs, config, ... }: {
     services.network-manager-applet.enable = true;
     services.blueman-applet.enable = true;

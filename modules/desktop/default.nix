@@ -141,7 +141,6 @@ in {
         };
 
         packages = with pkgs.unstable; [
-          xorg.xbacklight
           xorg.xinit
           xorg.xwininfo
           xorg.xkill
