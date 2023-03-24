@@ -184,6 +184,12 @@ in {
               "https://www.youtube.com/feeds/videos.xml?channel_id=UCoxcjq-8xIDTYp3uz647V5A";
           }
           {
+            title = "Phoronix";
+            tags = [ "news" "linux" "hardware" ];
+            url = "https://www.phoronix.com/rss.php";
+          }
+
+          {
             title = "PostmodernJukebox";
             tags = [ "video" "music" ];
             url =
@@ -191,12 +197,12 @@ in {
           }
           {
             title = "r/NixOS";
-            tags = [ "video" "linux" "reddit" ];
+            tags = [ "reddit" "linux" ];
             url = "https://www.reddit.com/r/NixOS.rss";
           }
           {
             title = "r/Scala";
-            tags = [ "video" "linux" "programming" ];
+            tags = [ "reddit" "programming" ];
             url = "https://www.reddit.com/r/Scala.rss";
           }
           {
