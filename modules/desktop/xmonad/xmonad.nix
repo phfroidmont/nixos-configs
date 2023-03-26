@@ -41,6 +41,8 @@ in {
         };
       };
 
+      services.picom.enable = true;
+
       home = {
         file.".xmonad/scripts" = {
           source = ./scripts;

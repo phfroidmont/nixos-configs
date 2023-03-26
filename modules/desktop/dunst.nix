@@ -14,7 +14,7 @@ in {
             alignment = "left";
             monitor = 0;
             browser = "firefox -new-tab";
-            corner_radius = 2;
+            corner_radius = 5;
             dmenu = "${pkgs.rofi}/bin/rofi -dmenu -p dunst";
             follow = "none";
             origin = "top-right";
