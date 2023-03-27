@@ -1,0 +1,101 @@
+* {
+  accent:   #83a598;
+  bg:       #282828;
+  bg-light: #3c3836;
+  bg-focus: #212121;
+  bg-dark:  #1d2021;
+  fg:       #fbf1c7;
+  fg-list:  #fbf1c7;
+
+  background-color: transparent;
+  text-color: @fg-list;
+  font: @text-font;
+  border-color: @bg-dark;
+}
+
+
+/**** Layout ****/
+window {
+  width:    1000px;
+  y-offset: -50px;
+  anchor:   north;
+  location: center;
+  border: 1px;
+  border-radius: 6px;
+  children: [ inputbar, listview ];
+
+}
+
+listview {
+  lines: 12;
+  fixed-height: false;
+  /* reverse: true; */
+  columns: 1;
+  scrollbar: true;
+  spacing: 1px;
+  /* Remove strange gap between listview and inputbar */
+  margin: -2px 0 0;
+}
+
+/*
+  TODO Not supported in stable branch of rofi
+  @media only (max-height: 1080px) {
+    window {
+      y-offset: -30%;
+    }
+    listview {
+      lines: 14;
+    }
+  }
+*/
+
+scrollbar {
+  handle-width: 1px;
+}
+inputbar {
+  children: [  prompt, entry ];
+  border: 0 0 0;
+}
+prompt {
+  padding: 11px;
+  expand: false;
+  border: 0 1px 0 0;
+  margin: 0 -2px 0 0;
+}
+entry, element {
+  padding: 10px 13px;
+}
+textbox {
+  padding: 24px;
+  margin: 20px;
+}
+
+
+/**** Looks ****/
+scrollbar {
+  background-color: @bg-dark;
+  handle-color: @accent;
+  border-color: @bg-dark;
+}
+listview, inputbar {
+  background-color: @bg-dark;
+}
+prompt {
+  text-color: @accent;
+}
+entry {
+  background-color: @bg-focus;
+  /* text-color: @fg; */
+}
+prompt {
+  background-color: @bg-light;
+}
+
+element {
+  background-color: @bg;
+  text-color: @fg;
+}
+element selected {
+  background-color: @bg-dark;
+  text-color: @accent;
+}

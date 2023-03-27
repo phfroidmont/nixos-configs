@@ -9,7 +9,10 @@ in {
 
   config = mkIf cfg.enable {
 
-    modules.desktop.polybar.enable = true;
+    modules = {
+      desktop.polybar.enable = true;
+      apps.rofi.enable = true;
+    };
 
     services.xserver = {
       enable = true;

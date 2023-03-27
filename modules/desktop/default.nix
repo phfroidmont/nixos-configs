@@ -134,11 +134,6 @@ in {
             AddressFamily inet
           '';
         };
-        rofi = {
-          enable = true;
-          theme = "gruvbox-dark";
-          terminal = "alacritty";
-        };
         bat.enable = true;
         jq.enable = true;
         fzf.enable = true;
