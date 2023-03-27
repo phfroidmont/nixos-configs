@@ -1,4 +1,4 @@
-{ config, options, lib, pkgs, ... }:
+{ inputs, config, options, lib, pkgs, ... }:
 
 with lib;
 with lib.my;
@@ -20,16 +20,12 @@ in {
 
     services.udisks2.enable = true;
 
-    systemd.packages = [ pkgs.dconf ];
-
-    # Required for custom GTK themes
-    services.dbus.packages = with pkgs; [ dconf ];
-
     home-manager.users.${config.user.name} = {
 
       xsession = {
         enable = true;
         initExtra = ''
+          ${pkgs.feh}/bin/feh --bg-fill ${./wallpaper.png}
           keepassxc &
         '';
         numlock.enable = true;
@@ -111,7 +107,7 @@ in {
           enable = false;
           inactiveInterval = 5;
           lockCmd =
-            "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ~/.wallpaper.png";
+            "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ${./wallpaper.png}";
         };
       };
 
@@ -153,48 +149,33 @@ in {
         };
       };
 
-      gtk = {
-        enable = true;
-        theme.name = "oomox-gruvmox-dark-medium-default";
-        iconTheme.name = "oomox-gruvmox-dark-medium-default";
-      };
-      qt = {
-        enable = true;
-        platformTheme = "gtk";
+      xdg.configFile = {
+        "ranger" = {
+          source = ./files/ranger;
+          recursive = true;
+        };
+        "ranger/plugins" = {
+          source = builtins.fetchGit {
+            url = "git://github.com/phfroidmont/ranger_devicons.git";
+            rev = "e02b6a3203411b76616a0e4328245bf8b47c5dcc";
+          };
+          recursive = true;
+        };
       };
 
       home = {
-        sessionVariables = { QT_AUTO_SCREEN_SCALE_FACTOR = "0"; };
 
         keyboard = {
           layout = "fr";
           options = [ "caps:escape" ];
         };
 
-        file = {
-          ".wallpaper.png".source = ./wallpaper.png;
-          ".themes/oomox-gruvmox-dark-medium-default" = {
-            source = ./files/oomox-gruvmox-dark-medium-default;
-            recursive = true;
-          };
-          ".config/ranger" = {
-            source = ./files/ranger;
-            recursive = true;
-          };
-          ".config/ranger/plugins" = {
-            source = builtins.fetchGit {
-              url = "git://github.com/phfroidmont/ranger_devicons.git";
-              rev = "e02b6a3203411b76616a0e4328245bf8b47c5dcc";
-            };
-            recursive = true;
-          };
-        };
+        file = { ".wallpaper.png".source = ./wallpaper.png; };
 
         packages = with pkgs.unstable; [
           xorg.xinit
           xorg.xwininfo
           xorg.xkill
-          numix-gtk-theme
 
           # Ranger preview utils
           w3m

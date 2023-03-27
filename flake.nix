@@ -4,36 +4,47 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
+    gruvbox-gtk-theme = {
+      url = "github:Fausto-Korpsvart/Gruvbox-GTK-Theme";
+      flake = false;
+    };
+    gruvbox-kvantum-theme = {
+      url = "github:sachnr/gruvbox-kvantum-themes";
+      flake = false;
+    };
   };
 
-  outputs = inputs @ { self, home-manager, nixpkgs, nixpkgs-unstable, ... }:
+  outputs = inputs@{ self, home-manager, nixpkgs, nixpkgs-unstable, ... }:
     let
       inherit (lib.my) mapModules mapModulesRec mapHosts;
 
       system = "x86_64-linux";
 
-      mkPkgs = pkgs: extraOverlays: import pkgs {
-        inherit system;
-        config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
-          "corefonts"
-          "steam"
-          "steam-original"
-          "steam-run"
-        ];
-        overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
-      };
+      mkPkgs = pkgs: extraOverlays:
+        import pkgs {
+          inherit system;
+          config.allowUnfreePredicate = pkg:
+            builtins.elem (pkgs.lib.getName pkg) [
+              "corefonts"
+              "steam"
+              "steam-original"
+              "steam-run"
+            ];
+          overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
+        };
       pkgs = mkPkgs nixpkgs [ self.overlay ];
       pkgs-unstable = mkPkgs nixpkgs-unstable [ ];
 
-      lib = nixpkgs.lib.extend
-        (self: super: { my = import ./lib { inherit pkgs inputs; lib = self; }; });
-    in
-    {
+      lib = nixpkgs.lib.extend (self: super: {
+        my = import ./lib {
+          inherit pkgs inputs;
+          lib = self;
+        };
+      });
+    in {
       lib = lib.my;
 
-      overlay = final: prev: {
-        unstable = pkgs-unstable;
-      };
+      overlay = final: prev: { unstable = pkgs-unstable; };
 
       overlays = { my = (import ./overlay.nix); };
 

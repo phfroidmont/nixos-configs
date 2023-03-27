@@ -194,6 +194,38 @@
         "type": "github"
       }
     },
+    "gruvbox-gtk-theme": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1676919051,
+        "narHash": "sha256-xcTI0rLZE7Yzt/9lljotzMDfiacZp1Jj41aLCzJKJko=",
+        "owner": "Fausto-Korpsvart",
+        "repo": "Gruvbox-GTK-Theme",
+        "rev": "44e81d8226579a24a791f3acf43b97de815bc4b1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Fausto-Korpsvart",
+        "repo": "Gruvbox-GTK-Theme",
+        "type": "github"
+      }
+    },
+    "gruvbox-kvantum-theme": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1674507936,
+        "narHash": "sha256-orAPLYxl9/KMzGlX7YCpq5FTKa/4FG8/qEv2xdC9QOM=",
+        "owner": "sachnr",
+        "repo": "gruvbox-kvantum-themes",
+        "rev": "439fe6df66644579abcd11169200c8a20a134d5f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sachnr",
+        "repo": "gruvbox-kvantum-themes",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": "nixpkgs",
@@ -448,6 +480,8 @@
     },
     "root": {
       "inputs": {
+        "gruvbox-gtk-theme": "gruvbox-gtk-theme",
+        "gruvbox-kvantum-theme": "gruvbox-kvantum-theme",
         "home-manager": "home-manager",
         "nix-doom-emacs": "nix-doom-emacs",
         "nixpkgs": "nixpkgs_3",

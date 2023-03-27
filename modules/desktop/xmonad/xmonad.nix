@@ -10,7 +10,13 @@ in {
   config = mkIf cfg.enable {
 
     modules = {
-      desktop.polybar.enable = true;
+      desktop = {
+        polybar.enable = true;
+        themes = {
+          gtk.enable = true;
+          qt.enable = true;
+        };
+      };
       apps.rofi.enable = true;
     };
 
