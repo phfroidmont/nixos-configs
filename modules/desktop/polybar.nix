@@ -246,10 +246,36 @@ in {
             format-paused-prefix-font = 2;
             format-paused-foreground = "\${colors.fg-alt}";
           });
+          "module/battery" = {
+            type = "internal/battery";
+            battery = "BAT0";
+            adapter = "AC";
+
+            format-charging = "<animation-charging> <label-charging>";
+            format-discharging = "<ramp-capacity> <label-discharging>";
+
+            ramp-capacity-0 = "";
+            ramp-capacity-1 = "";
+            ramp-capacity-2 = "";
+            ramp-capacity-3 = "";
+            ramp-capacity-4 = "";
+
+            ramp-capacity-font = 2;
+
+            ramp-capacity-0-foreground = "\${colors.red}";
+            ramp-capacity-1-foreground = "\${colors.yellow}";
+            ramp-capacity-2-foreground = "\${colors.fg-alt}";
+
+            animation-charging-0 = "";
+            animation-charging-1 = "";
+            animation-charging-2 = "";
+            animation-charging-3 = "";
+            animation-charging-4 = "";
+
+            animation-charging-font = 2;
+          };
         };
       };
-
     };
-
   };
 }
