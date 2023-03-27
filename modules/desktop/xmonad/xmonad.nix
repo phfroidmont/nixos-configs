@@ -23,6 +23,8 @@ in {
     services.xserver = {
       enable = true;
       layout = "fr";
+      autoRepeatDelay = 400;
+      autoRepeatInterval = 25;
       desktopManager.xterm.enable = false;
       windowManager.xmonad.enable = true;
       displayManager.lightdm = {
