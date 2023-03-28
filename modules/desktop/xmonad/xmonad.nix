@@ -12,6 +12,7 @@ in {
     modules = {
       desktop = {
         polybar.enable = true;
+        picom.enable = true;
         themes = {
           gtk.enable = true;
           qt.enable = true;

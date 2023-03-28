@@ -19,7 +19,7 @@
 
   outputs = inputs@{ self, home-manager, nixpkgs, nixpkgs-unstable, ... }:
     let
-      inherit (lib.my) mapModules mapModulesRec mkHost;
+      inherit (lib.my) mapModules mapModulesRec mkHost mapHosts;
 
       system = "x86_64-linux";
 
@@ -51,9 +51,7 @@
 
       overlays = { my = (import ./overlay.nix); };
 
-      nixosConfigurations = {
-        nixos-desktop = mkHost ./hosts/nixos-desktop/default.nix { };
-        froidmpa-laptop = mkHost ./hosts/froidmpa-laptop/default.nix { };
+      nixosConfigurations = (mapHosts ./hosts { }) // {
         rpi3 = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           specialArgs = { inherit inputs; };
