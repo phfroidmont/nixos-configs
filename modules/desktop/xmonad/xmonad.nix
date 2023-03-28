@@ -53,14 +53,7 @@ in {
         };
       };
 
-      services.picom.enable = true;
-
       home = {
-        file.".xmonad/scripts" = {
-          source = ./scripts;
-          recursive = true;
-        };
-
         packages = with pkgs.unstable; [
           i3lock
 

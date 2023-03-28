@@ -9,6 +9,7 @@ in {
   config = mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
       services.picom = {
+        enable = true;
         backend = "glx";
         vSync = true;
         opacityRules = [

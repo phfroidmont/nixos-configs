@@ -93,7 +93,7 @@ myAdditionalKeys = [
     ("M-n", spawn $ myTerminal ++ " -e newsboat"),
     ("M-c", spawn "rofi -show calc -modi calc -no-show-match -no-sort"),
     ("<Print>", spawn "scrot -e 'mv $f ~/Pictures/Screenshots'"),
-    ("S-<Print>", spawn "~/.xmonad/scripts/screenshot.sh"),
+    ("S-<Print>", spawn "flameshot gui"),
     ("M-S-a", spawn $ myTerminal ++ " -e pulsemixer"),
     ("M-S-p", spawn "rofi -show p -modi p:rofi-power-menu"),
     ("M-<Return>", spawn myTerminal),

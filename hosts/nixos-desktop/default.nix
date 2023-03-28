@@ -10,6 +10,7 @@
       vscode.enable = true;
       dunst.enable = true;
       htop.enable = true;
+      flameshot.enable = true;
     };
     editor = {
       vim.enable = true;
