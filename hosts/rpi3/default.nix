@@ -1,17 +1,23 @@
-{ pkgs, config, lib, ... }:
-{
+{ inputs, pkgs, ... }: {
+
+  nix = {
+    registry.nixpkgs.flake = inputs.nixpkgs;
+    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+  };
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
   boot.kernelParams = [ "cma=256M" ];
 
-  fileSystems."/" =
-    {
-      device = "/dev/disk/by-label/NIXOS_SD";
-      fsType = "ext4";
-    };
+  fileSystems."/" = {
+    device = "/dev/disk/by-label/NIXOS_SD";
+    fsType = "ext4";
+  };
 
-  swapDevices = [{ device = "/swapfile"; size = 1024; }];
+  swapDevices = [{
+    device = "/swapfile";
+    size = 1024;
+  }];
 
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keyFiles = [
@@ -37,11 +43,8 @@
         statistics_interval = 90;
         querylog_enabled = true;
         querylog_interval = "2160h";
-        upstream_dns = [
-          "tls://doh.mullvad.net"
-          "[/lan/]192.168.1.1"
-          "[//]192.168.1.1"
-        ];
+        upstream_dns =
+          [ "tls://doh.mullvad.net" "[/lan/]192.168.1.1" "[//]192.168.1.1" ];
         local_ptr_upstreams = [ "192.168.1.1" ];
         use_private_ptr_resolvers = true;
         resolve_clients = true;
@@ -63,9 +66,7 @@
   networking.firewall.allowedTCPPorts = [ 53 ];
   networking.firewall.allowedUDPPorts = [ 53 ];
 
-  environment.systemPackages = with pkgs; [
-    htop
-  ];
+  environment.systemPackages = with pkgs; [ vim htop ];
 
   system.stateVersion = "22.05";
 }

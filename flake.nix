@@ -2,7 +2,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-22.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
     gruvbox-gtk-theme = {
       url = "github:Fausto-Korpsvart/Gruvbox-GTK-Theme";
@@ -16,7 +19,7 @@
 
   outputs = inputs@{ self, home-manager, nixpkgs, nixpkgs-unstable, ... }:
     let
-      inherit (lib.my) mapModules mapModulesRec mapHosts;
+      inherit (lib.my) mapModules mapModulesRec mkHost;
 
       system = "x86_64-linux";
 
@@ -48,7 +51,14 @@
 
       overlays = { my = (import ./overlay.nix); };
 
-      nixosConfigurations = mapHosts ./hosts { };
-
+      nixosConfigurations = {
+        nixos-desktop = mkHost ./hosts/nixos-desktop/default.nix { };
+        froidmpa-laptop = mkHost ./hosts/froidmpa-laptop/default.nix { };
+        rpi3 = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [ ./hosts/rpi3/default.nix ];
+        };
+      };
     };
 }

@@ -1,11 +1,8 @@
 { config, options, lib, home-manager, ... }:
 
 with lib;
-with lib.my;
-{
-  options = with types; {
-    user = mkOpt attrs { };
-  };
+with lib.my; {
+  options = with types; { user = mkOpt attrs { }; };
 
   config = {
 
@@ -23,6 +20,7 @@ with lib.my;
 
       users.${config.user.name} = {
         home = {
+          enableNixpkgsReleaseCheck = true;
           stateVersion = config.system.stateVersion;
         };
       };
