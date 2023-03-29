@@ -109,6 +109,8 @@ in {
 
         file = { ".wallpaper.png".source = ./wallpaper.png; };
 
+        sessionVariables.EDITOR = "vim";
+
         packages = with pkgs.unstable; [
           xorg.xinit
           xorg.xwininfo
