@@ -285,7 +285,7 @@ in {
           }
         ];
         extraConfig = ''
-          macro v set browser "setsid -f ${pkgs.mpv}/bin/mpv --really-quiet --no-terminal" ; open-in-browser ; set browser brave
+          macro v set browser "setsid -f ${pkgs.unstable.mpv}/bin/mpv --really-quiet --no-terminal" ; open-in-browser ; set browser brave
 
           # unbind keys
           unbind-key ENTER
