@@ -6,10 +6,10 @@
  treemacs-git-mode 'extended)
 
 ;; Enable nice rendering of diagnostics like compile errors.
-(use-package flycheck
+(use-package! flycheck
   :init (global-flycheck-mode))
 
-(use-package lsp-mode
+(use-package! lsp-mode
   ;; Optional - enable lsp-mode automatically in scala files
   ;; You could also swap out lsp for lsp-deffered in order to defer loading
   :hook  (scala-mode . lsp)
@@ -31,3 +31,11 @@
 (use-package! consult
   :config
   (defun consult--ripgrep-builder (&rest args) (apply (consult--ripgrep-make-builder) args)))
+
+(use-package! lsp-tailwindcss
+  :init
+  (setq lsp-tailwindcss-add-on-mode t)
+  (setq lsp-tailwindcss-major-modes '(rjsx-mode web-mode html-mode css-mode typescript-mode typescript-tsx-mode tsx-ts-mode scala-mode))
+  (setq lsp-tailwindcss-experimental-class-regex [
+            [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
+            [ "cls\\s*:=\\s*\\(?([^,^\\n^\\)]*)" "\"([^']*)\"" ]]))
