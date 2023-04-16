@@ -121,7 +121,6 @@ in {
           xclip
           odt2txt
 
-          firefox
           brave
           keepassxc
           krita

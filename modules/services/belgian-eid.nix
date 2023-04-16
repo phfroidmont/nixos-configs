@@ -9,14 +9,11 @@ in {
 
   config = mkIf cfg.enable {
 
-    nixpkgs.overlays = [
-      (final: prev: {
-        firefox = prev.firefox.override { pkcs11Modules = [ prev.eid-mw ]; };
-      })
-    ];
-
     services.pcscd.enable = true;
 
-    environment.systemPackages = with pkgs.unstable; [ eid-mw ];
+    environment.systemPackages = with pkgs.unstable; [
+      (firefox.override { pkcs11Modules = [ eid-mw ]; })
+      eid-mw
+    ];
   };
 }
