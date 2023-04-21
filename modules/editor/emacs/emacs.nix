@@ -19,6 +19,8 @@ in {
         metals
         rnix-lsp
         nixfmt
+
+        sqlite # Used by org-roam
       ];
 
       services.emacs = {

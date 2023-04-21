@@ -3,7 +3,9 @@
  doom-theme 'doom-gruvbox
  doom-font (font-spec :family "MesloLGS Nerd Font Mono" :size 16)
  doom-big-font (font-spec :family "MesloLGS Nerd Font Mono" :size 24)
- treemacs-git-mode 'extended)
+ treemacs-git-mode 'extended
+ org-directory "~/Nextcloud/Org/"
+ org-roam-directory "~/Nextcloud/OrgRoam/")
 
 ; Workaround for "Error running timer: (void-function consult--ripgrep-builder)"
 (use-package! consult
