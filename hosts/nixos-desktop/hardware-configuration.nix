@@ -1,11 +1,9 @@
-{ config, lib, pkgs, modulesPath, ... }:
-{
-  imports = [
-    (modulesPath + "/installer/scan/not-detected.nix")
-  ];
+{ config, lib, pkgs, modulesPath, ... }: {
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
   boot = {
-    initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "sd_mod" ];
+    initrd.availableKernelModules =
+      [ "nvme" "xhci_pci" "ahci" "usbhid" "sd_mod" ];
     initrd.kernelModules = [ "amdgpu" ];
     kernelModules = [ "kvm-amd" ];
     extraModulePackages = [ ];
@@ -13,21 +11,23 @@
     loader.efi.canTouchEfiVariables = true;
   };
 
+  fileSystems."/" = {
+    device = "/dev/disk/by-uuid/f1e21558-88e6-413e-b56a-04e0b25e9ddd";
+    fsType = "ext4";
+  };
 
-  fileSystems."/" =
-    {
-      device = "/dev/disk/by-uuid/f1e21558-88e6-413e-b56a-04e0b25e9ddd";
-      fsType = "ext4";
-    };
-
-  fileSystems."/boot" =
-    {
-      device = "/dev/disk/by-uuid/CCD1-0415";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/CCD1-0415";
+    fsType = "vfat";
+  };
 
   fileSystems."/home/froidmpa/Nextcloud" = {
     device = "/dev/disk/by-uuid/a4ba8b21-ea33-4487-b6f6-9bb7470a0acb";
+    fsType = "ext4";
+  };
+
+  fileSystems."/home/froidmpa/Backup" = {
+    device = "/dev/disk/by-uuid/7fdc4e44-ecb4-49c7-9fb0-cb1ef6235b05";
     fsType = "ext4";
   };
 
@@ -48,13 +48,11 @@
     enable = true;
     driSupport = true;
     driSupport32Bit = true;
-    extraPackages = with pkgs; [
-      rocm-opencl-icd
-      rocm-opencl-runtime
-    ];
+    extraPackages = with pkgs; [ rocm-opencl-icd rocm-opencl-runtime ];
   };
 
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode =
+    lib.mkDefault config.hardware.enableRedistributableFirmware;
   hardware.video.hidpi.enable = lib.mkDefault true;
 
   services.resolved.dnssec = "false";
