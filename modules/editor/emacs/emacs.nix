@@ -20,7 +20,9 @@ in {
         rnix-lsp
         nixfmt
 
-        sqlite # Used by org-roam
+        # Used by org-roam
+        sqlite
+        graphviz
       ];
 
       services.emacs = {
