@@ -23,6 +23,10 @@ in {
         # Used by org-roam
         sqlite
         graphviz
+
+        # Used by elfeed-tube
+        yt-dlp
+        mpv
       ];
 
       services.emacs = {
