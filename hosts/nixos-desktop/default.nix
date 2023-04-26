@@ -22,7 +22,6 @@
       docker.enable = true;
       libvirt.enable = true;
     };
-    apps = { newsboat.enable = true; };
     media = {
       mpd.enable = true;
       ncmpcpp.enable = true;

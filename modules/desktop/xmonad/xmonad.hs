@@ -90,7 +90,7 @@ myAdditionalKeys = [
     ("M-y", spawn $ myTerminal ++ " -e calcurse"),
     ("M-v", spawn $ myTerminal ++ " -e ncmpcpp -s visualizer"),
     ("M-m", spawn $ myTerminal ++ " -e ncmpcpp"),
-    ("M-n", spawn $ myTerminal ++ " -e newsboat"),
+    ("M-n", spawn "emacsclient -c --eval '(elfeed)'"),
     ("M-c", spawn "rofi -show calc -modi calc -no-show-match -no-sort"),
     ("<Print>", spawn "scrot -e 'mv $f ~/Pictures/Screenshots'"),
     ("S-<Print>", spawn "flameshot gui"),

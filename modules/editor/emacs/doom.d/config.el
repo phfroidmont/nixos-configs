@@ -35,3 +35,6 @@
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+
+;; Update elfeed on open
+(add-hook 'elfeed-search-mode-hook #'elfeed-update)
