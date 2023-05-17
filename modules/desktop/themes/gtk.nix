@@ -23,7 +23,7 @@ in {
       home = {
 
         pointerCursor = {
-          package = pkgs.paper-icon-theme;
+          package = pkgs.unstable.paper-icon-theme;
           name = "Paper";
           size = 24;
           gtk.enable = true;
