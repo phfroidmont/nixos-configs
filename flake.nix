@@ -6,6 +6,7 @@
       url = "github:nix-community/home-manager/release-22.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    emacs-overlay.url = "github:nix-community/emacs-overlay";
     nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
     gruvbox-gtk-theme = {
       url = "github:Fausto-Korpsvart/Gruvbox-GTK-Theme";
