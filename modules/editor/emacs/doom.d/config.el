@@ -36,11 +36,28 @@
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 
-;; Update elfeed on open
-(add-hook 'elfeed-search-mode-hook #'elfeed-update)
+; Taken from https://github.com/yqrashawn/yqdotfiles/blob/master/.doom.d/read.el
+(setq! elfeed-use-curl t)
+(after! elfeed
+  (elfeed-set-timeout 36000)
+  (run-with-idle-timer 300 t #'elfeed-update)
+  (setq!
+  ;;   elfeed-protocol-newsblur-maxpages 200
+  ;;   elfeed-search-filter "+unread +p1"
+  ;;   elfeed-search-trailing-width 60
+      rmh-elfeed-org-files `(,(concat org-directory "elfeed.org")))
+  ;; (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+  (setq elfeed-protocol-enabled-protocols '(owncloud))
+  (defadvice elfeed (after configure-elfeed-feeds activate)
+    "Make elfeed-org autotags rules work with elfeed-protocol."
+    (setq elfeed-protocol-tags elfeed-feeds)
+    (setq elfeed-feeds (list
+                         (list "owncloud+https://paultrial@cloud.banditlair.com"
+                           :password (shell-command-to-string "echo -n `secret-tool lookup elfeed nextcloud`")
+                           :autotags elfeed-protocol-tags))))
+  (elfeed-protocol-enable))
 
 (use-package! elfeed-tube
-  ;;:ensure t ;; or :straight t
   :after elfeed
   :demand t
   :config
@@ -56,7 +73,7 @@
          ([remap save-buffer] . elfeed-tube-save)))
 
 (use-package! elfeed-tube-mpv
-  ;;:ensure t ;; or :straight t
   :bind (:map elfeed-show-mode-map
-              ("gf" . elfeed-tube-mpv-follow-mode)
-              ("gw" . elfeed-tube-mpv-where)))
+              ;; ("gf" . elfeed-tube-mpv-follow-mode)
+              ;; ("gw" . elfeed-tube-mpv-where)))
+              ))

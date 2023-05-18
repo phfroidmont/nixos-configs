@@ -16,6 +16,11 @@ in {
         ripgrep
         fd
         findutils.locate
+        python311
+        libsecret
+        gcc
+        gnumake
+        cmake
 
         terraform
         pandoc

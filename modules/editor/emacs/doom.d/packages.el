@@ -1,4 +1,5 @@
 (package! lsp-tailwindcss)
+(package! elfeed-protocol)
 (package! elfeed-tube)
 (package! elfeed-tube-mpv)
 (package! mpv)
