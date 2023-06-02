@@ -100,6 +100,17 @@ in {
         };
       };
 
+      xdg.desktopEntries = {
+        ocr = {
+          name = "OCR image: ${lang}";
+          exec = "${pkgs.writeScript "ocr" ''
+            ${pkgs.xfce.xfce4-screenshooter}/bin/xfce4-screenshooter -r --save /dev/stdout | \
+            ${pkgs.tesseract}/bin/tesseract -l ${lang} - - | \
+            ${pkgs.xclip}/bin/xclip -sel clip
+          ''}";
+        };
+      };
+
       home = {
 
         keyboard = {
