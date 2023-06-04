@@ -102,10 +102,10 @@ in {
 
       xdg.desktopEntries = {
         ocr = {
-          name = "OCR image: ${lang}";
+          name = "OCR image";
           exec = "${pkgs.writeScript "ocr" ''
             ${pkgs.xfce.xfce4-screenshooter}/bin/xfce4-screenshooter -r --save /dev/stdout | \
-            ${pkgs.tesseract}/bin/tesseract -l ${lang} - - | \
+            ${pkgs.tesseract}/bin/tesseract -l eng+fre - - | \
             ${pkgs.xclip}/bin/xclip -sel clip
           ''}";
         };
