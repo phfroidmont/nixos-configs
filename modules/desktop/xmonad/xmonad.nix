@@ -31,16 +31,16 @@ in {
       displayManager.lightdm = {
         enable = true;
         background = ../wallpaper.png;
-        greeters.mini = {
-          enable = true;
-          user = config.user.name;
-          extraConfig = ''
-            text-color = "#fbf1c7"
-            password-background-color = "#3c3836"
-            window-color = "#282828"
-            border-color = "#458588"
-          '';
-        };
+        #greeters.mini = {
+        #  enable = true;
+        #  user = config.user.name;
+        #  extraConfig = ''
+        #    text-color = "#fbf1c7"
+        #    password-background-color = "#3c3836"
+        #    window-color = "#282828"
+        #    border-color = "#458588"
+        #  '';
+        #};
       };
     };
 

@@ -25,11 +25,21 @@ with lib.my; {
 
   system.configurationRevision = with inputs; mkIf (self ? rev) self.rev;
 
-  time.timeZone = lib.mkDefault "Europe/Amsterdam";
+  time.timeZone = mkDefault "Europe/Amsterdam";
 
-  i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
+  i18n.defaultLocale = mkDefault "en_US.UTF-8";
 
-  console = { keyMap = lib.mkDefault "fr"; };
+  console = {
+    keyMap = lib.mkDefault "fr";
+    font = mkDefault "${pkgs.terminus_font}/share/consolefonts/ter-v32n.psf.gz";
+    earlySetup = true;
+  };
+
+  fonts.fontconfig.antialias = mkDefault true;
+  fonts.fontconfig.subpixel = {
+    rgba = mkDefault "none";
+    lcdfilter = mkDefault "none";
+  };
 
   environment.systemPackages = with pkgs; [
     git
