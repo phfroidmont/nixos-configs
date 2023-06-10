@@ -61,6 +61,8 @@
   # Enable touchpad support.
   services.xserver.libinput.enable = true;
 
+  services.xserver.videoDrivers = [ "amdgpu" "modesetting" ];
+
   services.blueman.enable = true;
 
   services.logind.lidSwitch = "ignore";
