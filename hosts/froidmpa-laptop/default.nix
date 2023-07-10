@@ -21,6 +21,7 @@
       belgian-eid.enable = true;
       docker.enable = true;
       libvirt.enable = true;
+      languagetool.enable = true;
     };
     media = {
       mpd.enable = true;
