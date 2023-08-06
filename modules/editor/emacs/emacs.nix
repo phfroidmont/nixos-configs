@@ -21,6 +21,7 @@ in {
         gcc
         gnumake
         cmake
+        nodejs
 
         terraform
         pandoc
@@ -34,7 +35,8 @@ in {
         nodePackages.js-beautify # JS/CSS/HTML formatter
 
         # LSPs
-        metals # Scala
+        coursier
+        # metals # Scala
         rnix-lsp # Nix
         phpactor # PHP
 
