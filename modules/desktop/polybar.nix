@@ -116,7 +116,7 @@ in {
             time = "%H:%M";
             time-alt = "%H:%M";
             format-foreground = "\${colors.accent}";
-            format-prefix = "";
+            format-prefix = "󰥔";
             format-prefix-font = 2;
             format-prefix-padding = 1;
             format-prefix-foreground = "\${colors.accent}";
@@ -132,9 +132,8 @@ in {
             mount-0 = "/";
             interval = 30;
             format-mounted = "<bar-used>";
-            format-mounted-prefix = "󰋊";
+            format-mounted-prefix = "";
             format-mounted-prefix-padding = 1;
-            # format-mounted-prefix-padding-right = 0;
             format-mounted-prefix-font = 2;
             format-mounted-foreground = "\${colors.accent}";
 
@@ -161,9 +160,8 @@ in {
             type = "internal/cpu";
             interval = 2;
             format = "<bar-load>";
-            format-prefix = "";
+            format-prefix = "";
             format-prefix-padding = 1;
-            # format-prefix-padding-right = 1;
             format-prefix-font = 2;
             format-foreground = "\${colors.accent}";
 
@@ -186,9 +184,8 @@ in {
             type = "internal/memory";
             interval = 3;
             format = "<bar-used>";
-            format-prefix = "";
+            format-prefix = " ";
             format-prefix-padding = 1;
-            # format-prefix-padding-right = 1;
             format-prefix-font = 2;
             format-prefix-foreground = "\${colors.accent}";
 
@@ -238,7 +235,7 @@ in {
 
             label-song = "%artist% - %title%";
             format-playing-prefix = "󰎈";
-            format-palying-prefix-padding = 1;
+            format-playing-prefix-padding = 1;
             format-playing-prefix-font = 2;
             format-playing-foreground = "\${colors.fg}";
             format-paused-prefix = "󰎊";
