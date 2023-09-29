@@ -24,7 +24,6 @@ in {
         enableAutosuggestions = true;
         enableSyntaxHighlighting = true;
         initExtra = ''
-          source ${./p10k.zsh}
           autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
           zle -N up-line-or-beginning-search
           zle -N down-line-or-beginning-search
@@ -40,15 +39,6 @@ in {
         };
         plugins = [
           {
-            name = "powerlevel10k";
-            src = pkgs.zsh-powerlevel10k;
-            file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-          }
-          {
-            name = "powerlevel10k-config";
-            src = ./p10k.zsh;
-          }
-          {
             name = "nix-zsh-completions";
             src = pkgs.nix-zsh-completions;
           }
@@ -57,6 +47,17 @@ in {
             src = pkgs.zsh-completions;
           }
         ];
+      };
+      programs.starship = {
+        enable = true;
+        enableZshIntegration = true;
+        settings = {
+          add_newline = true;
+          scala = { symbol = " "; };
+          terraform = { symbol = "󱁢 "; };
+          nix_shell = { symbol = "󱄅 "; };
+          nodejs = { symbol = " "; };
+        };
       };
     };
   };
