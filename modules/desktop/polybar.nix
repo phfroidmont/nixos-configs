@@ -73,7 +73,7 @@ in {
 
             padding = 2;
 
-            font-0 = "MesloLGS Nerd Font Mono:pixelsize=12;2";
+            font-0 = "MesloLGS Nerd Font Mono:pixelsize=12;3";
             font-1 = "MesloLGS Nerd Font Mono:pixelsize=20;5";
 
             modules-left = "pulseaudio cpu memory fs xwindow";
@@ -131,7 +131,8 @@ in {
             type = "internal/fs";
             mount-0 = "/";
             interval = 30;
-            format-mounted = "<bar-used>";
+            format-mounted = "<label-mounted>";
+            label-mounted = "%used% of %total%";
             format-mounted-prefix = "";
             format-mounted-prefix-padding = 1;
             format-mounted-prefix-font = 2;
@@ -184,7 +185,7 @@ in {
             type = "internal/memory";
             interval = 3;
             format = "<bar-used>";
-            format-prefix = " ";
+            format-prefix = "";
             format-prefix-padding = 1;
             format-prefix-font = 2;
             format-prefix-foreground = "\${colors.accent}";
