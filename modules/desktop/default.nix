@@ -9,7 +9,7 @@ in {
     fonts = {
       fonts = with pkgs.unstable; [
         corefonts # Microsoft free fonts
-        (nerdfonts.override { fonts = [ "Meslo" ]; })
+        (nerdfonts.override { fonts = [ "Meslo" "NerdFontsSymbolsOnly" ]; })
       ];
       fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font Mono" ]; };
     };

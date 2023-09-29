@@ -39,6 +39,14 @@ in {
         # metals # Scala
         rnix-lsp # Nix
         phpactor # PHP
+        #OCaml
+        ocaml
+        dune_3
+        ocamlPackages.ocaml-lsp
+        ocamlPackages.ocamlformat
+        ocamlPackages.utop
+        ocamlPackages.ocp-indent
+        ocamlPackages.merlin
 
         # Used by org-roam
         sqlite
@@ -109,6 +117,5 @@ in {
       #   };
       # };
     };
-    fonts.fonts = [ pkgs.emacs-all-the-icons-fonts ];
   };
 }
