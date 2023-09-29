@@ -53,10 +53,12 @@ in {
         enableZshIntegration = true;
         settings = {
           add_newline = true;
+          cmd_duration = { show_milliseconds = true; };
           scala = { symbol = " "; };
           terraform = { symbol = "󱁢 "; };
           nix_shell = { symbol = "󱄅 "; };
           nodejs = { symbol = " "; };
+          php = { symbol = " "; };
         };
       };
     };
