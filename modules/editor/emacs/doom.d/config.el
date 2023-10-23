@@ -71,3 +71,12 @@
               ;; ("gf" . elfeed-tube-mpv-follow-mode)
               ;; ("gw" . elfeed-tube-mpv-where)))
               ))
+
+;; Force using LSP formatter until this is resolved: https://github.com/doomemacs/doomemacs/issues/7490
+(setq-hook! 'scala-mode-hook
+  apheleia-inhibit t
+  +format-with nil)
+(add-hook 'scala-mode-hook
+          (lambda()
+            (add-hook 'before-save-hook #'lsp-format-buffer t t)
+            (add-hook 'before-save-hook #'lsp-organize-imports t t)))
