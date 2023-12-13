@@ -146,6 +146,7 @@ in {
           transmission-remote-gtk
           monero-gui
 
+          scala-cli
           jdk
           jetbrains.idea-community
           httpie
