@@ -53,7 +53,10 @@ in {
         enableZshIntegration = true;
         settings = {
           add_newline = true;
-          cmd_duration = { show_milliseconds = true; };
+          cmd_duration = {
+            min_time = 0;
+            show_milliseconds = true;
+          };
           scala = { symbol = " "; };
           terraform = { symbol = "󱁢 "; };
           nix_shell = { symbol = "󱄅 "; };
