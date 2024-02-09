@@ -15,7 +15,7 @@ in {
 
   config = {
     user.packages = with pkgs; [
-      (mkIf cfg.psx.enable epsxe)
+      (mkIf cfg.psx.enable duckstation)
       (mkIf cfg.ds.enable desmume)
       (mkIf cfg.gc.enable dolphinEmu)
       (mkIf (cfg.gba.enable || cfg.gb.enable || cfg.snes.enable) higan)

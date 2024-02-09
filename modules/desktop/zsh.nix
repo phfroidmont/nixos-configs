@@ -22,7 +22,7 @@ in {
         };
         enableCompletion = true;
         enableAutosuggestions = true;
-        enableSyntaxHighlighting = true;
+        syntaxHighlighting.enable = true;
         initExtra = ''
           autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
           zle -N up-line-or-beginning-search

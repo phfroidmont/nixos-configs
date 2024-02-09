@@ -7,7 +7,7 @@ in {
   config = mkIf config.services.xserver.enable {
 
     fonts = {
-      fonts = with pkgs.unstable; [
+      packages = with pkgs.unstable; [
         corefonts # Microsoft free fonts
         (nerdfonts.override { fonts = [ "Meslo" "NerdFontsSymbolsOnly" ]; })
       ];

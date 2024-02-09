@@ -13,6 +13,7 @@ in {
     user.packages = with pkgs; [
       (mkIf cfg.steam.enable steam)
       (mkIf cfg.lutris.enable lutris)
+      (mkIf cfg.lutris.enable wine)
       (mkIf (cfg.steam.enable || cfg.lutris.enable) protontricks)
     ];
   };

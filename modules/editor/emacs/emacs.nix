@@ -2,7 +2,16 @@
 
 with lib;
 with lib.my;
-let cfg = config.modules.editor.emacs;
+let
+  cfg = config.modules.editor.emacs;
+  myEmacs = pkgs.unstable.emacs29.override {
+    withNativeCompilation = true;
+    withSQLite3 = true;
+    withTreeSitter = true;
+    withWebP = true;
+  };
+  myEmacsWithPackages = myEmacs.pkgs.withPackages
+    (epkgs: with epkgs; [ vterm pdf-tools treesit-grammars.with-all-grammars ]);
 in {
   options.modules.editor.emacs = { enable = mkBoolOpt false; };
 
@@ -23,7 +32,7 @@ in {
         cmake
         nodejs
 
-        terraform
+        opentofu
         pandoc
 
         # Formatters and linters
@@ -68,17 +77,13 @@ in {
       services.emacs = {
         enable = true;
         client.enable = true;
-        package = with pkgs;
-          ((emacsPackagesFor emacsNativeComp).emacsWithPackages
-            (epkgs: [ epkgs.vterm ]));
+        package = myEmacsWithPackages;
       };
 
       # Use either this or nix-doom-emacs
       programs.emacs = {
         enable = true;
-        package = with pkgs;
-          ((emacsPackagesFor emacsNativeComp).emacsWithPackages
-            (epkgs: [ epkgs.vterm ]));
+        package = myEmacs;
       };
       xdg.configFile = { "doom" = { source = ./doom.d; }; };
       home.sessionPath = [
