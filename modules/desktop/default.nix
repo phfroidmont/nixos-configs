@@ -84,19 +84,13 @@ in {
           enableZshIntegration = true;
           nix-direnv.enable = true;
         };
-      };
-
-      xdg.configFile = {
-        "ranger" = {
-          source = ./files/ranger;
-          recursive = true;
-        };
-        "ranger/plugins" = {
-          source = builtins.fetchGit {
-            url = "git://github.com/phfroidmont/ranger_devicons.git";
-            rev = "e02b6a3203411b76616a0e4328245bf8b47c5dcc";
+        joshuto = {
+          enable = true;
+          settings = {
+            xdg_open = true;
+            xdg_open_fork = true;
+            preview.preview_script = ./files/joshuo_preview_file.sh;
           };
-          recursive = true;
         };
       };
 
@@ -114,13 +108,17 @@ in {
       xdg.mimeApps = {
         enable = true;
         defaultApplications = {
-          "inode/directory" = "ranger.desktop";
+          "inode/directory" = "joshuto.desktop";
 
           "text/html" = "firefox.desktop";
           "x-scheme-handler/http" = "firefox.desktop";
           "x-scheme-handler/https" = "firefox.desktop";
           "x-scheme-handler/about" = "firefox.desktop";
 
+          "image/png" = "feh.desktop";
+          "image/webp" = "feh.desktop";
+          "image/jpeg" = "feh.desktop";
+          "image/gif" = "mpv.desktop";
           "image/*" = "feh.desktop";
           "audio/*" = "mpv.desktop";
           "video/*" = "mpv.desktop";
@@ -129,7 +127,7 @@ in {
           "application/rar" = "ark.desktop";
           "application/7z" = "ark.desktop";
           "application/*tar" = "ark.desktop";
-          "application/pdf" = "zathura.desktop";
+          "application/pdf" = "org.pwmt.zathura-pdf-mupdf.desktop";
 
           "application/msword" = "onlyoffice-desktopeditors.desktop";
           "application/vnd.openxmlformats-officedocument.presentationml.presentation" =
@@ -157,10 +155,19 @@ in {
           xorg.xwininfo
           xorg.xkill
 
-          # Ranger preview utils
+          # Joshuto preview utils
+          file
+          catdoc
+          pandoc
+          mu
+          djvulibre
+          exiftool
+          mediainfo
+          atool
+          gnutar
+          poppler_utils
+          libtransmission
           w3m
-          xclip
-          odt2txt
 
           brave
           keepassxc
@@ -182,11 +189,9 @@ in {
           httpie
 
           zsh-syntax-highlighting
-          ranger
           R
           tldr
           thefuck
-          atool
           ark
           linuxPackages.perf
         ];

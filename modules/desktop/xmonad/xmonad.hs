@@ -86,7 +86,7 @@ myAdditionalKeys = [
     ("M-w", spawn "firefox"),
     ("M-i", spawn $ myTerminal ++ " -e htop"),
     ("M-e", spawn "emacsclient -c"),
-    ("M-r", spawn $ myTerminal ++ " -e ranger"),
+    ("M-r", spawn $ myTerminal ++ " -e joshuto"),
     ("M-y", spawn $ myTerminal ++ " -e calcurse"),
     ("M-v", spawn $ myTerminal ++ " -e ncmpcpp -s visualizer"),
     ("M-m", spawn $ myTerminal ++ " -e ncmpcpp"),
