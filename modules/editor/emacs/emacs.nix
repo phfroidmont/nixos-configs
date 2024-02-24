@@ -2,16 +2,7 @@
 
 with lib;
 with lib.my;
-let
-  cfg = config.modules.editor.emacs;
-  myEmacs = pkgs.unstable.emacs29.override {
-    withNativeCompilation = true;
-    withSQLite3 = true;
-    withTreeSitter = true;
-    withWebP = true;
-  };
-  myEmacsWithPackages = myEmacs.pkgs.withPackages
-    (epkgs: with epkgs; [ vterm pdf-tools treesit-grammars.with-all-grammars ]);
+let cfg = config.modules.editor.emacs;
 in {
   options.modules.editor.emacs = { enable = mkBoolOpt false; };
 
@@ -77,13 +68,23 @@ in {
       services.emacs = {
         enable = true;
         client.enable = true;
-        package = myEmacsWithPackages;
       };
 
       # Use either this or nix-doom-emacs
       programs.emacs = {
         enable = true;
-        package = myEmacs;
+        package = pkgs.unstable.emacs29.override {
+          withNativeCompilation = true;
+          withSQLite3 = true;
+          withTreeSitter = true;
+          withWebP = true;
+        };
+        extraPackages = epkgs:
+          with epkgs; [
+            vterm
+            pdf-tools
+            treesit-grammars.with-all-grammars
+          ];
       };
       xdg.configFile = { "doom" = { source = ./doom.d; }; };
       home.sessionPath = [
