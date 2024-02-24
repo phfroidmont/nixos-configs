@@ -111,6 +111,36 @@ in {
         };
       };
 
+      xdg.mimeApps = {
+        enable = true;
+        defaultApplications = {
+          "inode/directory" = "ranger.desktop";
+
+          "text/html" = "firefox.desktop";
+          "x-scheme-handler/http" = "firefox.desktop";
+          "x-scheme-handler/https" = "firefox.desktop";
+          "x-scheme-handler/about" = "firefox.desktop";
+
+          "image/*" = "feh.desktop";
+          "audio/*" = "mpv.desktop";
+          "video/*" = "mpv.desktop";
+
+          "application/zip" = "ark.desktop";
+          "application/rar" = "ark.desktop";
+          "application/7z" = "ark.desktop";
+          "application/*tar" = "ark.desktop";
+          "application/pdf" = "zathura.desktop";
+
+          "application/msword" = "onlyoffice-desktopeditors.desktop";
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation" =
+            "onlyoffice-desktopeditors.desktop";
+          "application/vnd.openxmlformats-officedocument*" =
+            "onlyoffice-desktopeditors.desktop";
+
+          "text/*" = "nvim.desktop";
+        };
+      };
+
       home = {
 
         keyboard = {
@@ -157,6 +187,7 @@ in {
           tldr
           thefuck
           atool
+          ark
           linuxPackages.perf
         ];
       };
