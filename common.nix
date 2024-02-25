@@ -49,7 +49,7 @@ with lib.my; {
     inetutils
     man
 
-    htop
+    htop-vim
     ncdu
     nload
     pciutils

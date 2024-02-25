@@ -67,7 +67,7 @@
   networking.firewall.allowedTCPPorts = [ 53 ];
   networking.firewall.allowedUDPPorts = [ 53 ];
 
-  environment.systemPackages = with pkgs; [ vim htop ];
+  environment.systemPackages = with pkgs; [ vim htop-vim ];
 
   system.stateVersion = "22.05";
 }
