@@ -89,6 +89,7 @@ in {
           settings = {
             xdg_open = true;
             xdg_open_fork = true;
+            display = { show_icons = true; };
             preview.preview_script = ./files/joshuo_preview_file.sh;
           };
         };
