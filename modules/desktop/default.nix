@@ -181,6 +181,7 @@ in {
           onlyoffice-bin
           thunderbird
           portfolio
+          gnucash
           transmission-remote-gtk
           monero-gui
 
