@@ -40,7 +40,7 @@
     services.blueman-applet.enable = true;
     services.grobi = {
       enable = true;
-      executeAfter = [ "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.png" ];
+      executeAfter = [ "${pkgs.feh}/bin/feh --bg-fill ~/.wallpaper.jpg" ];
       rules = [
         {
           name = "External HDMI";

@@ -77,7 +77,7 @@ myRemoveKeys = [
 
 myAdditionalKeys = [
     ("M-q", kill),
-    ("M-x", spawn "i3lock -e -f -c 000000 -i ~/.wallpaper.png"),
+    ("M-x", spawn "i3lock -e -f -c 000000 -i ~/.wallpaper.jpg"),
     ("M-S-h", sendMessage (IncMasterN 1)),
     ("M-S-l", sendMessage (IncMasterN (-1))),
     ("M-S-<Return>", windows W.swapMaster),

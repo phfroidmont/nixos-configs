@@ -28,20 +28,8 @@ in {
       autoRepeatInterval = 25;
       desktopManager.xterm.enable = false;
       windowManager.xmonad.enable = true;
-      displayManager.lightdm = {
-        enable = true;
-        background = ../wallpaper.png;
-        #greeters.mini = {
-        #  enable = true;
-        #  user = config.user.name;
-        #  extraConfig = ''
-        #    text-color = "#fbf1c7"
-        #    password-background-color = "#3c3836"
-        #    window-color = "#282828"
-        #    border-color = "#458588"
-        #  '';
-        #};
-      };
+      displayManager.sddm.enable = true;
+
     };
 
     home-manager.users.${config.user.name} = {

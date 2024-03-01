@@ -2,7 +2,13 @@
 
 with lib;
 with lib.my;
-let cfg = config.modules.desktop;
+let
+  cfg = config.modules.desktop;
+  wallpaper = pkgs.fetchurl {
+    url =
+      "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/irl/houseonthesideofalake.jpg";
+    sha256 = "sha256-obKI4qZvucogqRCl51lwV9X8SRaMqcbBwWMfc9TupIo=";
+  };
 in {
   config = mkIf config.services.xserver.enable {
 
@@ -25,7 +31,7 @@ in {
       xsession = {
         enable = true;
         initExtra = ''
-          ${pkgs.feh}/bin/feh --bg-fill ${./wallpaper.png}
+          ${pkgs.feh}/bin/feh --bg-fill ${wallpaper}
           keepassxc &
         '';
         numlock.enable = true;
@@ -43,8 +49,7 @@ in {
         screen-locker = {
           enable = false;
           inactiveInterval = 5;
-          lockCmd =
-            "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ${./wallpaper.png}";
+          lockCmd = "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ${wallpaper}";
         };
       };
 
@@ -147,7 +152,7 @@ in {
           options = [ "caps:escape" ];
         };
 
-        file = { ".wallpaper.png".source = ./wallpaper.png; };
+        file = { ".wallpaper.jpg".source = wallpaper; };
 
         sessionVariables.EDITOR = "vim";
 
