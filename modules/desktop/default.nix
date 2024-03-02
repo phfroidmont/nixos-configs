@@ -91,11 +91,90 @@ in {
         };
         joshuto = {
           enable = true;
+          package = with pkgs;
+            writeShellScriptBin "joshuto" ''
+              export joshuto_wrap_id="$$"
+              export joshuto_wrap_tmp="$(mktemp -d -t joshuto-wrap-$joshuto_wrap_id-XXXXXX)"
+              export joshuto_wrap_preview_meta="$joshuto_wrap_tmp/preview-meta"
+              export ueberzug_pid_file="$joshuto_wrap_tmp/pid"
+              export ueberzug_img_identifier="preview"
+              export ueberzug_socket=""
+              export ueberzug_pid=""
+
+              function start_ueberzugpp {
+                  ## Adapt Überzug++ options here. For example, remove the '--no-opencv' or set another output method.
+                  ${ueberzugpp}/bin/ueberzug layer --no-stdin --pid-file "$ueberzug_pid_file" --no-opencv &>/dev/null
+                  export ueberzug_pid="$(cat "$ueberzug_pid_file")"
+                  export ueberzug_socket=/tmp/ueberzugpp-"$ueberzug_pid".socket
+                  mkdir -p "$joshuto_wrap_preview_meta"
+              }
+
+              function stop_ueberzugpp {
+                  remove_image
+                  ${ueberzugpp}/bin/ueberzug cmd -s "$ueberzug_socket" -a exit
+                  kill "$ueberzug_pid"
+                  rm -rf "$joshuto_wrap_tmp"
+              }
+
+              function show_image {
+                  ${ueberzugpp}/bin/ueberzug cmd -s "$ueberzug_socket" -a add -i "$ueberzug_img_identifier" -x "$2" -y "$3" --max-width "$4" --max-height "$5" -f "$1" &>/dev/null
+              }
+
+              function remove_image {
+                  ${ueberzugpp}/bin/ueberzug cmd -s "$ueberzug_socket" -a remove -i "$ueberzug_img_identifier" &>/dev/null
+              }
+
+              function get_preview_meta_file {
+                  echo "$joshuto_wrap_preview_meta/$(echo "$1" | md5sum | sed 's/ //g')"
+              }
+
+              export -f get_preview_meta_file
+              export -f show_image
+              export -f remove_image
+
+              if [ -n "$DISPLAY" ] && command -v ${ueberzugpp}/bin/ueberzug > /dev/null; then
+                  trap stop_ueberzugpp EXIT QUIT INT TERM
+                  start_ueberzugpp
+              fi
+
+              ${joshuto}/bin/joshuto "$@"
+              exit $?
+            '';
           settings = {
             xdg_open = true;
             xdg_open_fork = true;
             display = { show_icons = true; };
+            # preview.preview_protocol = "kitty";
             preview.preview_script = ./files/joshuo_preview_file.sh;
+            preview.preview_shown_hook_script = with pkgs;
+              writeScript "on_preview_shown" ''
+                #!/usr/bin/env bash
+                test -z "$joshuto_wrap_id" && exit 1;
+
+                path="$1"       # Full path of the previewed file
+                x="$2"          # x coordinate of upper left cell of preview area
+                y="$3"          # y coordinate of upper left cell of preview area
+                width="$4"      # Width of the preview pane (number of fitting characters)
+                height="$5"     # Height of the preview pane (number of fitting characters)
+
+                # Find out mimetype and extension
+                mimetype=$(${file}/bin/file --mime-type -Lb "$path")
+                extension=$(echo "''${path##*.}" | awk '{print tolower($0)}')
+
+                case "$mimetype" in
+                    image/png | image/jpeg)
+                        show_image "$path" $x $y $width $height
+                        ;;
+                    *)
+                        remove_image
+
+                esac
+              '';
+            preview.preview_removed_hook_script =
+              pkgs.writeScript "on_preview_removed" ''
+                #!/usr/bin/env bash
+                test -z "$joshuto_wrap_id" && exit 1;
+                remove_image'';
           };
         };
       };

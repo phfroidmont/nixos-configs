@@ -196,6 +196,9 @@ handle_mime() {
             exit 1 ;;
 
             ## Image
+        image/png | image/jpeg)
+            ## Display image
+            exit 0 ;;
         image/*)
             ## Preview as text conversion
             exiftool "${FILE_PATH}" && exit 0
