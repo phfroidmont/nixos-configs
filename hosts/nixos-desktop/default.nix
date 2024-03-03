@@ -6,6 +6,7 @@
     desktop = {
       xmonad.enable = true;
       alacritty.enable = true;
+      joshuto.enable = true;
       zsh.enable = true;
       vscode.enable = true;
       dunst.enable = true;

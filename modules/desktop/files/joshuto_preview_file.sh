@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 ## This script is a template script for creating textual file previews in Joshuto.
 ##
 ## Copy this script to your Joshuto configuration directory and refer to this
@@ -61,6 +59,7 @@ while [ "$#" -gt 0 ]; do
             ;;
         "--preview-height")
             shift
+            # shellcheck disable=SC2034
             PREVIEW_HEIGHT="$1"
             ;;
     esac
