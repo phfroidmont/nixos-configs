@@ -37,7 +37,9 @@ in {
         # LSPs
         coursier
         # metals # Scala
-        rnix-lsp # Nix
+        # Nix
+        nil
+        nixfmt
         phpactor # PHP
         #OCaml
         ocaml
