@@ -11,7 +11,7 @@ in {
 
     services.pcscd.enable = true;
 
-    environment.systemPackages = with pkgs.unstable; [
+    environment.systemPackages = with pkgs; [
       (firefox.override { pkcs11Modules = [ eid-mw ]; })
       eid-mw
     ];
