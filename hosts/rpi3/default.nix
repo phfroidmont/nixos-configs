@@ -28,21 +28,18 @@
   services.adguardhome = {
     enable = true;
 
-    host = "0.0.0.0";
-    port = 80;
     openFirewall = true;
 
     mutableSettings = false;
 
     settings = {
+      http = { address = "0.0.0.0:80"; };
       auth_attempts = 5;
       block_auth_min = 15;
       dns = {
-        bind_host = "0.0.0.0";
+        bind_hosts = [ "0.0.0.0" ];
         port = 53;
         statistics_interval = 90;
-        querylog_enabled = true;
-        querylog_interval = "2160h";
         upstream_dns =
           [ "tls://doh.mullvad.net" "[/lan/]192.168.1.1" "[//]192.168.1.1" ];
         local_ptr_upstreams = [ "192.168.1.1" ];
@@ -60,11 +57,15 @@
           }
         ];
       };
+      querylog = {
+        enabled = true;
+        interval = "2160h";
+      };
     };
   };
 
   networking.hostName = "rpi3";
-  networking.firewall.allowedTCPPorts = [ 53 ];
+  networking.firewall.allowedTCPPorts = [ 53 80 ];
   networking.firewall.allowedUDPPorts = [ 53 ];
 
   environment.systemPackages = with pkgs; [ vim htop-vim ];
