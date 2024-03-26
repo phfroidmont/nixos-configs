@@ -12,7 +12,7 @@ in {
         package = with pkgs;
           writeShellApplication {
             name = "joshuto";
-            runtimeInputs = [ ueberzugpp joshuto ];
+            runtimeInputs = [ ueberzugpp joshuto trash-cli xclip fzf ];
             text = builtins.readFile ./files/joshuto_wrapper.sh;
           };
         settings = {
@@ -20,24 +20,26 @@ in {
           xdg_open_fork = true;
           display = { show_icons = true; };
           preview.preview_script = with pkgs;
-            "${writeShellApplication {
-              name = "joshuto-preview";
-              runtimeInputs = [
-                file
-                catdoc
-                pandoc
-                mu
-                djvulibre
-                exiftool
-                mediainfo
-                atool
-                gnutar
-                poppler_utils
-                libtransmission
-                w3m
-              ];
-              text = builtins.readFile ./files/joshuto_preview_file.sh;
-            }}/bin/joshuto-preview";
+            "${
+              writeShellApplication {
+                name = "joshuto-preview";
+                runtimeInputs = [
+                  file
+                  catdoc
+                  pandoc
+                  mu
+                  djvulibre
+                  exiftool
+                  mediainfo
+                  atool
+                  gnutar
+                  poppler_utils
+                  libtransmission
+                  w3m
+                ];
+                text = builtins.readFile ./files/joshuto_preview_file.sh;
+              }
+            }/bin/joshuto-preview";
           preview.preview_shown_hook_script = with pkgs;
             writeScript "on_preview_shown" ''
               #!/usr/bin/env bash
