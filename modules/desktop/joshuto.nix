@@ -19,6 +19,7 @@ in {
           xdg_open = true;
           xdg_open_fork = true;
           display = { show_icons = true; };
+          preview.max_preview_size = 50 * 1024 * 1024;
           preview.preview_script = with pkgs;
             "${
               writeShellApplication {
