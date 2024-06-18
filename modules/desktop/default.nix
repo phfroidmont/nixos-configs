@@ -153,6 +153,8 @@ in {
           xorg.xkill
 
           brave
+          ungoogled-chromium
+          mullvad-browser
           keepassxc
           krita
           element-desktop
