@@ -21,7 +21,7 @@ in {
           size = 50000;
         };
         enableCompletion = true;
-        enableAutosuggestions = true;
+        autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
         initExtra = ''
           autoload -Uz up-line-or-beginning-search down-line-or-beginning-search

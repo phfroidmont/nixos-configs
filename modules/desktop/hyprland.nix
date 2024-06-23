@@ -60,7 +60,7 @@ in {
             kb_options = "caps:escape";
             numlock_by_default = "true";
             touchpad = {
-              natural_scroll = true;
+              natural_scroll = false;
               disable_while_typing = true;
               tap-to-click = false;
               middle_button_emulation = false;
@@ -374,6 +374,8 @@ in {
         xdg-desktop-portal-hyprland
       ];
     };
+
+    hardware.opengl.enable = true;
 
     security.pam.services.swaylock = { };
 

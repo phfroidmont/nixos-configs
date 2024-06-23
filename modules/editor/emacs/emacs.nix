@@ -39,7 +39,6 @@ in {
         # metals # Scala
         # Nix
         nil
-        nixfmt
         phpactor # PHP
         #OCaml
         ocaml

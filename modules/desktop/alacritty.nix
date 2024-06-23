@@ -46,7 +46,7 @@ in {
           };
           scrolling.history = 65535;
           font.size = 8;
-          key_bindings = [
+          keyboard.bindings = [
             {
               key = "Up";
               mods = "Control";

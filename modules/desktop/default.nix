@@ -42,7 +42,7 @@ in {
         gpg-agent = {
           enable = true;
           enableSshSupport = false;
-          pinentryFlavor = "gtk2";
+          pinentryPackage = pkgs.pinentry-gtk2;
         };
         unclutter.enable = true;
       };
@@ -152,7 +152,7 @@ in {
           mumble
           libreoffice-fresh
           onlyoffice-bin
-          pkgs.thunderbird
+          thunderbird
           portfolio
           gnucash
           transmission-remote-gtk
