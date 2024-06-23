@@ -16,6 +16,20 @@ in {
             sort_by = "alphabetical";
             linemode = "mtime";
           };
+          preview = {
+            max_width = 1200;
+            max_height = 1800;
+          };
+        };
+        theme = {
+          status = {
+            separator_open = "";
+            separator_close = "";
+            separator_style = {
+              fg = "black";
+              bg = "black";
+            };
+          };
         };
       };
 

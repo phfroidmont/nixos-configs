@@ -5,7 +5,9 @@ with lib.my;
 
 let
   cfg = config.modules.desktop.hyprland;
-  term = "${pkgs.alacritty}/bin/alacritty";
+  term = "${
+      config.home-manager.users.${config.user.name}.programs.kitty.package
+    }/bin/kitty";
 in {
   options.modules.desktop.hyprland = { enable = mkBoolOpt false; };
 
@@ -17,7 +19,7 @@ in {
           gtk.enable = true;
           qt.enable = true;
         };
-        alacritty.enable = true;
+        terminal.enable = true;
         file-manager.enable = true;
         zsh.enable = true;
         vscode.enable = true;

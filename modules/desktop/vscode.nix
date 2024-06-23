@@ -62,7 +62,7 @@ in {
           "explorer.confirmDelete" = false;
           "explorer.confirmDragAndDrop" = false;
           "terminal.integrated.shellIntegration.enabled" = false;
-          "terminal.external.linuxExec" = "alacritty";
+          "terminal.external.linuxExec" = "kitty";
           "terminal.integrated.scrollback" = 65535;
         };
       };
