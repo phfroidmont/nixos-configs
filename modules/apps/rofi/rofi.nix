@@ -11,7 +11,7 @@ in {
 
       programs.rofi = {
         enable = true;
-        package = pkgs.rofi.override { plugins = [ pkgs.rofi-calc ]; };
+        package = pkgs.rofi-wayland.override { plugins = [ pkgs.rofi-calc ]; };
         terminal = "alacritty";
         extraConfig = {
           icon-theme = "Paper";

@@ -62,7 +62,7 @@ in {
         imagemagick
         ffmpegthumbnailer
         mediainfo
-        poppler_utils
+        poppler
         gnutar
         unzip
       ];

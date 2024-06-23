@@ -2,17 +2,7 @@
   imports = [ ./hardware-configuration.nix ];
 
   modules = {
-    hardware = { audio.enable = true; };
-    desktop = {
-      xmonad.enable = true;
-      alacritty.enable = true;
-      joshuto.enable = true;
-      zsh.enable = true;
-      vscode.enable = true;
-      dunst.enable = true;
-      htop.enable = true;
-      flameshot.enable = true;
-    };
+    desktop.hyprland.enable = true;
     editor = {
       vim.enable = true;
       emacs.enable = true;

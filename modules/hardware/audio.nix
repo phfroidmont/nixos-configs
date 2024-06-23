@@ -8,8 +8,13 @@ in {
 
   config = mkIf cfg.enable {
     sound.enable = true;
-    hardware.pulseaudio.enable = true;
-    hardware.pulseaudio.support32Bit = true;
+
+    security.rtkit.enable = true;
+
+    services.pipewire = {
+      enable = true;
+      pulse.enable = true;
+    };
 
     home-manager.users.${config.user.name} = {
       home.packages = with pkgs.unstable; [ pulsemixer ];

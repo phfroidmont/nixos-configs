@@ -42,8 +42,6 @@
   networking.useNetworkd = true;
   networking.interfaces.enp31s0.useDHCP = true;
 
-  services.xserver.videoDrivers = [ "amdgpu" ];
-
   hardware.opengl = {
     enable = true;
     driSupport = true;

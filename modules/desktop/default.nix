@@ -10,14 +10,22 @@ let
     sha256 = "sha256-obKI4qZvucogqRCl51lwV9X8SRaMqcbBwWMfc9TupIo=";
   };
 in {
-  config = mkIf config.services.xserver.enable {
+
+  options.modules.desktop = {
+    wallpaper = mkOption {
+      type = types.path;
+      default = wallpaper;
+    };
+  };
+
+  config = mkIf config.modules.desktop.hyprland.enable {
 
     fonts = {
       packages = with pkgs.unstable; [
         corefonts # Microsoft free fonts
         (nerdfonts.override { fonts = [ "Meslo" "NerdFontsSymbolsOnly" ]; })
       ];
-      fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font Mono" ]; };
+      fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font" ]; };
     };
 
     programs.adb.enable = true;
@@ -28,15 +36,6 @@ in {
 
     home-manager.users.${config.user.name} = {
 
-      xsession = {
-        enable = true;
-        initExtra = ''
-          ${pkgs.feh}/bin/feh --bg-fill ${wallpaper}
-          keepassxc &
-        '';
-        numlock.enable = true;
-      };
-
       services = {
         nextcloud-client.enable = true;
         udiskie.enable = true;
@@ -46,11 +45,6 @@ in {
           pinentryFlavor = "gtk2";
         };
         unclutter.enable = true;
-        screen-locker = {
-          enable = false;
-          inactiveInterval = 5;
-          lockCmd = "${pkgs.i3lock}/bin/i3lock -e -f -c 000000 -i ${wallpaper}";
-        };
       };
 
       programs = {
@@ -95,9 +89,9 @@ in {
         ocr = {
           name = "OCR image";
           exec = "${pkgs.writeScript "ocr" ''
-            ${pkgs.xfce.xfce4-screenshooter}/bin/xfce4-screenshooter -r --save /dev/stdout | \
-            ${pkgs.tesseract}/bin/tesseract -l eng+fre - - | \
-            ${pkgs.xclip}/bin/xclip -sel clip
+            ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | \
+            ${pkgs.tesseract}/bin/tesseract stdin stdout -l eng+fre | \
+            ${pkgs.wl-clipboard}/bin/wl-copy
           ''}";
         };
       };
@@ -143,27 +137,22 @@ in {
           options = [ "caps:escape" ];
         };
 
-        file = { ".wallpaper.jpg".source = wallpaper; };
-
         sessionVariables.EDITOR = "vim";
 
         packages = with pkgs.unstable; [
-          xorg.xinit
-          xorg.xwininfo
-          xorg.xkill
-
           brave
           ungoogled-chromium
           mullvad-browser
           keepassxc
           krita
           element-desktop
+          feh
           mpv
           jellyfin-mpv-shim
           mumble
           libreoffice-fresh
           onlyoffice-bin
-          thunderbird
+          pkgs.thunderbird
           portfolio
           gnucash
           transmission-remote-gtk
@@ -183,32 +172,6 @@ in {
         ];
       };
 
-      systemd.user.services.activitywatch = {
-        Unit.Description = "Start ActivityWatch";
-        Service.Type = "simple";
-        Service.ExecStart = "${pkgs.unstable.activitywatch-bin}/bin/aw-server";
-        Install.WantedBy = [ "default.target" ];
-        Service.Restart = "on-failure";
-        Service.RestartSec = 5;
-      };
-      systemd.user.services.activitywatch-afk = {
-        Unit.Description = "Start ActivityWatch AFK";
-        Service.Type = "simple";
-        Service.ExecStart =
-          "${pkgs.unstable.activitywatch-bin}/bin/aw-watcher-afk";
-        Install.WantedBy = [ "default.target" ];
-        Service.Restart = "on-failure";
-        Service.RestartSec = 5;
-      };
-      systemd.user.services.activitywatch-window = {
-        Unit.Description = "Start ActivityWatch Window";
-        Service.Type = "simple";
-        Service.ExecStart =
-          "${pkgs.unstable.activitywatch-bin}/bin/aw-watcher-window";
-        Install.WantedBy = [ "default.target" ];
-        Service.Restart = "on-failure";
-        Service.RestartSec = 5;
-      };
     };
   };
 }

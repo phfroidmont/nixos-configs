@@ -4,9 +4,7 @@ with lib;
 with lib.my;
 let cfg = config.modules.desktop.alacritty;
 in {
-  options.modules.desktop.alacritty = {
-    enable = mkBoolOpt false;
-  };
+  options.modules.desktop.alacritty = { enable = mkBoolOpt false; };
   config = mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
       programs.alacritty = {
