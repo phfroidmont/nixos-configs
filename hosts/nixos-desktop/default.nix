@@ -23,6 +23,8 @@
     };
   };
 
+  programs.kdeconnect.enable = true;
+
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   # Allow to externally control MPD
