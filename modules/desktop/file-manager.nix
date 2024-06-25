@@ -21,6 +21,30 @@ in {
             max_height = 1800;
           };
         };
+        keymap = {
+          manager.prepend_keymap = [
+            {
+              on = [ "<C-s>" ];
+              run = ''shell "$SHELL" --block --confirm'';
+              desc = "Open shell here";
+            }
+            {
+              on = [ "y" ];
+              run = [
+                "yank"
+                ''
+                  shell --confirm 'for path in "$@"; do echo "file://$path"; done | wl-copy -t text/uri-list'
+                ''
+              ];
+              desc = "Copy files to clipboard";
+            }
+          ];
+          input.prepend_keymap = [{
+            on = [ "<Esc>" ];
+            run = "close";
+            desc = "Cancel input";
+          }];
+        };
         theme = {
           status = {
             separator_open = "";
