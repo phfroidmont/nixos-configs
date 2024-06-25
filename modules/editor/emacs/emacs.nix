@@ -76,6 +76,7 @@ in {
         enable = true;
         package = pkgs.unstable.emacs29.override {
           withNativeCompilation = true;
+          withPgtk = true;
           withSQLite3 = true;
           withTreeSitter = true;
           withWebP = true;

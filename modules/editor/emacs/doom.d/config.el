@@ -1,8 +1,8 @@
 (setq
  projectile-project-search-path '("~/Projects/")
  doom-theme 'doom-gruvbox
- doom-font (font-spec :family "MesloLGS Nerd Font Mono" :size 16)
- doom-big-font (font-spec :family "MesloLGS Nerd Font Mono" :size 24)
+ doom-font (font-spec :family "MesloLGS Nerd Font Mono" :size 10.0)
+ doom-big-font (font-spec :family "MesloLGS Nerd Font Mono" :size 20.0)
  treemacs-git-mode 'extended
  org-directory "~/Nextcloud/Org/"
  org-roam-directory "~/Nextcloud/OrgRoam/"
