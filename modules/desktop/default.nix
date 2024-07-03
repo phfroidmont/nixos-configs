@@ -108,11 +108,11 @@ in {
           "x-scheme-handler/https" = "firefox.desktop";
           "x-scheme-handler/about" = "firefox.desktop";
 
-          "image/png" = "feh.desktop";
-          "image/webp" = "feh.desktop";
-          "image/jpeg" = "feh.desktop";
+          "image/png" = "swayimg.desktop";
+          "image/webp" = "swayimg.desktop";
+          "image/jpeg" = "swayimg.desktop";
           "image/gif" = "mpv.desktop";
-          "image/*" = "feh.desktop";
+          "image/*" = "swayimg.desktop";
           "audio/*" = "mpv.desktop";
           "video/*" = "mpv.desktop";
 
@@ -148,7 +148,7 @@ in {
           keepassxc
           krita
           element-desktop
-          feh
+          swayimg
           mpv
           jellyfin-mpv-shim
           mumble
