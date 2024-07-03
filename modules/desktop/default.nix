@@ -23,9 +23,11 @@ in {
     fonts = {
       packages = with pkgs.unstable; [
         corefonts # Microsoft free fonts
+        noto-fonts-emoji
+        meslo-lg
         (nerdfonts.override { fonts = [ "Meslo" "NerdFontsSymbolsOnly" ]; })
       ];
-      fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font" ]; };
+      fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font Mono" ]; };
     };
 
     programs.adb.enable = true;
