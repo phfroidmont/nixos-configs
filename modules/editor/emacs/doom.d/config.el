@@ -21,6 +21,16 @@
   (setq lsp-tailwindcss-experimental-class-regex [
                                                   [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
                                                   [ "cls\\s*:=\\s*\\(?([^,^\\n^\\)]*)" "\"([^']*)\"" ]]))
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]node_modules\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.direnv\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.devenv\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.metals\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.bloop\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]out\\'"))
+
 (after! nix-mode
   (set-formatter! 'nixpkgs-fmt '("nixpkgs-fmt" ) :modes '(nix-mode)))
 
