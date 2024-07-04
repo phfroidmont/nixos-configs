@@ -27,7 +27,8 @@ in {
         pandoc
 
         # Formatters and linters
-        nixfmt # nix formatter
+        nixfmt-rfc-style # nix formatter
+        nixpkgs-fmt
         shfmt # sh formatter
         shellcheck # sh linter
         html-tidy # HTML formatter
@@ -37,8 +38,10 @@ in {
         # LSPs
         coursier
         # metals # Scala
+
         # Nix
         nil
+
         phpactor # PHP
         #OCaml
         ocaml

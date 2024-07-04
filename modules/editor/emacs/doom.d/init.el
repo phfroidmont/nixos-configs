@@ -89,7 +89,7 @@
        (debugger +lsp)          ; FIXME stepping through code, to help you add bugs
        direnv
        ;;docker
-       ;;editorconfig      ; let someone else argue about tabs vs spaces
+       editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
@@ -149,7 +149,7 @@
        ;;lua               ; one-based indices? one-based indices
        markdown          ; writing docs for people to ignore
        ;;nim               ; python + lisp at the speed of c
-       (nix +tree-sitter)  ; I hereby declare "nix geht mehr!"
+       (nix +lsp +tree-sitter)  ; I hereby declare "nix geht mehr!"
        (ocaml +lsp +tree-sitter)             ; an objective camel
        (org +roam2 +present +hugo +dragndrop)               ; organize your plain life in plain text
        (php +lsp +tree-sitter) ; perl's insecure younger brother

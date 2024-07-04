@@ -21,6 +21,8 @@
   (setq lsp-tailwindcss-experimental-class-regex [
                                                   [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
                                                   [ "cls\\s*:=\\s*\\(?([^,^\\n^\\)]*)" "\"([^']*)\"" ]]))
+(after! nix-mode
+  (set-formatter! 'nixpkgs-fmt '("nixpkgs-fmt" ) :modes '(nix-mode)))
 
 (use-package! websocket
   :after org-roam)
