@@ -5,6 +5,11 @@
     initrd.availableKernelModules =
       [ "nvme" "xhci_pci" "ahci" "usbhid" "sd_mod" ];
     initrd.kernelModules = [ "amdgpu" ];
+
+    kernelParams = [
+      "amdgpu.noretry=0" # Prevents constant crashing in BG3
+    ];
+
     kernelModules = [ "kvm-amd" ];
     extraModulePackages = [ ];
     loader.systemd-boot.enable = true;
@@ -46,7 +51,7 @@
     enable = true;
     driSupport = true;
     driSupport32Bit = true;
-    extraPackages = with pkgs; [ rocm-opencl-icd rocm-opencl-runtime ];
+    extraPackages = with pkgs; [ rocm-opencl-icd rocm-opencl-runtim eamdvlk ];
   };
 
   hardware.cpu.amd.updateMicrocode =
