@@ -8,7 +8,8 @@ let
   term = "${
       config.home-manager.users.${config.user.name}.programs.kitty.package
     }/bin/kitty";
-in {
+in
+{
   options.modules.desktop.hyprland = { enable = mkBoolOpt false; };
 
   config = mkIf cfg.enable {
@@ -32,6 +33,84 @@ in {
     };
 
     home-manager.users.${config.user.name} = {
+      wayland.windowManager.sway = {
+        enable = true;
+        systemd.enable = true;
+        xwayland = true;
+        config = {
+          modifier = "Mod4";
+          input = {
+            "type:keyboard" = {
+              "xkb_layout" = "fr";
+              "xkb_variant" = "nodeadkeys";
+              "xkb_options" = "caps:escape";
+              "xkb_numlock" = "enabled";
+            };
+          };
+
+          keybindings = {
+            "mod4+Return" = "exec ${term}";
+            "mod4+c" = "kill";
+            "mod4+Shift+r" = "reload";
+            "mod4+Shift+c" = "exit";
+            "mod4+Shift+a" = "exec ${term} -e pulsemixer";
+            "mod4+w" = "exec firefox";
+            "mod4+r" = "exec ${term} -e yazi";
+            "mod4+e" = "exec emacsclient -c";
+            "mod4+n" = "exec emacsclient -c --eval '(elfeed)'";
+            "mod4+i" = "exec ${term} -e htop";
+            "mod4+m" = "exec ${term} -e ncmpcpp";
+            "mod4+v" = "exec ${term} -e ncmpcpp -s visualizer";
+            "mod4+t" = "floating toggle";
+            "mod4+d" = "exec rofi -show drun -show-icons";
+            "mod4+Shift+p" = "exec rofi -show p -modi p:rofi-power-menu";
+
+            "mod4+h" = "focus left";
+            "mod4+j" = "focus down";
+            "mod4+k" = "focus up";
+            "mod4+l" = "focus right";
+            "mod4+Shift+h" = "move left";
+            "mod4+Shift+j" = "move down";
+            "mod4+Shift+k" = "move up";
+            "mod4+Shift+l" = "move right";
+            "mod4+f" = "fullscreen";
+
+            "XF86AudioRaiseVolume" = "exec pulsemixer --change-volume +1";
+            "XF86AudioLowerVolume" = "exec pulsemixer --change-volume -1";
+            "XF86AudioMute" = "exec pulsemixer --toggle-mute";
+            "XF86AudioPlay" = "exec mpc toggle";
+            "XF86AudioPause" = "exec mpc toggle";
+            "XF86AudioNext" = "exec mpc next";
+            "XF86AudioPrev" = "exec mpc prev";
+            "mod4+p" = "exec mpc toggle";
+          };
+
+          keycodebindings = {
+            "mod4+10" = "workspace number 1";
+            "mod4+11" = "workspace number 2";
+            "mod4+12" = "workspace number 3";
+            "mod4+13" = "workspace number 4";
+            "mod4+14" = "workspace number 5";
+            "mod4+15" = "workspace number 6";
+            "mod4+16" = "workspace number 7";
+            "mod4+17" = "workspace number 8";
+            "mod4+18" = "workspace number 9";
+            "mod4+19" = "workspace number 0";
+
+            "mod4+Shift+10" = "move container to workspace number 1";
+            "mod4+Shift+11" = "move container to workspace number 2";
+            "mod4+Shift+12" = "move container to workspace number 3";
+            "mod4+Shift+13" = "move container to workspace number 4";
+            "mod4+Shift+14" = "move container to workspace number 5";
+            "mod4+Shift+15" = "move container to workspace number 6";
+            "mod4+Shift+16" = "move container to workspace number 7";
+            "mod4+Shift+17" = "move container to workspace number 8";
+            "mod4+Shift+18" = "move container to workspace number 9";
+            "mod4+Shift+19" = "move container to workspace number 0";
+          };
+        };
+      };
+
       wayland.windowManager.hyprland = {
         enable = true;
         systemd.enable = true;
