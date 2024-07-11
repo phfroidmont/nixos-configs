@@ -2,7 +2,7 @@
   imports = [ ./hardware-configuration.nix ];
 
   modules = {
-    desktop.hyprland.enable = true;
+    desktop.wm.enable = true;
     editor = {
       vim.enable = true;
       emacs.enable = true;

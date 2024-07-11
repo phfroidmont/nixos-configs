@@ -4,13 +4,13 @@ with lib;
 with lib.my;
 
 let
-  cfg = config.modules.desktop.hyprland;
+  cfg = config.modules.desktop.wm;
   term = "${
       config.home-manager.users.${config.user.name}.programs.kitty.package
     }/bin/kitty";
 in
 {
-  options.modules.desktop.hyprland = { enable = mkBoolOpt false; };
+  options.modules.desktop.wm = { enable = mkBoolOpt false; };
 
   config = mkIf cfg.enable {
 
