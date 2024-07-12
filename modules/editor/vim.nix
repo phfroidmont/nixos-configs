@@ -34,7 +34,7 @@ in {
           cursorline = true;
 
           # Enable linematch diff algorithm
-          diffopt.__raw = ''
+          diffopt.__raw = /*lua*/ ''
             vim.list_extend(vim.opt.diffopt:get(), { "algorithm:histogram", "linematch:60" })
           '';
 
@@ -93,7 +93,7 @@ in {
           shiftwidth = 2;
 
           # Disable search count wrap and startup messages
-          shortmess.__raw = ''
+          shortmess.__raw = /*lua*/ ''
             vim.tbl_deep_extend("force", vim.opt.shortmess:get(), { s = true, I = true })
           '';
 
@@ -133,7 +133,7 @@ in {
           # Save undo history to undo file (in $XDG_STATE_HOME/nvim/undo)
           undofile = true;
 
-          viewoptions.__raw = ''
+          viewoptions.__raw = /*lua*/ ''
             vim.tbl_filter(function(val) return val ~= "curdir" end, vim.opt.viewoptions:get())
           '';
 
@@ -179,7 +179,7 @@ in {
           }
           {
             key = "<leader>.";
-            action.__raw = ''
+            action.__raw = /*lua*/''
               function()
                 require("yazi").yazi()
               end
@@ -193,7 +193,7 @@ in {
           }
           {
             key = "<leader>fs";
-            action.__raw = ''
+            action.__raw = /*lua*/''
               function()
                 vim.lsp.buf.format()
                 vim.cmd.write()
@@ -396,7 +396,7 @@ in {
             src = inputs.vim-org-roam;
           })
         ];
-        extraConfigLua =
+        extraConfigLua = /*lua*/
           ''
             require('yazi').setup({
               opts = {
