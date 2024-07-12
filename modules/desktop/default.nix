@@ -1,9 +1,6 @@
-{ inputs, config, options, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
-with lib;
-with lib.my;
 let
-  cfg = config.modules.desktop;
   wallpaper = pkgs.fetchurl {
     url =
       "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/irl/houseonthesideofalake.jpg";
@@ -13,13 +10,13 @@ in
 {
 
   options.modules.desktop = {
-    wallpaper = mkOption {
-      type = types.path;
+    wallpaper = lib.mkOption {
+      type = lib.types.path;
       default = wallpaper;
     };
   };
 
-  config = mkIf config.modules.desktop.wm.enable {
+  config = lib.mkIf config.modules.desktop.wm.enable {
 
     fonts = {
       packages = with pkgs.unstable; [
@@ -142,7 +139,7 @@ in
 
         sessionVariables.EDITOR = "vim";
 
-        packages = with pkgs.unstable; [
+        packages = (with pkgs.unstable; [
           brave
           ungoogled-chromium
           mullvad-browser
@@ -151,7 +148,6 @@ in
           element-desktop
           swayimg
           mpv
-          jellyfin-mpv-shim
           mumble
           libreoffice-fresh
           onlyoffice-bin
@@ -169,9 +165,10 @@ in
           zsh-syntax-highlighting
           R
           tldr
-          thefuck
           ark
           linuxPackages.perf
+        ]) ++ [
+          pkgs.jellyfin-mpv-shim
         ];
       };
 

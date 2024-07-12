@@ -42,7 +42,7 @@ in {
         # Nix
         nil
 
-        phpactor # PHP
+        pkgs.phpactor # PHP
         #OCaml
         ocaml
         dune_3
@@ -74,7 +74,6 @@ in {
         client.enable = true;
       };
 
-      # Use either this or nix-doom-emacs
       programs.emacs = {
         enable = true;
         package = pkgs.unstable.emacs29.override {
@@ -108,25 +107,6 @@ in {
           fi
         '';
       };
-
-      # imports = [ inputs.nix-doom-emacs.hmModule ];
-      # programs.doom-emacs = {
-      #   enable = true;
-      #   doomPrivateDir = ./doom.d;
-      #   emacsPackagesOverlay = final: prev: {
-      #     ob-ammonite = with final;
-      #       (trivialBuild {
-      #         src = pkgs.fetchFromGitHub {
-      #           owner = "zwild";
-      #           repo = "ob-ammonite";
-      #           rev = "39937dff395e70aff76a4224fa49cf2ec6c57cca";
-      #           sha256 = pkgs.lib.fakeSha256;
-      #         };
-      #         pname = "ob-ammonite";
-      #         packageRequires = [ s dash editorconfig ];
-      #       });
-      #   };
-      # };
     };
   };
 }

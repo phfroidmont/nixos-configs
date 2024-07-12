@@ -1,11 +1,9 @@
 { config, lib, pkgs, ... }:
 
-with lib;
-with lib.my;
 let cfg = config.modules.desktop.zsh;
 in {
-  options.modules.desktop.zsh = { enable = mkBoolOpt false; };
-  config = mkIf cfg.enable {
+  options.modules.desktop.zsh = { enable = lib.my.mkBoolOpt false; };
+  config = lib.mkIf cfg.enable {
 
     environment.pathsToLink = [ "/share/zsh" ];
 
@@ -30,8 +28,6 @@ in {
 
           [[ -n "$key[Up]"   ]] && bindkey -- "$key[Up]"   up-line-or-beginning-search
           [[ -n "$key[Down]" ]] && bindkey -- "$key[Down]" down-line-or-beginning-search
-
-          eval $(${pkgs.thefuck}/bin/thefuck --alias)
         '';
         oh-my-zsh = {
           enable = true;
@@ -47,6 +43,10 @@ in {
             src = pkgs.zsh-completions;
           }
         ];
+      };
+      programs.thefuck = {
+        enable = true;
+        enableZshIntegration = true;
       };
       programs.starship = {
         enable = true;

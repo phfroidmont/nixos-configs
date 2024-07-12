@@ -2,19 +2,21 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-
     home-manager = {
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay";
-    nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
-    gruvbox-gtk-theme = {
-      url = "github:Fausto-Korpsvart/Gruvbox-GTK-Theme";
+    nixvim = {
+      url = "github:nix-community/nixvim/nixos-24.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    vim-yazi = {
+      url = "github:mikavilpas/yazi.nvim";
       flake = false;
     };
-    gruvbox-kvantum-theme = {
-      url = "github:sachnr/gruvbox-kvantum-themes";
+    vim-org-roam = {
+      url = "github:chipsenkbeil/org-roam.nvim";
       flake = false;
     };
     flameshot-git = {
@@ -23,9 +25,9 @@
     };
   };
 
-  outputs = inputs@{ self, home-manager, nixpkgs, nixpkgs-unstable, ... }:
+  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, ... }:
     let
-      inherit (lib.my) mapModules mapModulesRec mkHost mapHosts;
+      inherit (lib.my) mapHosts;
 
       system = "x86_64-linux";
 
@@ -50,7 +52,8 @@
           lib = self;
         };
       });
-    in {
+    in
+    {
       lib = lib.my;
 
       overlay = final: prev: { unstable = pkgs-unstable; };
