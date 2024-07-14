@@ -372,6 +372,12 @@ in {
             key = ">";
             action = ">gv";
           }
+          {
+            mode = "n";
+            key = "<leader>qq";
+            action = "<cmd>qa<cr>";
+            options.desc = "Quit All";
+          }
         ];
 
         plugins = {
@@ -475,14 +481,14 @@ in {
                         vim.keymap.set(mode, l, r, { buffer = buffer, desc = desc})
                       end
 
-                      map("n", "<leader>h;", function()
+                      map("n", "<leader>g;", function()
                         if vim.wo.diff then
                           vim.cmd.normal({ "]c", bang = true })
                         else
                           gs.nav_hunk("next")
                         end
                       end, "Next Hunk")
-                      map("n", "<leader>h,", function()
+                      map("n", "<leader>g,", function()
                         if vim.wo.diff then
                           vim.cmd.normal({ "[c", bang = true })
                         else
@@ -641,6 +647,7 @@ in {
                       ['<leader>s'] = { name = 'Search', _ = 'which_key_ignore' },
                       ['<leader>w'] = { name = 'Window', _ = 'which_key_ignore' },
                       ['<leader>t'] = { name = 'Toggle', _ = 'which_key_ignore' },
+                      ['<leader>q'] = { name = 'Quit/Session', _ = 'which_key_ignore' },
                     }
                   end
                 '';
@@ -789,6 +796,20 @@ in {
                 keys.__raw = /*lua*/ ''
                   {
                     { "<leader>sr", function() require("spectre").open() end, desc = "Replace in Files (Spectre)" },
+                  }
+                '';
+              }
+              {
+                pkg = pkgs.unstable.vimPlugins.persistence-nvim;
+                event = "BufReadPre";
+                opts.__raw = /*lua*/ ''
+                  { options =vim.opt.sessionoptions:get() }
+                '';
+                keys.__raw = /*lua*/ ''
+                  {
+                    { "<leader>qs", function() require("persistence").load() end, desc = "Restore Session" },
+                    { "<leader>ql", function() require("persistence").load({ last = true }) end, desc = "Restore Last Session" },
+                    { "<leader>qd", function() require("persistence").stop() end, desc = "Don't Save Current Session" },
                   }
                 '';
               }
