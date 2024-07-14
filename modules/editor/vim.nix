@@ -300,6 +300,24 @@ in {
             action = "<C-w>l";
             options = { desc = "Go to Right Winddow"; remap = true; };
           }
+          {
+            mode = "n";
+            key = "<leader>wl";
+            action = "<C-w>l";
+            options = { desc = "Go to Right Winddow"; remap = true; };
+          }
+          {
+            mode = "n";
+            key = "<c-h>";
+            action = "<C-w>h";
+            options = { desc = "Go to Left Winddow"; remap = true; };
+          }
+          {
+            mode = "n";
+            key = "<leader>wh";
+            action = "<C-w>h";
+            options = { desc = "Go to Left Winddow"; remap = true; };
+          }
           # Move lines
           {
             mode = "n";
