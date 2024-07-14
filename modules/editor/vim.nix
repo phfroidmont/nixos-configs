@@ -510,6 +510,11 @@ in {
               }
               {
                 pkg = pkgs.unstable.vimPlugins.indent-blankline-nvim;
+                event = "VeryLazy";
+                main = "ibl";
+                opts = {
+                  scope.enabled = false;
+                };
               }
               {
                 pkg = pkgs.unstable.vimPlugins.vim-sleuth;
