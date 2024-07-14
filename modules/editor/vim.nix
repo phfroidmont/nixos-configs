@@ -160,27 +160,27 @@ in {
           {
             key = "<leader>sh";
             action = "<CMD>Telescope help_tags<CR>";
-            options.desc = "[S]earch [H]elp";
+            options.desc = "Search help";
           }
           {
             key = "<leader>sk";
             action = "<CMD>Telescope keymaps<CR>";
-            options.desc = "[S]earch [K]eymaps";
+            options.desc = "Search keymaps";
           }
           {
             key = "<leader>ss";
             action = "<CMD>Telescope<CR>";
-            options.desc = "[S]earch [S]elect Telescope";
+            options.desc = "Search select Telescope";
           }
           {
             key = "<leader>/";
             action = "<CMD>Telescope live_grep layout_strategy=vertical<CR>";
-            options.desc = "Search with rg";
+            options.desc = "Grep (root dir)";
           }
           {
             key = "<leader>sR";
             action = "<CMD>Telescope resume<CR>";
-            options.desc = "[S]earch [R]esume";
+            options.desc = "Search resume";
           }
           {
             key = "<leader>cx";
@@ -219,6 +219,12 @@ in {
           {
             key = "<leader>bb";
             action = "<CMD>Telescope buffers layout_strategy=vertical<CR>";
+            options.desc = "Switch buffer";
+          }
+          {
+            key = "<leader>,";
+            action = "<CMD>Telescope buffers layout_strategy=vertical<CR>";
+            options.desc = "Switch buffer";
           }
           {
             key = "<leader>bn";
