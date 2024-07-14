@@ -178,7 +178,7 @@ in {
             options.desc = "Search with rg";
           }
           {
-            key = "<leader>sr";
+            key = "<leader>sR";
             action = "<CMD>Telescope resume<CR>";
             options.desc = "[S]earch [R]esume";
           }
@@ -756,6 +756,16 @@ in {
                       },
                     }
                   end
+                '';
+              }
+              {
+                pkg = pkgs.unstable.vimPlugins.nvim-spectre;
+                cmd = "Spectre";
+                opts = { open_cmd = "noswapfile vnew"; };
+                keys.__raw = /*lua*/ ''
+                  {
+                    { "<leader>sr", function() require("spectre").open() end, desc = "Replace in Files (Spectre)" },
+                  }
                 '';
               }
 
