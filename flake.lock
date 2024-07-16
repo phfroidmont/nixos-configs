@@ -432,11 +432,11 @@
     "vim-yazi": {
       "flake": false,
       "locked": {
-        "lastModified": 1720634904,
-        "narHash": "sha256-HrNNrLAewzyebKZ2m1wBJxcVn2w2UjapeHRAZQDN/5U=",
+        "lastModified": 1721070270,
+        "narHash": "sha256-kURiv1MUjcu5N0pE2tz1/JG5X8WMTbH+0yTJCzS+U30=",
         "owner": "mikavilpas",
         "repo": "yazi.nvim",
-        "rev": "c0841f4902204844db7def936b6702fa73b8cff0",
+        "rev": "f63312b3e07cb0dac14e4e64df3f84482c9c3646",
         "type": "github"
       },
       "original": {
