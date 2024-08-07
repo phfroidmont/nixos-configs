@@ -4,4 +4,6 @@ return {
   { "williamboman/mason.nvim",           enabled = false },
   { "williamboman/mason-lspconfig.nvim", enabled = false },
   { "jay-babu/mason-nvim-dap.nvim",      enabled = false },
+  { "folke/noice.nvim",                  enabled = false },
+  { "Bilal2453/luvit-meta",              enabled = false },
 }
