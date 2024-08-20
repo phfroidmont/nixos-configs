@@ -1,9 +1,14 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my; {
-  imports = [ inputs.home-manager.nixosModules.home-manager ]
-    ++ (mapModulesRec' (toString ./modules) import);
+{
+  imports = [
+    inputs.home-manager.nixosModules.home-manager
+  ] ++ (lib.my.mapModulesRec' (toString ./modules) import);
 
   nix = {
     package = pkgs.nixFlakes;
@@ -23,22 +28,22 @@ with lib.my; {
     };
   };
 
-  system.configurationRevision = with inputs; mkIf (self ? rev) self.rev;
+  system.configurationRevision = lib.mkIf (inputs.self ? rev) inputs.self.rev;
 
-  time.timeZone = mkDefault "Europe/Amsterdam";
+  time.timeZone = lib.mkDefault "Europe/Amsterdam";
 
-  i18n.defaultLocale = mkDefault "en_US.UTF-8";
+  i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
 
   console = {
     keyMap = lib.mkDefault "fr";
-    font = mkDefault "${pkgs.terminus_font}/share/consolefonts/ter-v32n.psf.gz";
+    font = lib.mkDefault "${pkgs.terminus_font}/share/consolefonts/ter-v32n.psf.gz";
     earlySetup = true;
   };
 
-  fonts.fontconfig.antialias = mkDefault true;
+  fonts.fontconfig.antialias = lib.mkDefault true;
   fonts.fontconfig.subpixel = {
-    rgba = mkDefault "none";
-    lcdfilter = mkDefault "none";
+    rgba = lib.mkDefault "none";
+    lcdfilter = lib.mkDefault "none";
   };
 
   environment.systemPackages = with pkgs; [
@@ -60,7 +65,10 @@ with lib.my; {
   ];
 
   networking.hosts = {
-    "127.0.0.1" = [ "localhost" "membres.yourcoop.local" ];
+    "127.0.0.1" = [
+      "localhost"
+      "membres.yourcoop.local"
+    ];
   };
   services.resolved.dnssec = "false";
 }

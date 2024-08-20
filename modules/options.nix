@@ -1,19 +1,28 @@
-{ config, options, lib, home-manager, ... }:
+{
+  config,
+  options,
+  lib,
+  ...
+}:
 
-with lib;
-with lib.my; {
-  options = with types; { user = mkOpt attrs { }; };
+{
+  options = {
+    user = lib.my.mkOpt lib.types.attrs { };
+  };
 
   config = {
 
     user = {
       name = "froidmpa";
       description = "The primary user account";
-      extraGroups = [ "wheel" "adbusers" ];
+      extraGroups = [
+        "wheel"
+        "adbusers"
+      ];
       isNormalUser = true;
     };
 
-    users.users.${config.user.name} = mkAliasDefinitions options.user;
+    users.users.${config.user.name} = lib.mkAliasDefinitions options.user;
 
     home-manager = {
       useUserPackages = true;
@@ -21,7 +30,7 @@ with lib.my; {
       users.${config.user.name} = {
         home = {
           enableNixpkgsReleaseCheck = true;
-          stateVersion = config.system.stateVersion;
+          inherit (config.system) stateVersion;
         };
       };
     };

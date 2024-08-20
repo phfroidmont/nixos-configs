@@ -1,7 +1,10 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
 let
   cfg = config.modules.desktop.themes.gtk;
 
@@ -9,8 +12,7 @@ let
     name = "gruvbox-plus";
     version = "5.1";
     src = pkgs.fetchurl {
-      url =
-        "https://github.com/SylEleuth/gruvbox-plus-icon-pack/releases/download/v${version}/gruvbox-plus-icon-pack-${version}.zip";
+      url = "https://github.com/SylEleuth/gruvbox-plus-icon-pack/releases/download/v${version}/gruvbox-plus-icon-pack-${version}.zip";
       sha256 = "1n3hqwk1mqaj8vbmy0pqbiq6v5jqrhmhin506xbpnccl28f907j0";
     };
     dontUnpack = true;
@@ -20,10 +22,13 @@ let
     '';
 
   };
-in {
-  options.modules.desktop.themes.gtk = { enable = mkBoolOpt false; };
+in
+{
+  options.modules.desktop.themes.gtk = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
 
     systemd.packages = [ pkgs.dconf ];
 
@@ -48,8 +53,12 @@ in {
       };
 
       xdg.configFile = {
-        "gtk-3.0/gtk.css" = { source = ./gtk.css; };
-        "gtk-4.0/gtk.css" = { source = ./gtk.css; };
+        "gtk-3.0/gtk.css" = {
+          source = ./gtk.css;
+        };
+        "gtk-4.0/gtk.css" = {
+          source = ./gtk.css;
+        };
       };
 
       home = {

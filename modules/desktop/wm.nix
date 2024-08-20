@@ -1,18 +1,20 @@
-{ options, config, lib, pkgs, ... }:
-
-with lib;
-with lib.my;
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.modules.desktop.wm;
-  term = "${
-      config.home-manager.users.${config.user.name}.programs.kitty.package
-    }/bin/kitty";
+  term = "${config.home-manager.users.${config.user.name}.programs.kitty.package}/bin/kitty";
 in
 {
-  options.modules.desktop.wm = { enable = mkBoolOpt false; };
+  options.modules.desktop.wm = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
 
     modules = {
       desktop = {
@@ -28,7 +30,9 @@ in
         htop.enable = true;
         flameshot.enable = true;
       };
-      hardware = { audio.enable = true; };
+      hardware = {
+        audio.enable = true;
+      };
       apps.rofi.enable = true;
     };
 
@@ -113,14 +117,20 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
+        package = pkgs.unstable.hyprland;
         systemd.enable = true;
         xwayland.enable = true;
         settings = {
           "$mod" = "SUPER";
 
-          env = [ "XCURSOR_SIZE,24" "WLR_NO_HARDWARE_CURSORS,1" ];
+          env = [
+            "XCURSOR_SIZE,24"
+            "WLR_NO_HARDWARE_CURSORS,1"
+          ];
 
-          xwayland = { force_zero_scaling = true; };
+          xwayland = {
+            force_zero_scaling = true;
+          };
 
           general = {
             layout = "dwindle";
@@ -134,7 +144,9 @@ in
             hover_icon_on_border = false;
           };
 
-          dwindle = { preserve_split = true; };
+          dwindle = {
+            preserve_split = true;
+          };
 
           input = {
             kb_layout = "fr";
@@ -294,9 +306,19 @@ in
             height = 25;
             spacing = 2;
             reload-style-on-change = true;
-            modules-left = [ "cpu" "memory" "disk" "hyprland/window" ];
+            modules-left = [
+              "cpu"
+              "memory"
+              "disk"
+              "hyprland/window"
+            ];
             modules-center = [ "hyprland/workspaces" ];
-            modules-right = [ "mpd" "battery" "clock" "tray" ];
+            modules-right = [
+              "mpd"
+              "battery"
+              "clock"
+              "tray"
+            ];
 
             tray = {
               icon-size = 14;
@@ -391,7 +413,11 @@ in
       };
 
       home = {
-        packages = with pkgs.unstable; [ wlr-randr wl-clipboard wdisplays ];
+        packages = with pkgs.unstable; [
+          wlr-randr
+          wl-clipboard
+          wdisplays
+        ];
       };
 
       programs.swaylock = {

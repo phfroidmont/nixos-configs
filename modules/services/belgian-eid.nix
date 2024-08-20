@@ -1,13 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
+let
+  cfg = config.modules.services.belgian-eid;
+in
+{
+  options.modules.services.belgian-eid = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-let cfg = config.modules.services.belgian-eid;
-in {
-  options.modules.services.belgian-eid = { enable = mkBoolOpt false; };
-
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
 
     services.pcscd.enable = true;
 

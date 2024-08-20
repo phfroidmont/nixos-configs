@@ -1,20 +1,25 @@
-{ options, config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.media;
-in {
+let
+  cfg = config.modules.media;
+in
+{
   options.modules.media = {
-    steam.enable = mkBoolOpt false;
-    lutris.enable = mkBoolOpt false;
+    steam.enable = lib.my.mkBoolOpt false;
+    lutris.enable = lib.my.mkBoolOpt false;
   };
 
   config = {
-    user.packages = with pkgs; [
-      (mkIf cfg.steam.enable steam)
-      (mkIf cfg.lutris.enable lutris)
-      (mkIf cfg.lutris.enable wine)
-      (mkIf (cfg.steam.enable || cfg.lutris.enable) protontricks)
+    user.packages = [
+      (lib.mkIf cfg.steam.enable pkgs.steam)
+      (lib.mkIf cfg.lutris.enable pkgs.lutris)
+      (lib.mkIf cfg.lutris.enable pkgs.wine)
+      (lib.mkIf (cfg.steam.enable || cfg.lutris.enable) pkgs.protontricks)
     ];
   };
 }

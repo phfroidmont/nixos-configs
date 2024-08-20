@@ -1,13 +1,14 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
-with lib;
-with lib.my;
+let
+  cfg = config.modules.services.languagetool;
+in
+{
+  options.modules.services.languagetool = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-let cfg = config.modules.services.languagetool;
-in {
-  options.modules.services.languagetool = { enable = mkBoolOpt false; };
-
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     services.languagetool = {
       enable = true;
       allowOrigin = "*";

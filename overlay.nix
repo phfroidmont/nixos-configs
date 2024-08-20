@@ -1,3 +1,1 @@
-final: prev: {
-  activitywatch-bin = prev.callPackage ./packages/activitywatch.nix { };
-}
+final: prev: { activitywatch-bin = prev.callPackage ./packages/activitywatch.nix { }; }

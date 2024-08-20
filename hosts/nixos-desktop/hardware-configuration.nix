@@ -19,28 +19,29 @@
     loader.efi.canTouchEfiVariables = true;
   };
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/f1e21558-88e6-413e-b56a-04e0b25e9ddd";
-    fsType = "ext4";
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-uuid/f1e21558-88e6-413e-b56a-04e0b25e9ddd";
+      fsType = "ext4";
+    };
+
+    "/boot" = {
+      device = "/dev/disk/by-uuid/CCD1-0415";
+      fsType = "vfat";
+    };
+
+    "/home/froidmpa/Nextcloud" = {
+      device = "/dev/disk/by-uuid/a4ba8b21-ea33-4487-b6f6-9bb7470a0acb";
+      fsType = "ext4";
+    };
+
+    "/home/froidmpa/Backup" = {
+      device = "/dev/disk/by-uuid/7fdc4e44-ecb4-49c7-9fb0-cb1ef6235b05";
+      fsType = "ext4";
+    };
   };
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/CCD1-0415";
-    fsType = "vfat";
-  };
-
-  fileSystems."/home/froidmpa/Nextcloud" = {
-    device = "/dev/disk/by-uuid/a4ba8b21-ea33-4487-b6f6-9bb7470a0acb";
-    fsType = "ext4";
-  };
-
-  fileSystems."/home/froidmpa/Backup" = {
-    device = "/dev/disk/by-uuid/7fdc4e44-ecb4-49c7-9fb0-cb1ef6235b05";
-    fsType = "ext4";
-  };
-
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/f714775c-b5af-4c0c-8330-999b43db4794"; }];
+  swapDevices = [ { device = "/dev/disk/by-uuid/f714775c-b5af-4c0c-8330-999b43db4794"; } ];
 
   zramSwap.enable = true;
 
@@ -54,11 +55,14 @@
     enable = true;
     driSupport = true;
     driSupport32Bit = true;
-    extraPackages = with pkgs; [ rocm-opencl-icd rocm-opencl-runtime amdvlk ];
+    extraPackages = with pkgs; [
+      rocm-opencl-icd
+      rocm-opencl-runtime
+      amdvlk
+    ];
   };
 
-  hardware.cpu.amd.updateMicrocode =
-    lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   services.resolved.dnssec = "false";
 }

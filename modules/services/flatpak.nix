@@ -1,13 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
+let
+  cfg = config.modules.services.flatpak;
+in
+{
+  options.modules.services.flatpak = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-let cfg = config.modules.services.flatpak;
-in {
-  options.modules.services.flatpak = { enable = mkBoolOpt false; };
-
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     services.flatpak.enable = true;
 
     xdg.portal = {

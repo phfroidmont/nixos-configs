@@ -25,16 +25,24 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      nixpkgs-unstable,
+      ...
+    }:
     let
       inherit (lib.my) mapHosts;
 
       system = "x86_64-linux";
 
-      mkPkgs = pkgs: extraOverlays:
+      mkPkgs =
+        pkgs: extraOverlays:
         import pkgs {
           inherit system;
-          config.allowUnfreePredicate = pkg:
+          config.allowUnfreePredicate =
+            pkg:
             builtins.elem (pkgs.lib.getName pkg) [
               "corefonts"
               "steam"
@@ -46,24 +54,30 @@
       pkgs = mkPkgs nixpkgs [ self.overlay ];
       pkgs-unstable = mkPkgs nixpkgs-unstable [ ];
 
-      lib = nixpkgs.lib.extend (self: super: {
-        my = import ./lib {
-          inherit pkgs inputs;
-          lib = self;
-        };
-      });
+      lib = nixpkgs.lib.extend (
+        self: super: {
+          my = import ./lib {
+            inherit pkgs inputs;
+            lib = self;
+          };
+        }
+      );
     in
     {
       lib = lib.my;
 
       overlay = final: prev: { unstable = pkgs-unstable; };
 
-      overlays = { my = (import ./overlay.nix); };
+      overlays = {
+        my = import ./overlay.nix;
+      };
 
       nixosConfigurations = (mapHosts ./hosts { }) // {
         rpi3 = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
-          specialArgs = { inherit inputs; };
+          specialArgs = {
+            inherit inputs;
+          };
           modules = [ ./hosts/rpi3/default.nix ];
         };
       };

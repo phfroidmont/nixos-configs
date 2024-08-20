@@ -1,9 +1,13 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   wallpaper = pkgs.fetchurl {
-    url =
-      "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/irl/houseonthesideofalake.jpg";
+    url = "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/irl/houseonthesideofalake.jpg";
     sha256 = "sha256-obKI4qZvucogqRCl51lwV9X8SRaMqcbBwWMfc9TupIo=";
   };
 in
@@ -23,9 +27,16 @@ in
         corefonts # Microsoft free fonts
         noto-fonts-emoji
         meslo-lg
-        (nerdfonts.override { fonts = [ "Meslo" "NerdFontsSymbolsOnly" ]; })
+        (nerdfonts.override {
+          fonts = [
+            "Meslo"
+            "NerdFontsSymbolsOnly"
+          ];
+        })
       ];
-      fontconfig.defaultFonts = { monospace = [ "MesloLGS Nerd Font Mono" ]; };
+      fontconfig.defaultFonts = {
+        monospace = [ "MesloLGS Nerd Font Mono" ];
+      };
     };
 
     programs.adb.enable = true;
@@ -57,7 +68,9 @@ in
             key = lib.mkDefault "3AC6F170F01133CE393BCD94BE948AFD7E7873BE";
             signByDefault = true;
           };
-          extraConfig = { init.defaultBranch = "master"; };
+          extraConfig = {
+            init.defaultBranch = "master";
+          };
         };
         ssh = {
           enable = true;
@@ -121,10 +134,8 @@ in
           "application/pdf" = "org.pwmt.zathura-pdf-mupdf.desktop";
 
           "application/msword" = "onlyoffice-desktopeditors.desktop";
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation" =
-            "onlyoffice-desktopeditors.desktop";
-          "application/vnd.openxmlformats-officedocument*" =
-            "onlyoffice-desktopeditors.desktop";
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation" = "onlyoffice-desktopeditors.desktop";
+          "application/vnd.openxmlformats-officedocument*" = "onlyoffice-desktopeditors.desktop";
 
           "text/*" = "nvim.desktop";
         };
@@ -139,37 +150,37 @@ in
 
         sessionVariables.EDITOR = "vim";
 
-        packages = (with pkgs.unstable; [
-          brave
-          ungoogled-chromium
-          mullvad-browser
-          keepassxc
-          krita
-          element-desktop
-          swayimg
-          mpv
-          mumble
-          libreoffice-fresh
-          onlyoffice-bin
-          thunderbird
-          portfolio
-          gnucash
-          transmission-remote-gtk
-          monero-gui
+        packages =
+          (with pkgs.unstable; [
+            brave
+            ungoogled-chromium
+            mullvad-browser
+            keepassxc
+            krita
+            element-desktop
+            swayimg
+            mpv
+            mumble
+            libreoffice-fresh
+            onlyoffice-bin
+            thunderbird
+            portfolio
+            gnucash
+            transmission-remote-gtk
+            monero-gui
 
-          scala-cli
-          jdk
-          jetbrains.idea-community
-          httpie
+            scala-cli
+            jdk
+            jetbrains.idea-community
+            httpie
 
-          zsh-syntax-highlighting
-          R
-          tldr
-          ark
-          linuxPackages.perf
-        ]) ++ [
-          pkgs.jellyfin-mpv-shim
-        ];
+            zsh-syntax-highlighting
+            R
+            tldr
+            ark
+            linuxPackages.perf
+          ])
+          ++ [ pkgs.jellyfin-mpv-shim ];
       };
 
     };

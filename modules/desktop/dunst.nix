@@ -1,11 +1,18 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.desktop.dunst;
-in {
-  options.modules.desktop.dunst = { enable = mkBoolOpt false; };
-  config = mkIf cfg.enable {
+let
+  cfg = config.modules.desktop.dunst;
+in
+{
+  options.modules.desktop.dunst = {
+    enable = lib.my.mkBoolOpt false;
+  };
+  config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
       services.dunst = {
         enable = true;

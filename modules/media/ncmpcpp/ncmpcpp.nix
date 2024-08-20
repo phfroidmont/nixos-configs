@@ -1,12 +1,19 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.media.ncmpcpp;
-in {
-  options.modules.media.ncmpcpp = { enable = mkBoolOpt false; };
+let
+  cfg = config.modules.media.ncmpcpp;
+in
+{
+  options.modules.media.ncmpcpp = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
 
       home = {

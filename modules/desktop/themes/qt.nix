@@ -1,13 +1,20 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.desktop.themes.qt;
+let
+  cfg = config.modules.desktop.themes.qt;
 
-in {
-  options.modules.desktop.themes.qt = { enable = mkBoolOpt false; };
+in
+{
+  options.modules.desktop.themes.qt = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
 
     environment.systemPackages = with pkgs; [
       libsForQt5.qt5.qtquickcontrols2

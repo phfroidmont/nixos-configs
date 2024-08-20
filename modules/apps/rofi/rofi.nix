@@ -1,12 +1,19 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.apps.rofi;
-in {
-  options.modules.apps.rofi = { enable = mkBoolOpt false; };
+let
+  cfg = config.modules.apps.rofi;
+in
+{
+  options.modules.apps.rofi = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
 
       programs.rofi = {
@@ -31,7 +38,10 @@ in {
         };
         theme = ./theme.rasi;
       };
-      home.packages = with pkgs.unstable; [ paper-icon-theme rofi-power-menu ];
+      home.packages = with pkgs.unstable; [
+        paper-icon-theme
+        rofi-power-menu
+      ];
     };
   };
 }

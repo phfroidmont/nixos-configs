@@ -1,11 +1,18 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.desktop.file-manager;
-in {
-  options.modules.desktop.file-manager = { enable = mkBoolOpt false; };
-  config = mkIf cfg.enable {
+let
+  cfg = config.modules.desktop.file-manager;
+in
+{
+  options.modules.desktop.file-manager = {
+    enable = lib.my.mkBoolOpt false;
+  };
+  config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
 
       programs.yazi = {
@@ -39,11 +46,13 @@ in {
               desc = "Copy files to clipboard";
             }
           ];
-          input.prepend_keymap = [{
-            on = [ "<Esc>" ];
-            run = "close";
-            desc = "Cancel input";
-          }];
+          input.prepend_keymap = [
+            {
+              on = [ "<Esc>" ];
+              run = "close";
+              desc = "Cancel input";
+            }
+          ];
         };
         theme = {
           status = {

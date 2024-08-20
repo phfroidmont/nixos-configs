@@ -1,13 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
+let
+  cfg = config.modules.services.libvirt;
+in
+{
+  options.modules.services.libvirt = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-let cfg = config.modules.services.libvirt;
-in {
-  options.modules.services.libvirt = { enable = mkBoolOpt false; };
-
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
 
     virtualisation = {
       libvirtd.enable = true;

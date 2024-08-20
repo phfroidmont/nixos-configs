@@ -1,12 +1,13 @@
-{ lib
-, stdenv
-, fetchzip
-, autoPatchelfHook
-, libGL
-, freetype
-, libdrm
-, fontconfig
-, harfbuzz
+{
+  lib,
+  stdenv,
+  fetchzip,
+  autoPatchelfHook,
+  libGL,
+  freetype,
+  libdrm,
+  fontconfig,
+  harfbuzz,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,7 +19,14 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-4lfUxJTBpjrsRO+pmW7DNKV69tMr2wiarA5Fy4wPgMk=";
   };
 
-  nativeBuildInputs = [ autoPatchelfHook libGL freetype libdrm fontconfig harfbuzz ];
+  nativeBuildInputs = [
+    autoPatchelfHook
+    libGL
+    freetype
+    libdrm
+    fontconfig
+    harfbuzz
+  ];
   installPhase = ''
     mkdir -p $out/bin
     cp -r * $out/

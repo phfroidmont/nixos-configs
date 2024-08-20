@@ -1,24 +1,29 @@
-{ options, config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.media.emulators;
-in {
+let
+  cfg = config.modules.media.emulators;
+in
+{
   options.modules.media.emulators = {
-    psx.enable = mkBoolOpt false; # Playstation
-    ds.enable = mkBoolOpt false; # Nintendo DS
-    gc.enable = mkBoolOpt false; # GameCube
-    gb.enable = mkBoolOpt false; # GameBoy + GameBoy Color
-    gba.enable = mkBoolOpt false; # GameBoy Advance
-    snes.enable = mkBoolOpt false; # Super Nintendo
+    psx.enable = lib.my.mkBoolOpt false; # Playstation
+    ds.enable = lib.my.mkBoolOpt false; # Nintendo DS
+    gc.enable = lib.my.mkBoolOpt false; # GameCube
+    gb.enable = lib.my.mkBoolOpt false; # GameBoy + GameBoy Color
+    gba.enable = lib.my.mkBoolOpt false; # GameBoy Advance
+    snes.enable = lib.my.mkBoolOpt false; # Super Nintendo
   };
 
   config = {
-    user.packages = with pkgs; [
-      (mkIf cfg.psx.enable duckstation)
-      (mkIf cfg.ds.enable desmume)
-      (mkIf cfg.gc.enable dolphinEmu)
-      (mkIf (cfg.gba.enable || cfg.gb.enable || cfg.snes.enable) higan)
+    user.packages = [
+      (lib.mkIf cfg.psx.enable pkgs.duckstation)
+      (lib.mkIf cfg.ds.enable pkgs.desmume)
+      (lib.mkIf cfg.gc.enable pkgs.dolphinEmu)
+      (lib.mkIf (cfg.gba.enable || cfg.gb.enable || cfg.snes.enable) pkgs.higan)
     ];
   };
 }

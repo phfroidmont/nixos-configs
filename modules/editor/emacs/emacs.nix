@@ -1,73 +1,93 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.editor.emacs;
-in {
-  options.modules.editor.emacs = { enable = mkBoolOpt false; };
+let
+  cfg = config.modules.editor.emacs;
+in
+{
+  options.modules.editor.emacs = {
+    enable = lib.my.mkBoolOpt false;
+  };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
 
       nixpkgs.overlays = [ inputs.emacs-overlay.overlay ];
 
-      home.packages = with pkgs.unstable; [
-        binutils
-        ripgrep
-        fd
-        findutils.locate
-        python311
-        libsecret
-        gcc
-        gnumake
-        cmake
-        nodejs
+      home = {
+        packages = [
+          pkgs.unstable.binutils
+          pkgs.unstable.ripgrep
+          pkgs.unstable.fd
+          pkgs.unstable.findutils.locate
+          pkgs.unstable.python311
+          pkgs.unstable.libsecret
+          pkgs.unstable.gcc
+          pkgs.unstable.gnumake
+          pkgs.unstable.cmake
+          pkgs.unstable.nodejs
 
-        opentofu
-        pandoc
+          pkgs.unstable.opentofu
+          pkgs.unstable.pandoc
 
-        # Formatters and linters
-        nixfmt-rfc-style # nix formatter
-        nixpkgs-fmt
-        shfmt # sh formatter
-        shellcheck # sh linter
-        html-tidy # HTML formatter
-        nodePackages.stylelint # CSS linter
-        nodePackages.js-beautify # JS/CSS/HTML formatter
+          # Formatters and linters
+          pkgs.unstable.nixfmt-rfc-style # nix formatter
+          pkgs.unstable.nixpkgs-fmt
+          pkgs.unstable.shfmt # sh formatter
+          pkgs.unstable.shellcheck # sh linter
+          pkgs.unstable.html-tidy # HTML formatter
+          pkgs.unstable.nodePackages.stylelint # CSS linter
+          pkgs.unstable.nodePackages.js-beautify # JS/CSS/HTML formatter
 
-        # LSPs
-        coursier
-        # metals # Scala
+          # LSPs
+          pkgs.unstable.coursier
+          # metals # Scala
 
-        # Nix
-        nil
+          # Nix
+          pkgs.unstable.nil
 
-        pkgs.phpactor # PHP
-        #OCaml
-        ocaml
-        dune_3
-        ocamlPackages.ocaml-lsp
-        ocamlPackages.ocamlformat
-        ocamlPackages.utop
-        ocamlPackages.ocp-indent
-        ocamlPackages.merlin
+          pkgs.phpactor # PHP
+          #OCaml
+          pkgs.unstable.ocaml
+          pkgs.unstable.dune_3
+          pkgs.unstable.ocamlPackages.ocaml-lsp
+          pkgs.unstable.ocamlPackages.ocamlformat
+          pkgs.unstable.ocamlPackages.utop
+          pkgs.unstable.ocamlPackages.ocp-indent
+          pkgs.unstable.ocamlPackages.merlin
 
-        # Used by org-roam
-        sqlite
-        graphviz
+          # Used by org-roam
+          pkgs.unstable.sqlite
+          pkgs.unstable.graphviz
 
-        # Used by elfeed-tube
-        yt-dlp
-        mpv
+          # Used by elfeed-tube
+          pkgs.unstable.yt-dlp
+          pkgs.unstable.mpv
 
-        # Used by dirvish
-        imagemagick
-        ffmpegthumbnailer
-        mediainfo
-        poppler
-        gnutar
-        unzip
-      ];
+          # Used by dirvish
+          pkgs.unstable.imagemagick
+          pkgs.unstable.ffmpegthumbnailer
+          pkgs.unstable.mediainfo
+          pkgs.unstable.poppler
+          pkgs.unstable.gnutar
+          pkgs.unstable.unzip
+        ];
+        sessionPath = [ "${config.home-manager.users.${config.user.name}.xdg.configHome}/emacs/bin" ];
+        activation = {
+          installDoomEmacs = ''
+            if [ ! -d "${config.home-manager.users.${config.user.name}.xdg.configHome}/emacs" ]; then
+               git clone --depth=1 --single-branch https://github.com/doomemacs/doomemacs "${
+                 config.home-manager.users.${config.user.name}.xdg.configHome
+               }/emacs"
+            fi
+          '';
+        };
+      };
 
       services.emacs = {
         enable = true;
@@ -83,29 +103,17 @@ in {
           withTreeSitter = true;
           withWebP = true;
         };
-        extraPackages = epkgs:
-          with epkgs; [
+        extraPackages =
+          epkgs: with epkgs; [
             vterm
             pdf-tools
             treesit-grammars.with-all-grammars
           ];
       };
-      xdg.configFile = { "doom" = { source = ./doom.d; }; };
-      home.sessionPath = [
-        "${
-          config.home-manager.users.${config.user.name}.xdg.configHome
-        }/emacs/bin"
-      ];
-      home.activation = {
-        installDoomEmacs = ''
-          if [ ! -d "${
-            config.home-manager.users.${config.user.name}.xdg.configHome
-          }/emacs" ]; then
-             git clone --depth=1 --single-branch https://github.com/doomemacs/doomemacs "${
-               config.home-manager.users.${config.user.name}.xdg.configHome
-             }/emacs"
-          fi
-        '';
+      xdg.configFile = {
+        "doom" = {
+          source = ./doom.d;
+        };
       };
     };
   };

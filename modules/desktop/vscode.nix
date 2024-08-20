@@ -1,29 +1,32 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-with lib;
-with lib.my;
-let cfg = config.modules.desktop.vscode;
-in {
+let
+  cfg = config.modules.desktop.vscode;
+in
+{
   options.modules.desktop.vscode = {
-    enable = mkBoolOpt false;
+    enable = lib.my.mkBoolOpt false;
   };
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
       programs.vscode = {
         enable = true;
         package = pkgs.vscodium;
-        extensions = (
-          with pkgs.vscode-extensions; [
-            pkief.material-icon-theme
-            jnoortheen.nix-ide
-            arrterian.nix-env-selector
-            scala-lang.scala
-            scalameta.metals
-            hashicorp.terraform
-            bradlc.vscode-tailwindcss
-            asciidoctor.asciidoctor-vscode
-          ]
-        );
+        extensions = with pkgs.vscode-extensions; [
+          pkief.material-icon-theme
+          jnoortheen.nix-ide
+          arrterian.nix-env-selector
+          scala-lang.scala
+          scalameta.metals
+          hashicorp.terraform
+          bradlc.vscode-tailwindcss
+          asciidoctor.asciidoctor-vscode
+        ];
         userSettings = {
           "editor.formatOnSave" = true;
           "editor.quickSuggestions" = {
@@ -33,8 +36,14 @@ in {
             "scala" = "html";
           };
           "tailwindCSS.experimental.classRegex" = [
-            [ "cls\\(([^)]*)\\)" "\"([^']*)\"" ]
-            [ "cls\\s*:=\\s*\\(?([^,^\\n^\\)]*)" "\"([^']*)\"" ]
+            [
+              "cls\\(([^)]*)\\)"
+              "\"([^']*)\""
+            ]
+            [
+              "cls\\s*:=\\s*\\(?([^,^\\n^\\)]*)"
+              "\"([^']*)\""
+            ]
           ];
 
           "files.autoSave" = "onFocusChange";
@@ -50,9 +59,7 @@ in {
           "terraform.languageServer" = {
             "external" = true;
             "pathToBinary" = "";
-            "args" = [
-              "serve"
-            ];
+            "args" = [ "serve" ];
             "maxNumberOfProblems" = 100;
             "trace.server" = "off";
           };
