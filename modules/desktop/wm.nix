@@ -117,7 +117,7 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
-        package = pkgs.unstable.hyprland;
+        # package = pkgs.unstable.hyprland;
         systemd.enable = true;
         xwayland.enable = true;
         settings = {
@@ -146,6 +146,11 @@ in
 
           dwindle = {
             preserve_split = true;
+          };
+
+          debug = {
+            disable_logs = false;
+            enable_stdout_logs = true;
           };
 
           input = {

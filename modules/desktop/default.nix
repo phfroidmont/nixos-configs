@@ -157,7 +157,6 @@ in
             mullvad-browser
             keepassxc
             krita
-            element-desktop
             swayimg
             mpv
             mumble

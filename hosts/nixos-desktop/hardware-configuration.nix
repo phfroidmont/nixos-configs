@@ -1,11 +1,23 @@
-{ config, lib, pkgs, modulesPath, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+{
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
   boot = {
-    initrd.availableKernelModules =
-      [ "nvme" "xhci_pci" "ahci" "usbhid" "sd_mod" ];
+    initrd.availableKernelModules = [
+      "nvme"
+      "xhci_pci"
+      "ahci"
+      "usbhid"
+      "sd_mod"
+    ];
     initrd.kernelModules = [ "amdgpu" ];
-    kernelPackages = pkgs.linuxPackages_6_9;
+    # kernelPackages = pkgs.linuxPackages_6_9;
 
     # Prevents constant crashing in BG3
     kernelParams = [
