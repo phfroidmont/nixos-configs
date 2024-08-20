@@ -31,7 +31,7 @@ in
             conform-nvim
             nvim-lint
             markdown-preview-nvim
-            headlines-nvim
+            render-markdown
 
             # theme
             gruvbox-nvim
@@ -92,7 +92,7 @@ in
             plenary-nvim
             telescope-nvim
             telescope-fzf-native-nvim
-            nvim-spectre
+            grug-far-nvim
             flash-nvim
 
             # treesitter
@@ -156,7 +156,7 @@ in
           shfmt
 
           # Markdown extra
-          nodePackages.markdownlint-cli
+          markdownlint-cli2
           marksman
 
           # Docker extra
@@ -248,7 +248,7 @@ in
                   pkgs.vimUtils.packDir
                     config.home-manager.users.${config.user.name}.programs.neovim.finalPackage.passthru.packpathDirs
                 }/pack/myNeovimPackages/start",
-                patterns = {"folke", "nvim-telescope", "hrsh7th", "akinsho", "stevearc", "LazyVim", "catppuccin", "saadparwaiz1", "nvimdev", "rafamadriz", "lewis6991", "lukas-reineke", "nvim-lualine", "L3MON4D3", "williamboman", "echasnovski", "nvim-neo-tree", "MunifTanjim", "mfussenegger", "rcarriga", "neovim", "nvim-pack", "nvim-treesitter", "windwp", "JoosepAlviste", "nvim-tree", "nvim-lua", "RRethy", "dstein64", "Saecki", "ggandor", "iamcco", "nvim-neotest", "rouge8", "theHamsta", "SmiteshP", "jbyuki", "simrat39", "b0o", "tpope", "kosayoda", "ellisonleao", "NeogitOrg", "sindrets", "scalameta", "garymjr", "mikavilpas","kristijanhusak"},
+                patterns = {"folke", "nvim-telescope", "hrsh7th", "akinsho", "stevearc", "LazyVim", "catppuccin", "saadparwaiz1", "nvimdev", "rafamadriz", "lewis6991", "lukas-reineke", "nvim-lualine", "L3MON4D3", "williamboman", "echasnovski", "nvim-neo-tree", "MunifTanjim", "mfussenegger", "rcarriga", "neovim", "nvim-pack", "nvim-treesitter", "windwp", "JoosepAlviste", "nvim-tree", "nvim-lua", "RRethy", "dstein64", "Saecki", "ggandor", "iamcco", "nvim-neotest", "rouge8", "theHamsta", "SmiteshP", "jbyuki", "simrat39", "b0o", "tpope", "kosayoda", "ellisonleao", "NeogitOrg", "sindrets", "scalameta", "garymjr", "mikavilpas","kristijanhusak","MagicDuck","MeanderingProgrammer"},
               },
               install = {
                 missing = false,

@@ -17,6 +17,7 @@ in
 
       programs.yazi = {
         enable = true;
+        package = pkgs.unstable.yazi;
         enableZshIntegration = true;
         settings = {
           manager = {
