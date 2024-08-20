@@ -14,5 +14,8 @@ return {
     opts = {
       open_for_directories = true,
     },
+    config = function(opts)
+      require('yazi').setup(opts)
+    end,
   }
 }
