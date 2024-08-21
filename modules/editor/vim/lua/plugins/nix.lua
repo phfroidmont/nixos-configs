@@ -28,8 +28,11 @@ return {
   {
     "stevearc/conform.nvim",
     opts = {
+      format = {
+        lsp_format = "first"
+      },
       formatters_by_ft = {
-        nix = { "nixpkgs-fmt" },
+        nix = { "nixfmt" },
       },
     },
   },
