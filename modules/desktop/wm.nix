@@ -25,7 +25,6 @@ in
         terminal.enable = true;
         file-manager.enable = true;
         zsh.enable = true;
-        vscode.enable = true;
         dunst.enable = true;
         htop.enable = true;
         flameshot.enable = true;

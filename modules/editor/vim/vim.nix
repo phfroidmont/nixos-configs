@@ -31,7 +31,7 @@ in
             conform-nvim
             nvim-lint
             markdown-preview-nvim
-            render-markdown
+            render-markdown-nvim
 
             # theme
             gruvbox-nvim
@@ -141,7 +141,7 @@ in
           gcc # needed for nvim-treesitter
 
           # HTML, CSS, JSON
-          vscode-langservers-extracted
+          unstable.vscode-langservers-extracted
 
           # Nix
           nixd
@@ -404,14 +404,14 @@ in
                       setup("terraformls", {})
                       setup("marksman", {})
                       setup("lua_ls", {})
-                      setup("jsonls", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-json-language-server", "--stdio" } })
-                      setup("html", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-html-language-server", "--stdio" } })
-                      setup("eslint", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-eslint-language-server", "--stdio" } })
-                      setup("dockerls", { cmd = { "${pkgs.dockerfile-language-server-nodejs}/bin/docker-langserver", "--stdio" } })
+                      setup("jsonls", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-json-language-server", "--stdio" } })
+                      setup("html", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-html-language-server", "--stdio" } })
+                      setup("eslint", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-eslint-language-server", "--stdio" } })
+                      setup("dockerls", { cmd = { "${pkgs.unstable.dockerfile-language-server-nodejs}/bin/docker-langserver", "--stdio" } })
                       setup("docker_compose_language_service", {})
-                      setup("cssls", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-css-language-server", "--stdio" } })
+                      setup("cssls", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-css-language-server", "--stdio" } })
                       setup("bashls", {})
-                      setup("ansiblels", { cmd = { "${pkgs.ansible-language-server}/bin/ansible-language-server", "--stdio" } })
+                      setup("ansiblels", { cmd = { "${pkgs.unstable.ansible-language-server}/bin/ansible-language-server", "--stdio" } })
                     end
                   '';
               }
