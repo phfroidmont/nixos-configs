@@ -13,7 +13,7 @@
   nix = {
     package = pkgs.nixFlakes;
     extraOptions = "experimental-features = nix-command flakes";
-    nixPath = [ "nixpkgs=${inputs.nixpkgs-unstable}" ];
+    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
     settings = {
       substituters = [
         "https://nix-community.cachix.org"

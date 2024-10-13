@@ -23,7 +23,7 @@ in
   config = lib.mkIf config.modules.desktop.wm.enable {
 
     fonts = {
-      packages = with pkgs.unstable; [
+      packages = with pkgs; [
         corefonts # Microsoft free fonts
         noto-fonts-emoji
         meslo-lg
@@ -151,7 +151,7 @@ in
         sessionVariables.EDITOR = "vim";
 
         packages =
-          (with pkgs.unstable; [
+          (with pkgs; [
             brave
             ungoogled-chromium
             mullvad-browser

@@ -38,7 +38,7 @@ in
         };
         theme = ./theme.rasi;
       };
-      home.packages = with pkgs.unstable; [
+      home.packages = with pkgs; [
         paper-icon-theme
         rofi-power-menu
       ];

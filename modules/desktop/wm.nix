@@ -116,7 +116,6 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
-        # package = pkgs.unstable.hyprland;
         systemd.enable = true;
         xwayland.enable = true;
         settings = {
@@ -417,7 +416,7 @@ in
       };
 
       home = {
-        packages = with pkgs.unstable; [
+        packages = with pkgs; [
           wlr-randr
           wl-clipboard
           wdisplays
@@ -486,7 +485,7 @@ in
       ];
     };
 
-    hardware.opengl.enable = true;
+    hardware.graphics.enable = true;
 
     security.pam.services.swaylock = { };
 

@@ -20,12 +20,12 @@ in
 
       programs.neovim = {
         enable = true;
-        package = pkgs.unstable.neovim-unwrapped;
+        package = pkgs.neovim-unwrapped;
         vimAlias = true;
         vimdiffAlias = true;
         withNodeJs = true;
         plugins =
-          (with pkgs.unstable.vimPlugins; [
+          (with pkgs.vimPlugins; [
             # base distro
             LazyVim
             conform-nvim
@@ -141,7 +141,7 @@ in
           gcc # needed for nvim-treesitter
 
           # HTML, CSS, JSON
-          unstable.vscode-langservers-extracted
+          vscode-langservers-extracted
 
           # Nix
           nixd
@@ -264,7 +264,7 @@ in
 
       programs.nixvim = {
         enable = false;
-        package = pkgs.unstable.neovim-unwrapped;
+        package = pkgs.neovim-unwrapped;
         vimAlias = true;
 
         keymaps = [
@@ -328,7 +328,7 @@ in
                   '';
               }
               {
-                pkg = pkgs.unstable.vimPlugins.which-key-nvim;
+                pkg = pkgs.vimPlugins.which-key-nvim;
                 event = "VimEnter";
                 config = # lua
                   ''
@@ -404,24 +404,24 @@ in
                       setup("terraformls", {})
                       setup("marksman", {})
                       setup("lua_ls", {})
-                      setup("jsonls", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-json-language-server", "--stdio" } })
-                      setup("html", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-html-language-server", "--stdio" } })
-                      setup("eslint", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-eslint-language-server", "--stdio" } })
-                      setup("dockerls", { cmd = { "${pkgs.unstable.dockerfile-language-server-nodejs}/bin/docker-langserver", "--stdio" } })
+                      setup("jsonls", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-json-language-server", "--stdio" } })
+                      setup("html", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-html-language-server", "--stdio" } })
+                      setup("eslint", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-eslint-language-server", "--stdio" } })
+                      setup("dockerls", { cmd = { "${pkgs.dockerfile-language-server-nodejs}/bin/docker-langserver", "--stdio" } })
                       setup("docker_compose_language_service", {})
-                      setup("cssls", { cmd = { "${pkgs.unstable.vscode-langservers-extracted}/bin/vscode-css-language-server", "--stdio" } })
+                      setup("cssls", { cmd = { "${pkgs.vscode-langservers-extracted}/bin/vscode-css-language-server", "--stdio" } })
                       setup("bashls", {})
-                      setup("ansiblels", { cmd = { "${pkgs.unstable.ansible-language-server}/bin/ansible-language-server", "--stdio" } })
+                      setup("ansiblels", { cmd = { "${pkgs.ansible-language-server}/bin/ansible-language-server", "--stdio" } })
                     end
                   '';
               }
               {
-                pkg = pkgs.unstable.vimPlugins.nvim-cmp;
+                pkg = pkgs.vimPlugins.nvim-cmp;
                 event = "InsertEnter";
                 dependencies = [
-                  pkgs.unstable.vimPlugins.cmp-nvim-lsp
-                  pkgs.unstable.vimPlugins.cmp-path
-                  pkgs.unstable.vimPlugins.cmp-buffer
+                  pkgs.vimPlugins.cmp-nvim-lsp
+                  pkgs.vimPlugins.cmp-path
+                  pkgs.vimPlugins.cmp-buffer
                 ];
                 opts.__raw = # lua
                   ''
@@ -452,7 +452,7 @@ in
               # Disabled for now as it tries to write org grammar to its own directory in the nix store
               # https://github.com/nvim-orgmode/orgmode/blob/95fb795a422f0455e03d13a3f83525f1d00793ad/lua/orgmode/utils/treesitter/install.lua#L9
               # {
-              #   pkg = pkgs.unstable.vimPlugins.orgmode;
+              #   pkg = pkgs.vimPlugins.orgmode;
               #   event = "VeryLazy";
               #   ft = [ "org" ];
               #   config = /*lua*/ ''
@@ -469,7 +469,7 @@ in
               #     name = "org-roam.nvim";
               #     src = inputs.vim-org-roam;
               #   });
-              #   dependencies = [ pkgs.unstable.vimPlugins.orgmode ];
+              #   dependencies = [ pkgs.vimPlugins.orgmode ];
               #   event = "VeryLazy";
               #   ft = [ "org" ];
               #   config = /*lua*/ ''
@@ -485,7 +485,7 @@ in
         };
       };
 
-      home.packages = with pkgs.unstable; [
+      home.packages = with pkgs; [
         ripgrep
         fd
         nodejs

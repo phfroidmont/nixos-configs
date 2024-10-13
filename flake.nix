@@ -1,9 +1,8 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.05";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay";
@@ -29,7 +28,6 @@
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
       ...
     }:
     let
@@ -51,8 +49,8 @@
             ];
           overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };
-      pkgs = mkPkgs nixpkgs [ self.overlay ];
-      pkgs-unstable = mkPkgs nixpkgs-unstable [ ];
+
+      pkgs = mkPkgs nixpkgs [ ];
 
       lib = nixpkgs.lib.extend (
         self: super: {
@@ -65,8 +63,6 @@
     in
     {
       lib = lib.my;
-
-      overlay = final: prev: { unstable = pkgs-unstable; };
 
       overlays = {
         my = import ./overlay.nix;

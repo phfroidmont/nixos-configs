@@ -17,7 +17,7 @@ in
 
       programs.yazi = {
         enable = true;
-        package = pkgs.unstable.yazi;
+        package = pkgs.yazi;
         enableZshIntegration = true;
         settings = {
           manager = {
@@ -73,7 +73,7 @@ in
       };
 
       home = {
-        packages = with pkgs.unstable; [
+        packages = with pkgs; [
           ffmpegthumbnailer
           unar
           poppler

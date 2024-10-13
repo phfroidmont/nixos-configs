@@ -37,7 +37,7 @@ in
             };
           };
         };
-        home.packages = with pkgs.unstable; [ grim ];
+        home.packages = [ pkgs.grim ];
 
       };
   };

@@ -28,7 +28,7 @@ in
         platformTheme.name = "gtk";
         style = {
           name = "adwaita-dark";
-          package = pkgs.unstable.adwaita-qt;
+          package = pkgs.adwaita-qt;
         };
       };
     };

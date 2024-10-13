@@ -28,7 +28,7 @@ in
           "ctrl+shift+semicolon" = "scroll_to_prompt 1";
           "ctrl+shift+t" = "new_tab_with_cwd";
         };
-        theme = "Gruvbox Dark";
+        themeFile = "gruvbox-dark";
       };
     };
   };

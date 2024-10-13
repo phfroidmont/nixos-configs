@@ -21,61 +21,61 @@ in
 
       home = {
         packages = [
-          pkgs.unstable.binutils
-          pkgs.unstable.ripgrep
-          pkgs.unstable.fd
-          pkgs.unstable.findutils.locate
-          pkgs.unstable.python311
-          pkgs.unstable.libsecret
-          pkgs.unstable.gcc
-          pkgs.unstable.gnumake
-          pkgs.unstable.cmake
-          pkgs.unstable.nodejs
+          pkgs.binutils
+          pkgs.ripgrep
+          pkgs.fd
+          pkgs.findutils.locate
+          pkgs.python311
+          pkgs.libsecret
+          pkgs.gcc
+          pkgs.gnumake
+          pkgs.cmake
+          pkgs.nodejs
 
-          pkgs.unstable.opentofu
-          pkgs.unstable.pandoc
+          pkgs.opentofu
+          pkgs.pandoc
 
           # Formatters and linters
-          pkgs.unstable.nixfmt-rfc-style # nix formatter
-          pkgs.unstable.nixpkgs-fmt
-          pkgs.unstable.shfmt # sh formatter
-          pkgs.unstable.shellcheck # sh linter
-          pkgs.unstable.html-tidy # HTML formatter
-          pkgs.unstable.nodePackages.stylelint # CSS linter
-          pkgs.unstable.nodePackages.js-beautify # JS/CSS/HTML formatter
+          pkgs.nixfmt-rfc-style # nix formatter
+          pkgs.nixpkgs-fmt
+          pkgs.shfmt # sh formatter
+          pkgs.shellcheck # sh linter
+          pkgs.html-tidy # HTML formatter
+          pkgs.nodePackages.stylelint # CSS linter
+          pkgs.nodePackages.js-beautify # JS/CSS/HTML formatter
 
           # LSPs
-          pkgs.unstable.coursier
+          pkgs.coursier
           # metals # Scala
 
           # Nix
-          pkgs.unstable.nil
+          pkgs.nil
 
           pkgs.phpactor # PHP
           #OCaml
-          pkgs.unstable.ocaml
-          pkgs.unstable.dune_3
-          pkgs.unstable.ocamlPackages.ocaml-lsp
-          pkgs.unstable.ocamlPackages.ocamlformat
-          pkgs.unstable.ocamlPackages.utop
-          pkgs.unstable.ocamlPackages.ocp-indent
-          pkgs.unstable.ocamlPackages.merlin
+          pkgs.ocaml
+          pkgs.dune_3
+          pkgs.ocamlPackages.ocaml-lsp
+          pkgs.ocamlPackages.ocamlformat
+          pkgs.ocamlPackages.utop
+          pkgs.ocamlPackages.ocp-indent
+          pkgs.ocamlPackages.merlin
 
           # Used by org-roam
-          pkgs.unstable.sqlite
-          pkgs.unstable.graphviz
+          pkgs.sqlite
+          pkgs.graphviz
 
           # Used by elfeed-tube
-          pkgs.unstable.yt-dlp
-          pkgs.unstable.mpv
+          pkgs.yt-dlp
+          pkgs.mpv
 
           # Used by dirvish
-          pkgs.unstable.imagemagick
-          pkgs.unstable.ffmpegthumbnailer
-          pkgs.unstable.mediainfo
-          pkgs.unstable.poppler
-          pkgs.unstable.gnutar
-          pkgs.unstable.unzip
+          pkgs.imagemagick
+          pkgs.ffmpegthumbnailer
+          pkgs.mediainfo
+          pkgs.poppler
+          pkgs.gnutar
+          pkgs.unzip
         ];
         sessionPath = [ "${config.home-manager.users.${config.user.name}.xdg.configHome}/emacs/bin" ];
         activation = {
@@ -96,7 +96,7 @@ in
 
       programs.emacs = {
         enable = true;
-        package = pkgs.unstable.emacs29.override {
+        package = pkgs.emacs29.override {
           withNativeCompilation = true;
           withPgtk = true;
           withSQLite3 = true;

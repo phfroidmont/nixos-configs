@@ -14,7 +14,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    sound.enable = true;
 
     security.rtkit.enable = true;
 
@@ -24,7 +23,7 @@ in
     };
 
     home-manager.users.${config.user.name} = {
-      home.packages = with pkgs.unstable; [ pulsemixer ];
+      home.packages = [ pkgs.pulsemixer ];
     };
   };
 }

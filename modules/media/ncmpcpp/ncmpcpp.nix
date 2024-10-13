@@ -17,7 +17,7 @@ in
     home-manager.users.${config.user.name} = {
 
       home = {
-        packages = with pkgs.unstable; [
+        packages = with pkgs; [
           (ncmpcpp.override { visualizerSupport = true; })
           mpc_cli
         ];

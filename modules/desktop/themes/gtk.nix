@@ -39,11 +39,11 @@ in
       gtk = {
         enable = true;
         cursorTheme = {
-          package = pkgs.unstable.paper-icon-theme;
+          package = pkgs.paper-icon-theme;
           name = "Paper";
         };
         theme = {
-          package = pkgs.unstable.adw-gtk3;
+          package = pkgs.adw-gtk3;
           name = "adw-gtk3";
         };
         iconTheme = {
@@ -63,7 +63,7 @@ in
 
       home = {
         pointerCursor = {
-          package = pkgs.unstable.paper-icon-theme;
+          package = pkgs.paper-icon-theme;
           name = "Paper";
           size = 24;
           gtk.enable = true;

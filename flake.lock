@@ -28,11 +28,11 @@
         "nixpkgs-stable": "nixpkgs-stable"
       },
       "locked": {
-        "lastModified": 1728698619,
-        "narHash": "sha256-DcJvKq0HDrPc2PHw9mtXzaiGYiAG2SgQPHov36voDkU=",
+        "lastModified": 1728839477,
+        "narHash": "sha256-HXWknm3vRHknK0yKdlO1qKFxO6f8lJHaufFekxjL4RY=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "eac5f2748d0719b747e21b486c1686aa1e23a9ae",
+        "rev": "1ac99536bb5eb9b2b4fc161bd0651bcbbb36c6d9",
         "type": "github"
       },
       "original": {
@@ -182,16 +182,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1726989464,
-        "narHash": "sha256-Vl+WVTJwutXkimwGprnEtXc/s/s8sMuXzqXaspIGlwM=",
+        "lastModified": 1728791962,
+        "narHash": "sha256-nr5QiXwQcZmf6/auC1UpX8iAtINMtdi2mH+OkqJQVmU=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "2f23fa308a7c067e52dfcc30a0758f47043ec176",
+        "rev": "64c6325b28ebd708653dd41d88f306023f296184",
         "type": "github"
       },
       "original": {
         "owner": "nix-community",
-        "ref": "release-24.05",
+        "ref": "master",
         "repo": "home-manager",
         "type": "github"
       }
@@ -257,11 +257,11 @@
     },
     "nixpkgs-stable": {
       "locked": {
-        "lastModified": 1728500571,
-        "narHash": "sha256-dOymOQ3AfNI4Z337yEwHGohrVQb4yPODCW9MDUyAc4w=",
+        "lastModified": 1728740863,
+        "narHash": "sha256-u+rxA79a0lyhG+u+oPBRtTDtzz8kvkc9a6SWSt9ekVc=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "d51c28603def282a24fa034bcb007e2bcb5b5dd0",
+        "rev": "a3f9ad65a0bf298ed5847629a57808b97e6e8077",
         "type": "github"
       },
       "original": {
@@ -271,7 +271,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-unstable": {
+    "nixpkgs_2": {
       "locked": {
         "lastModified": 1728492678,
         "narHash": "sha256-9UTxR8eukdg+XZeHgxW5hQA9fIKHsKCdOIUycTryeVw=",
@@ -283,22 +283,6 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1728627514,
-        "narHash": "sha256-r+SF9AnHrTg+bk6YszoKfV9lgyw+yaFUQe0dOjI0Z2o=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "c505ebf777526041d792a49d5f6dd4095ea391a7",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-24.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -337,7 +321,6 @@
         "flameshot-git": "flameshot-git",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
-        "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim": "nixvim",
         "vim-org-roam": "vim-org-roam",
         "vim-yazi": "vim-yazi"
@@ -398,11 +381,11 @@
     "vim-yazi": {
       "flake": false,
       "locked": {
-        "lastModified": 1728500095,
-        "narHash": "sha256-zaA/YJyqjA6jX25uelWYFVW4iMJ7eza1b/LH6RWo30U=",
+        "lastModified": 1728834368,
+        "narHash": "sha256-hvrtjNkieHFs/VzeEPlI+nkFoTsRX/c32bBOjXPBwpM=",
         "owner": "mikavilpas",
         "repo": "yazi.nvim",
-        "rev": "1e8d63d85176d5e0cca191fd6c5847839b65bfa8",
+        "rev": "bff42c2ead02675d66e31799d2f3edaba29a4c79",
         "type": "github"
       },
       "original": {
