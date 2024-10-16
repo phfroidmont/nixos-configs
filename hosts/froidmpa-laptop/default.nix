@@ -28,7 +28,7 @@
   services.tlp.enable = true;
 
   home-manager.users.${config.user.name} =
-    { _ }:
+    { ... }:
     {
       services.network-manager-applet.enable = true;
       services.blueman-applet.enable = true;
