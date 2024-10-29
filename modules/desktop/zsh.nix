@@ -33,6 +33,11 @@ in
           enableCompletion = true;
           autosuggestion.enable = true;
           syntaxHighlighting.enable = true;
+          sessionVariables = {
+            # COURSIER_CACHE = "/mnt/c/Users/RDO/scoop/persist/coursier/cache";
+            # COURSIER_REPOSITORIES = "ivy2Local|https://nexus.foyer.lu/repository/mvn-all/";
+            # JAVA_OPTS = "-Dsbt.ivy.home=/mnt/c/Users/RDO/.ivy2";
+          };
           initExtra = # bash
             ''
               autoload -Uz up-line-or-beginning-search down-line-or-beginning-search

@@ -13,7 +13,7 @@
   config = {
 
     user = {
-      name = "froidmpa";
+      name = "nixos";
       description = "The primary user account";
       extraGroups = [
         "wheel"

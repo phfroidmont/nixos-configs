@@ -206,12 +206,15 @@ in
                 { import = "lazyvim.plugins.extras.editor.aerial" },
                 { import = "lazyvim.plugins.extras.editor.leap" },
                 { import = "lazyvim.plugins.extras.editor.navic" },
+                { import = "lazyvim.plugins.extras.formatting.prettier" },
+                { import = "lazyvim.plugins.extras.lang.angular" },
                 { import = "lazyvim.plugins.extras.lang.docker" },
                 { import = "lazyvim.plugins.extras.lang.json" },
                 { import = "lazyvim.plugins.extras.lang.markdown" },
                 { import = "lazyvim.plugins.extras.lang.sql" },
                 { import = "lazyvim.plugins.extras.lang.yaml" },
                 { import = "lazyvim.plugins.extras.lang.scala" },
+                { import = "lazyvim.plugins.extras.lang.typescript" },
                 { import = "lazyvim.plugins.extras.test.core" },
                 -- import/override with your plugins
                 { import = "plugins" },
@@ -496,6 +499,7 @@ in
         yaml-language-server
         typos-lsp
         nodePackages.typescript-language-server
+        nodePackages.prettier
         terraform-ls
         sqls
         nixd
@@ -503,6 +507,8 @@ in
         lua-language-server
         docker-compose-language-service
         bash-language-server
+        inputs.nixpkgs-master.legacyPackages.x86_64-linux.angular-language-server
+        inputs.nixpkgs-master.legacyPackages.x86_64-linux.vtsls
       ];
     };
   };
