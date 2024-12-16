@@ -16,6 +16,3 @@ map("n", "<leader>wh", "<C-w>h", { desc = "Go to Left Window", remap = true })
 
 -- File
 map("n", "<leader>fs", "<cmd>w<cr>", { desc = "Save File" })
-
--- Buffer
-map("n", "<leader>bk", LazyVim.ui.bufremove, { desc = "Delete Buffer" })

@@ -7,12 +7,8 @@
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     nixvim = {
-      url = "github:nix-community/nixvim/nixos-24.05";
+      url = "github:nix-community/nixvim/nixos-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    vim-yazi = {
-      url = "github:mikavilpas/yazi.nvim";
-      flake = false;
     };
     vim-org-roam = {
       url = "github:chipsenkbeil/org-roam.nvim";
@@ -46,6 +42,7 @@
               "steam"
               "steam-original"
               "steam-run"
+              "steam-unwrapped"
             ];
           overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };

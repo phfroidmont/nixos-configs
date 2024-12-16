@@ -11,4 +11,10 @@ return {
       defaults = { path_display = { "truncate" } },
     },
   },
+  {
+    'folke/snacks.nvim',
+    keys = {
+      { "<leader>bk", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
+    },
+  },
 }

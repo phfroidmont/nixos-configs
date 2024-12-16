@@ -22,7 +22,7 @@ in
     user.packages = [
       (lib.mkIf cfg.psx.enable pkgs.duckstation)
       (lib.mkIf cfg.ds.enable pkgs.desmume)
-      (lib.mkIf cfg.gc.enable pkgs.dolphinEmu)
+      (lib.mkIf cfg.gc.enable pkgs.dolphin-emu)
       (lib.mkIf (cfg.gba.enable || cfg.gb.enable || cfg.snes.enable) pkgs.higan)
     ];
   };

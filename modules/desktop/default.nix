@@ -27,17 +27,22 @@ in
         corefonts # Microsoft free fonts
         noto-fonts-emoji
         meslo-lg
-        (nerdfonts.override {
-          fonts = [
-            "Meslo"
-            "NerdFontsSymbolsOnly"
-          ];
-        })
+        pkgs.nerd-fonts.meslo-lg
+        pkgs.nerd-fonts.symbols-only
       ];
       fontconfig.defaultFonts = {
         monospace = [ "MesloLGS Nerd Font Mono" ];
       };
     };
+
+    security.pam.loginLimits = [
+      {
+        domain = "*";
+        item = "nofile";
+        type = "-";
+        value = "65536";
+      }
+    ];
 
     programs.adb.enable = true;
 

@@ -24,8 +24,9 @@ in
         vimAlias = true;
         vimdiffAlias = true;
         withNodeJs = true;
-        plugins =
-          (with pkgs.vimPlugins; [
+        plugins = (
+          with pkgs.vimPlugins;
+          [
             # base distro
             LazyVim
             conform-nvim
@@ -49,6 +50,10 @@ in
             which-key-nvim
             nvim-web-devicons
             mini-nvim
+            mini-ai
+            mini-comment
+            mini-icons
+            mini-pairs
             noice-nvim
             nui-nvim
             nvim-notify
@@ -57,6 +62,7 @@ in
             nvim-navic
             dressing-nvim
             aerial-nvim
+            snacks-nvim
 
             # project management
             project-nvim
@@ -115,6 +121,7 @@ in
             nvim-dap
             nvim-dap-ui
             nvim-dap-virtual-text
+            one-small-step-for-vimkind
 
             # neotest
             neotest
@@ -128,14 +135,9 @@ in
             lazy-nvim
             lazydev-nvim
             vim-startuptime
-          ])
-          ++ [
-            # File manager
-            (pkgs.vimUtils.buildVimPlugin {
-              name = "yazi.nvim";
-              src = inputs.vim-yazi;
-            })
-          ];
+            yazi-nvim
+          ]
+        );
 
         extraPackages = with pkgs; [
           gcc # needed for nvim-treesitter
