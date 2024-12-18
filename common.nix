@@ -17,12 +17,10 @@
     settings = {
       substituters = [
         "https://nix-community.cachix.org"
-        "http://cache.banditlair.com"
         "https://cache.nixos.org/"
       ];
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "cache.banditlair.com:4zk7iDvzKh6VN+LxzKIGcVPKgL5dLeyEt2ydrgx4o8c="
       ];
       auto-optimise-store = true;
     };
