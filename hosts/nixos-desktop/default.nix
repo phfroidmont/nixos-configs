@@ -45,6 +45,7 @@
     settings = {
       substituters = [ "ssh://nix-ssh@hel1.banditlair.com" ];
       trusted-public-keys = [ "hel1.banditlair.com:stzB4xe5QTFvSABoP11ZpNzLDCRZ93PExk0Z/gOzW3g=" ];
+      builders-use-substitutes = true;
     };
   };
 
