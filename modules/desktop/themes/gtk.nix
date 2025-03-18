@@ -10,10 +10,10 @@ let
 
   gruvboxPlus = pkgs.stdenv.mkDerivation rec {
     name = "gruvbox-plus";
-    version = "5.1";
+    version = "6.2.0";
     src = pkgs.fetchurl {
       url = "https://github.com/SylEleuth/gruvbox-plus-icon-pack/releases/download/v${version}/gruvbox-plus-icon-pack-${version}.zip";
-      sha256 = "1n3hqwk1mqaj8vbmy0pqbiq6v5jqrhmhin506xbpnccl28f907j0";
+      sha256 = "sha256-D+SPhucHU4Riz0mzU1LnaEkkaQt+blJMAsA5r6fTAQ0=";
     };
     dontUnpack = true;
     installPhase = ''

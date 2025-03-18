@@ -139,7 +139,8 @@ in
           "application/pdf" = "org.pwmt.zathura-pdf-mupdf.desktop";
 
           "application/msword" = "onlyoffice-desktopeditors.desktop";
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation" = "onlyoffice-desktopeditors.desktop";
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation" =
+            "onlyoffice-desktopeditors.desktop";
           "application/vnd.openxmlformats-officedocument*" = "onlyoffice-desktopeditors.desktop";
 
           "text/*" = "nvim.desktop";
@@ -181,7 +182,7 @@ in
             zsh-syntax-highlighting
             R
             tldr
-            ark
+            kdePackages.ark
             linuxPackages.perf
           ])
           ++ [ pkgs.jellyfin-mpv-shim ];

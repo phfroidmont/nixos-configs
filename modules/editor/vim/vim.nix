@@ -70,7 +70,6 @@ in
             persistence-nvim
 
             # smart typing
-            indent-blankline-nvim
             guess-indent-nvim
             vim-illuminate
 
@@ -83,21 +82,19 @@ in
             nvim-metals
 
             # cmp plugins
-            nvim-cmp # completion plugin
-            cmp-buffer # buffer completions
-            cmp-path # path completions
+            nvim-cmp
+            blink-cmp # completion plugin
             cmp_luasnip # snipper completions
-            cmp-nvim-lsp # LSP completions
 
             # snippets
             luasnip # snippet engine
-            nvim-snippets
             friendly-snippets # a bunch of snippets to use
 
             # search functionality
             plenary-nvim
             telescope-nvim
             telescope-fzf-native-nvim
+            fzf-lua
             grug-far-nvim
             flash-nvim
 
@@ -250,7 +247,7 @@ in
                   pkgs.vimUtils.packDir
                     config.home-manager.users.${config.user.name}.programs.neovim.finalPackage.passthru.packpathDirs
                 }/pack/myNeovimPackages/start",
-                patterns = {"folke", "nvim-telescope", "hrsh7th", "akinsho", "stevearc", "LazyVim", "catppuccin", "saadparwaiz1", "nvimdev", "rafamadriz", "lewis6991", "lukas-reineke", "nvim-lualine", "L3MON4D3", "williamboman", "echasnovski", "nvim-neo-tree", "MunifTanjim", "mfussenegger", "rcarriga", "neovim", "nvim-pack", "nvim-treesitter", "windwp", "JoosepAlviste", "nvim-tree", "nvim-lua", "RRethy", "dstein64", "Saecki", "ggandor", "iamcco", "nvim-neotest", "rouge8", "theHamsta", "SmiteshP", "jbyuki", "simrat39", "b0o", "tpope", "kosayoda", "ellisonleao", "NeogitOrg", "sindrets", "scalameta", "garymjr", "mikavilpas","kristijanhusak","MagicDuck","MeanderingProgrammer"},
+                patterns = {"folke", "nvim-telescope", "hrsh7th", "akinsho", "stevearc", "LazyVim", "catppuccin", "saadparwaiz1", "nvimdev", "rafamadriz", "lewis6991", "lukas-reineke", "nvim-lualine", "L3MON4D3", "williamboman", "echasnovski", "nvim-neo-tree", "MunifTanjim", "mfussenegger", "rcarriga", "neovim", "nvim-pack", "nvim-treesitter", "windwp", "JoosepAlviste", "nvim-tree", "nvim-lua", "RRethy", "dstein64", "Saecki", "ggandor", "iamcco", "nvim-neotest", "rouge8", "theHamsta", "SmiteshP", "jbyuki", "simrat39", "b0o", "tpope", "kosayoda", "ellisonleao", "NeogitOrg", "sindrets", "scalameta", "garymjr", "mikavilpas","kristijanhusak","MagicDuck","MeanderingProgrammer", "ibhagwan", "saghen"},
               },
               install = {
                 missing = false,
