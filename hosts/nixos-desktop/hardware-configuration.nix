@@ -17,13 +17,6 @@
       "sd_mod"
     ];
     initrd.kernelModules = [ "amdgpu" ];
-    # kernelPackages = pkgs.linuxPackages_6_9;
-
-    # Prevents constant crashing in BG3
-    kernelParams = [
-      "amdgpu.mcbp=0"
-      "amdgpu.noretry=0"
-    ];
 
     kernelModules = [ "kvm-amd" ];
     extraModulePackages = [ ];
