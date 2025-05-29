@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -20,7 +19,6 @@ in
         services.flameshot = {
           enable = true;
           package = pkgs.flameshot.overrideAttrs (old: {
-            src = inputs.flameshot-git;
             cmakeFlags = [ "-DUSE_WAYLAND_GRIM=1" ];
           });
           settings = {
@@ -38,7 +36,6 @@ in
           };
         };
         home.packages = [ pkgs.grim ];
-
       };
   };
 }

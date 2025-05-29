@@ -58,7 +58,7 @@ in
         gpg-agent = {
           enable = true;
           enableSshSupport = false;
-          pinentryPackage = pkgs.pinentry-gtk2;
+          pinentry.package = pkgs.pinentry-gtk2;
         };
         unclutter.enable = true;
       };

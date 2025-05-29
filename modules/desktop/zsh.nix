@@ -33,7 +33,7 @@ in
           enableCompletion = true;
           autosuggestion.enable = true;
           syntaxHighlighting.enable = true;
-          initExtra = # bash
+          initContent = # bash
             ''
               autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
               zle -N up-line-or-beginning-search

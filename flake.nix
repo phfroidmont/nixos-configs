@@ -7,15 +7,11 @@
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     nixvim = {
-      url = "github:nix-community/nixvim/nixos-24.11";
+      url = "github:nix-community/nixvim/nixos-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     vim-org-roam = {
       url = "github:chipsenkbeil/org-roam.nvim";
-      flake = false;
-    };
-    flameshot-git = {
-      url = "github:flameshot-org/flameshot";
       flake = false;
     };
   };

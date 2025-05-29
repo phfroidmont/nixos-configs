@@ -24,117 +24,114 @@ in
         vimAlias = true;
         vimdiffAlias = true;
         withNodeJs = true;
-        plugins = (
-          with pkgs.vimPlugins;
-          [
-            # base distro
-            LazyVim
-            conform-nvim
-            nvim-lint
-            markdown-preview-nvim
-            render-markdown-nvim
+        plugins = with pkgs.vimPlugins; [
+          # base distro
+          LazyVim
+          conform-nvim
+          nvim-lint
+          markdown-preview-nvim
+          render-markdown-nvim
 
-            # theme
-            gruvbox-nvim
+          # theme
+          gruvbox-nvim
 
-            # UI
-            bufferline-nvim
-            gitsigns-nvim
-            neogit
-            diffview-nvim
-            edgy-nvim
-            dashboard-nvim
-            toggleterm-nvim
-            trouble-nvim
-            lualine-nvim
-            which-key-nvim
-            nvim-web-devicons
-            mini-nvim
-            mini-ai
-            mini-comment
-            mini-icons
-            mini-pairs
-            noice-nvim
-            nui-nvim
-            nvim-notify
-            nvim-lsp-notify
-            neo-tree-nvim
-            nvim-navic
-            dressing-nvim
-            aerial-nvim
-            snacks-nvim
+          # UI
+          bufferline-nvim
+          gitsigns-nvim
+          neogit
+          diffview-nvim
+          edgy-nvim
+          dashboard-nvim
+          toggleterm-nvim
+          trouble-nvim
+          lualine-nvim
+          which-key-nvim
+          nvim-web-devicons
+          mini-nvim
+          mini-ai
+          mini-comment
+          mini-icons
+          mini-pairs
+          noice-nvim
+          nui-nvim
+          nvim-notify
+          nvim-lsp-notify
+          neo-tree-nvim
+          nvim-navic
+          dressing-nvim
+          aerial-nvim
+          snacks-nvim
 
-            # project management
-            project-nvim
-            neoconf-nvim
-            persistence-nvim
+          # project management
+          project-nvim
+          neoconf-nvim
+          persistence-nvim
 
-            # smart typing
-            guess-indent-nvim
-            vim-illuminate
+          # smart typing
+          guess-indent-nvim
+          vim-illuminate
 
-            # LSP
-            nvim-lspconfig
-            nvim-lightbulb # lightbulb for quick actions
-            # nvim-code-action-menu # code action menu
-            neodev-nvim
-            SchemaStore-nvim # load known formats for json and yaml
-            nvim-metals
+          # LSP
+          nvim-lspconfig
+          nvim-lightbulb # lightbulb for quick actions
+          # nvim-code-action-menu # code action menu
+          neodev-nvim
+          SchemaStore-nvim # load known formats for json and yaml
+          nvim-metals
 
-            # cmp plugins
-            nvim-cmp
-            blink-cmp # completion plugin
-            cmp_luasnip # snipper completions
+          # cmp plugins
+          nvim-cmp
+          blink-cmp # completion plugin
+          cmp_luasnip # snipper completions
 
-            # snippets
-            luasnip # snippet engine
-            friendly-snippets # a bunch of snippets to use
+          # snippets
+          luasnip # snippet engine
+          friendly-snippets # a bunch of snippets to use
 
-            # search functionality
-            plenary-nvim
-            telescope-nvim
-            telescope-fzf-native-nvim
-            fzf-lua
-            grug-far-nvim
-            flash-nvim
+          # search functionality
+          plenary-nvim
+          telescope-nvim
+          telescope-fzf-native-nvim
+          fzf-lua
+          grug-far-nvim
+          flash-nvim
 
-            # treesitter
-            nvim-treesitter-context
-            nvim-ts-autotag
-            nvim-treesitter-textobjects
-            nvim-treesitter.withAllGrammars
+          # treesitter
+          nvim-treesitter-context
+          nvim-ts-autotag
+          nvim-treesitter-textobjects
+          nvim-treesitter.withAllGrammars
 
-            # comments
-            ts-comments-nvim
-            nvim-ts-context-commentstring
-            todo-comments-nvim
+          # comments
+          ts-comments-nvim
+          nvim-ts-context-commentstring
+          todo-comments-nvim
 
-            # leap
-            vim-repeat
-            leap-nvim
-            flit-nvim
+          # leap
+          vim-repeat
+          leap-nvim
+          flit-nvim
 
-            # DAP
-            nvim-dap
-            nvim-dap-ui
-            nvim-dap-virtual-text
-            one-small-step-for-vimkind
+          # DAP
+          nvim-dap
+          nvim-dap-ui
+          nvim-dap-virtual-text
+          one-small-step-for-vimkind
 
-            # neotest
-            neotest
-            neotest-rust
+          # neotest
+          neotest
+          neotest-rust
 
-            # SQL
-            vim-dadbod
-            vim-dadbod-ui
-            vim-dadbod-completion
+          # SQL
+          vim-dadbod
+          vim-dadbod-ui
+          vim-dadbod-completion
 
-            lazy-nvim
-            lazydev-nvim
-            vim-startuptime
-            yazi-nvim
-          ]
-        );
+          lazy-nvim
+          lazydev-nvim
+          vim-startuptime
+          yazi-nvim
+        ];
 
         extraPackages = with pkgs; [
           gcc # needed for nvim-treesitter
@@ -247,7 +244,7 @@ in
                   pkgs.vimUtils.packDir
                     config.home-manager.users.${config.user.name}.programs.neovim.finalPackage.passthru.packpathDirs
                 }/pack/myNeovimPackages/start",
-                patterns = {"folke", "nvim-telescope", "hrsh7th", "akinsho", "stevearc", "LazyVim", "catppuccin", "saadparwaiz1", "nvimdev", "rafamadriz", "lewis6991", "lukas-reineke", "nvim-lualine", "L3MON4D3", "williamboman", "echasnovski", "nvim-neo-tree", "MunifTanjim", "mfussenegger", "rcarriga", "neovim", "nvim-pack", "nvim-treesitter", "windwp", "JoosepAlviste", "nvim-tree", "nvim-lua", "RRethy", "dstein64", "Saecki", "ggandor", "iamcco", "nvim-neotest", "rouge8", "theHamsta", "SmiteshP", "jbyuki", "simrat39", "b0o", "tpope", "kosayoda", "ellisonleao", "NeogitOrg", "sindrets", "scalameta", "garymjr", "mikavilpas","kristijanhusak","MagicDuck","MeanderingProgrammer", "ibhagwan", "saghen"},
+                patterns = {""},
               },
               install = {
                 missing = false,
