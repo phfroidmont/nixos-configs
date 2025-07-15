@@ -39,6 +39,7 @@
               "steam-original"
               "steam-run"
               "steam-unwrapped"
+              "keymapp"
             ];
           overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };

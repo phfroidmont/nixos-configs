@@ -184,10 +184,12 @@ in
             tldr
             kdePackages.ark
             linuxPackages.perf
+            keymapp
           ])
           ++ [ pkgs.jellyfin-mpv-shim ];
       };
 
     };
+    hardware.keyboard.zsa.enable = true;
   };
 }
