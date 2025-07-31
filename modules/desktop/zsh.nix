@@ -61,7 +61,7 @@ in
             }
           ];
         };
-        thefuck = {
+        pay-respects = {
           enable = true;
           enableZshIntegration = true;
         };
