@@ -182,7 +182,7 @@ in
           bind = [
             "$mod, Return, exec, ${term}"
             "$mod, C, killactive"
-            "$mod SHIFT, Q, exit"
+            # "$mod SHIFT, Q, exit"
             "$mod SHIFT, A, exec, ${term} -e pulsemixer"
             "$mod, W, exec, firefox"
             "$mod, R, exec, ${term} -e yazi"
