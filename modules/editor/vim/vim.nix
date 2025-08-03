@@ -121,6 +121,7 @@ in
           # neotest
           neotest
           neotest-rust
+          neotest-elixir
 
           # SQL
           vim-dadbod
@@ -162,6 +163,9 @@ in
 
           # JSON and YAML extras
           nodePackages.yaml-language-server
+
+          # Elixir
+          beam28Packages.elixir-ls
 
           # Custom
           editorconfig-checker
@@ -208,6 +212,7 @@ in
                 { import = "lazyvim.plugins.extras.lang.sql" },
                 { import = "lazyvim.plugins.extras.lang.yaml" },
                 { import = "lazyvim.plugins.extras.lang.scala" },
+                { import = "lazyvim.plugins.extras.lang.elixir" },
                 { import = "lazyvim.plugins.extras.test.core" },
                 -- import/override with your plugins
                 { import = "plugins" },

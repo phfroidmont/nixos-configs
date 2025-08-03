@@ -175,6 +175,7 @@ in
             monero-gui
 
             scala-cli
+            beamMinimal28Packages.elixir
             jdk
             jetbrains.idea-community
             httpie

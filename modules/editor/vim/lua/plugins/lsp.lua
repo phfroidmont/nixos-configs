@@ -8,6 +8,9 @@ return {
             showImplicitArguments = false,
           },
         },
+        elixirls = {
+          cmd = { "elixir-ls" },
+        },
       },
     },
   },
