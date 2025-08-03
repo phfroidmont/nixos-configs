@@ -14,6 +14,20 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    services.dnsmasq = {
+      enable = true;
+      settings = {
+        server = [
+          "/lefoyer.lu/10.33.0.100"
+          "/foyer.lu/10.33.0.100"
+          "/foyer.cloud/10.33.0.100"
+          "1.1.1.1"
+        ];
+        no-resolv = true;
+        interface = "lo";
+        bind-interfaces = true;
+      };
+    };
 
     networking = {
       proxy = {
@@ -57,8 +71,6 @@ in
       '';
     };
 
-    # users.users.${config.user.name}.extraGroups = [ "work-proxyd" ];
-    #
-    # environment.systemPackages = with pkgs; [ virt-manager ];
+    environment.systemPackages = with pkgs; [ chisel ];
   };
 }
