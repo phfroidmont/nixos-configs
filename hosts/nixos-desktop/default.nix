@@ -50,6 +50,8 @@
     };
   };
 
+  services.tailscale.enable = true;
+
   # Allow to externally control MPD
   networking.firewall.allowedTCPPorts = [ 6600 ];
 
