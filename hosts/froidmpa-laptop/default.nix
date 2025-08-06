@@ -61,6 +61,8 @@
     };
   };
 
+  services.tailscale.enable = true;
+
   nix = {
     distributedBuilds = true;
     buildMachines = [
