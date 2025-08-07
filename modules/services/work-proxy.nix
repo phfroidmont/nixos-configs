@@ -15,6 +15,17 @@ in
 
   config = lib.mkIf cfg.enable {
 
+    services.tinyproxy = {
+      enable = true;
+      settings = {
+        LogLevel = "Info";
+        Port = 2345;
+        Upstream = [
+          ''upstream http wsl:2345 ".microsoftonline.com"''
+        ];
+      };
+    };
+
     security.pki.certificateFiles = [
       "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
       ./certs/Foyer-Group-Root-CA.crt
