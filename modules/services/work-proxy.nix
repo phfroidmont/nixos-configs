@@ -50,6 +50,9 @@ in
       };
     };
 
-    environment.systemPackages = with pkgs; [ chisel ];
+    environment.systemPackages = with pkgs; [
+      (sbt.override { jre = jdk17; })
+      chisel
+    ];
   };
 }
