@@ -24,9 +24,13 @@ in
           "ctrl+down" = "change_font_size all -2.0";
           "shift+page_up" = "scroll_page_up";
           "shift+page_down" = "scroll_page_down";
-          "ctrl+shift+comma" = "scroll_to_prompt -1";
-          "ctrl+shift+semicolon" = "scroll_to_prompt 1";
-          "ctrl+shift+t" = "new_tab_with_cwd";
+          "ctrl+shift+u" = "scroll_to_prompt -1";
+          "ctrl+shift+d" = "scroll_to_prompt 1";
+          "ctrl+shift+t" = "new_tab_with_cwd !neighbor";
+          "ctrl+," = "previous_tab";
+          "ctrl+;" = "next_tab";
+          "ctrl+shift+," = "move_tab_backward";
+          "ctrl+shift+;" = "move_tab_forward";
         };
         themeFile = "gruvbox-dark";
       };
