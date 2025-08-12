@@ -40,6 +40,7 @@
               "steam-run"
               "steam-unwrapped"
               "keymapp"
+              "mongodb-compass"
             ];
           overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };

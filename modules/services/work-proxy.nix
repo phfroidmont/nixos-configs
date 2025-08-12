@@ -52,6 +52,7 @@ in
 
     environment.systemPackages = with pkgs; [
       (sbt.override { jre = jdk17; })
+      mongodb-compass
       chisel
     ];
   };
