@@ -34,6 +34,11 @@
       services.network-manager-applet.enable = true;
       services.blueman-applet.enable = true;
       wayland.windowManager.hyprland.settings = {
+        monitor = [
+          "eDP-1, 1920x1080, 0x720, 1.5"
+          "DP-1, 1920x1080, 0x0, 1.5"
+        ];
+
         workspace = [
           "w[tv1], gapsout:0, gapsin:0"
           "f[1], gapsout:0, gapsin:0"
