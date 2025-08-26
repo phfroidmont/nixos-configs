@@ -28,27 +28,25 @@
   programs.kdeconnect.enable = true;
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-  nix = {
-    distributedBuilds = true;
-    buildMachines = [
-      {
-        hostName = "hel1.banditlair.com";
-        sshUser = "nix-ssh";
-        system = "x86_64-linux";
-        supportedFeatures = [
-          "nixos-test"
-          "benchmark"
-          "big-parallel"
-          "kvm"
-        ];
-      }
-    ];
-    settings = {
-      substituters = [ "ssh://nix-ssh@hel1.banditlair.com" ];
-      trusted-public-keys = [ "hel1.banditlair.com:stzB4xe5QTFvSABoP11ZpNzLDCRZ93PExk0Z/gOzW3g=" ];
-      builders-use-substitutes = true;
-    };
-  };
+  # nix = {
+  #   distributedBuilds = true;
+  #   buildMachines = [
+  #     {
+  #       hostName = "hel1.banditlair.com";
+  #       sshUser = "nix-ssh";
+  #       system = "x86_64-linux";
+  #       supportedFeatures = [
+  #         "nixos-test"
+  #         "benchmark"
+  #         "big-parallel"
+  #         "kvm"
+  #       ];
+  #     }
+  #   ];
+  #   settings = {
+  #     builders-use-substitutes = true;
+  #   };
+  # };
 
   services.tailscale.enable = true;
 

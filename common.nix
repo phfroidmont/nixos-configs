@@ -8,7 +8,8 @@
 {
   imports = [
     inputs.home-manager.nixosModules.home-manager
-  ] ++ (lib.my.mapModulesRec' (toString ./modules) import);
+  ]
+  ++ (lib.my.mapModulesRec' (toString ./modules) import);
 
   nix = {
     package = pkgs.nixVersions.stable;
@@ -18,9 +19,13 @@
       substituters = [
         "https://nix-community.cachix.org"
         "https://cache.nixos.org/"
+        "https://devenv.cachix.org"
+        "ssh://nix-ssh@hel1.banditlair.com"
       ];
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+        "hel1.banditlair.com:stzB4xe5QTFvSABoP11ZpNzLDCRZ93PExk0Z/gOzW3g="
       ];
       auto-optimise-store = true;
     };
