@@ -50,6 +50,21 @@
 
   services.tailscale.enable = true;
 
+  services.openssh = {
+    enable = true;
+    passwordAuthentication = false;
+    listenAddresses = [
+      {
+        # Tailscale interface
+        addr = "100.71.79.119";
+        port = 22;
+      }
+    ];
+  };
+  users.users.root.openssh.authorizedKeys.keyFiles = [
+    ../../ssh_keys/phfroidmont-laptop.pub
+  ];
+
   # Allow to externally control MPD
   networking.firewall.allowedTCPPorts = [ 6600 ];
 
