@@ -24,7 +24,6 @@
 
   # Monitor backlight control
   programs.light.enable = true;
-  users.users.${config.user.name}.extraGroups = [ "video" ];
 
   services.tlp.enable = true;
 
@@ -67,6 +66,24 @@
   };
 
   services.tailscale.enable = true;
+
+  services.openssh = {
+    enable = true;
+    passwordAuthentication = false;
+    listenAddresses = [
+      {
+        # Tailscale interface
+        addr = "100.64.0.1";
+        port = 22;
+      }
+    ];
+  };
+  users.users.${config.user.name} = {
+    openssh.authorizedKeys.keyFiles = [
+      ../../ssh_keys/phfroidmont-desktop.pub
+    ];
+    extraGroups = [ "video" ];
+  };
 
   nix = {
     distributedBuilds = true;
