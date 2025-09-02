@@ -52,11 +52,11 @@
 
   services.openssh = {
     enable = true;
-    passwordAuthentication = false;
+    settings.PasswordAuthentication = false;
     listenAddresses = [
       {
         # Tailscale interface
-        addr = "100.71.79.119";
+        addr = "100.64.0.3";
         port = 22;
       }
     ];
