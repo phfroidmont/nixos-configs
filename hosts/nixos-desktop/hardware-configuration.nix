@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   modulesPath,
@@ -49,7 +48,10 @@
 
   swapDevices = [ { device = "/dev/disk/by-uuid/f714775c-b5af-4c0c-8330-999b43db4794"; } ];
 
-  zramSwap.enable = true;
+  powerManagement = {
+    cpuFreqGovernor = "performance";
+    powertop.enable = true;
+  };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
@@ -66,7 +68,7 @@
     ];
   };
 
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode = true;
 
   services.resolved.dnssec = "false";
 }

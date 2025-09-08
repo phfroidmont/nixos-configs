@@ -43,6 +43,10 @@
 
   i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
 
+  zramSwap.enable = true;
+  zramSwap.memoryPercent = 300;
+  systemd.oomd.enable = true;
+
   console = {
     keyMap = lib.mkDefault "fr";
     font = lib.mkDefault "${pkgs.terminus_font}/share/consolefonts/ter-v32n.psf.gz";
