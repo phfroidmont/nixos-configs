@@ -7,7 +7,7 @@
 
 let
   wallpaper = pkgs.fetchurl {
-    url = "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/irl/houseonthesideofalake.jpg";
+    url = "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/photography/houseonthesideofalake.jpg";
     sha256 = "sha256-obKI4qZvucogqRCl51lwV9X8SRaMqcbBwWMfc9TupIo=";
   };
 in

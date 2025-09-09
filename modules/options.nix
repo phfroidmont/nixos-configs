@@ -13,7 +13,7 @@
   config = {
 
     user = {
-      name = "froidmpa";
+      name = lib.mkDefault "froidmpa";
       description = "The primary user account";
       extraGroups = [
         "wheel"
