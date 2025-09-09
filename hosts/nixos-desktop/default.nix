@@ -25,6 +25,8 @@
     };
   };
 
+  user.name = "froidmpa";
+
   programs.kdeconnect.enable = true;
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
