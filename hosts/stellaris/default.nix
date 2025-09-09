@@ -108,6 +108,7 @@
   users.users.${config.user.name} = {
     openssh.authorizedKeys.keyFiles = [
       ../../ssh_keys/phfroidmont-desktop.pub
+      ../../ssh_keys/phfroidmont-laptop.pub
     ];
     extraGroups = [ "video" ];
   };

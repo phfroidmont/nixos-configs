@@ -63,6 +63,7 @@
   };
   users.users.root.openssh.authorizedKeys.keyFiles = [
     ../../ssh_keys/phfroidmont-laptop.pub
+    ../../ssh_keys/phfroidmont-stellaris.pub
   ];
 
   # Allow to externally control MPD
