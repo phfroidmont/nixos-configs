@@ -41,6 +41,8 @@
               "steam-unwrapped"
               "keymapp"
               "mongodb-compass"
+              "nvidia-x11"
+              "nvidia-settings"
             ];
           overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };

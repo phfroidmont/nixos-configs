@@ -60,9 +60,9 @@
       services.network-manager-applet.enable = true;
       services.blueman-applet.enable = true;
       wayland.windowManager.hyprland.settings = {
-        monitor = [
-          "eDP-1, 1920x1080, 0x720, 1.5"
-          "DP-1, 1920x1080, 0x0, 1.5"
+        env = [
+          "LIBVA_DRIVER_NAME,nvidia"
+          "__GLX_VENDOR_LIBRARY_NAME,nvidia"
         ];
 
         workspace = [

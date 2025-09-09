@@ -81,7 +81,7 @@ in
         activation = {
           installDoomEmacs = ''
             if [ ! -d "${config.home-manager.users.${config.user.name}.xdg.configHome}/emacs" ]; then
-               git clone --depth=1 --single-branch https://github.com/doomemacs/doomemacs "${
+               ${pkgs.git}/bin/git clone --depth=1 --single-branch https://github.com/doomemacs/doomemacs "${
                  config.home-manager.users.${config.user.name}.xdg.configHome
                }/emacs"
             fi
