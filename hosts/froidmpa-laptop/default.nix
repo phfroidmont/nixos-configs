@@ -22,6 +22,8 @@
     };
   };
 
+  user.name = "froidmpa";
+
   # Monitor backlight control
   programs.light.enable = true;
 
