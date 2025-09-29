@@ -71,5 +71,15 @@
   # Allow to externally control MPD
   networking.firewall.allowedTCPPorts = [ 6600 ];
 
+  home-manager.users.${config.user.name} =
+    { ... }:
+    {
+      wayland.windowManager.hyprland.settings = {
+        monitor = [
+          "DP-1, 4096x2160@240, 0x0, 1.5"
+        ];
+      };
+    };
+
   system.stateVersion = "20.09";
 }
