@@ -189,11 +189,14 @@ in
             kdePackages.ark
             linuxPackages.perf
             keymapp
+
+            ledger-live-desktop
           ])
           ++ [ pkgs.jellyfin-mpv-shim ];
       };
 
     };
     hardware.keyboard.zsa.enable = true;
+    hardware.ledger.enable = true;
   };
 }
