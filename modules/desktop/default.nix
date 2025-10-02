@@ -187,7 +187,7 @@ in
             R
             tldr
             kdePackages.ark
-            linuxPackages.perf
+            perf
             keymapp
 
             ledger-live-desktop

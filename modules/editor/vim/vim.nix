@@ -16,7 +16,7 @@ in
 
   config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {
-      imports = [ inputs.nixvim.homeManagerModules.nixvim ];
+      imports = [ inputs.nixvim.homeModules.nixvim ];
 
       programs.neovim = {
         enable = true;
@@ -157,7 +157,7 @@ in
           marksman
 
           # Docker extra
-          nodePackages.dockerfile-language-server-nodejs
+          dockerfile-language-server
           hadolint
           docker-compose-language-service
 

@@ -18,9 +18,7 @@ in
       {
         services.flameshot = {
           enable = true;
-          package = pkgs.flameshot.overrideAttrs (old: {
-            cmakeFlags = [ "-DUSE_WAYLAND_GRIM=1" ];
-          });
+          package = pkgs.flameshot;
           settings = {
             General = {
               showStartupLaunchMessage = false;
