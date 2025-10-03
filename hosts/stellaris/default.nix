@@ -53,7 +53,7 @@
 
   services.blueman.enable = true;
 
-  services.logind.lidSwitch = "ignore";
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
 
   user.name = "phfroidmont";
 

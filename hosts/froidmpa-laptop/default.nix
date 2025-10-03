@@ -80,6 +80,7 @@
       }
     ];
   };
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
   users.users.${config.user.name} = {
     openssh.authorizedKeys.keyFiles = [
       ../../ssh_keys/phfroidmont-desktop.pub

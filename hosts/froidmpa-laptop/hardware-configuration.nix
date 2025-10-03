@@ -55,6 +55,4 @@
 
   services.blueman.enable = true;
 
-  services.logind.lidSwitch = "ignore";
-
 }
