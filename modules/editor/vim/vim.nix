@@ -78,6 +78,7 @@ in
           neodev-nvim
           SchemaStore-nvim # load known formats for json and yaml
           nvim-metals
+          nvim-jdtls
 
           # cmp plugins
           nvim-cmp
@@ -164,6 +165,9 @@ in
           # JSON and YAML extras
           nodePackages.yaml-language-server
 
+          # Java
+          jdt-language-server
+
           # Elixir
           beam28Packages.elixir-ls
 
@@ -209,6 +213,7 @@ in
                 { import = "lazyvim.plugins.extras.formatting.prettier" },
                 { import = "lazyvim.plugins.extras.lang.angular" },
                 { import = "lazyvim.plugins.extras.lang.docker" },
+                { import = "lazyvim.plugins.extras.lang.java" },
                 { import = "lazyvim.plugins.extras.lang.json" },
                 { import = "lazyvim.plugins.extras.lang.markdown" },
                 { import = "lazyvim.plugins.extras.lang.sql" },
