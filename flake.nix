@@ -14,6 +14,8 @@
       url = "github:chipsenkbeil/org-roam.nvim";
       flake = false;
     };
+    # Workaround until nvim-treesitter main branch is used in nixpkgs
+    nvim-treesitter-main.url = "github:iofq/nvim-treesitter-main";
   };
 
   outputs =
@@ -44,7 +46,10 @@
               "nvidia-x11"
               "nvidia-settings"
             ];
-          overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
+          overlays =
+            extraOverlays
+            ++ (pkgs.lib.attrValues self.overlays)
+            ++ [ inputs.nvim-treesitter-main.overlays.default ];
         };
 
       pkgs = mkPkgs nixpkgs [ ];
