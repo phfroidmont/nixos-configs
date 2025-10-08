@@ -183,6 +183,7 @@ in
             mpv
             mumble
             libreoffice-fresh
+            signal-desktop
             onlyoffice-bin
             thunderbird
             portfolio
