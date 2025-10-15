@@ -15,6 +15,7 @@
       libvirt.enable = true;
       languagetool.enable = true;
       work-proxy.enable = true;
+      kanata.enable = true;
     };
     media = {
       mpd.enable = true;
