@@ -35,6 +35,7 @@ in
     environment.variables = {
       JAVAX_NET_SSL_TRUSTSTORE = ./certs/cacerts;
       JAVA_OPTS = "-Djavax.net.ssl.trustStore=${./certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
+      JAVA_TOOL_OPTIONS = "-Djavax.net.ssl.trustStore=${./certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
     };
 
     home-manager.users.${config.user.name} = {
