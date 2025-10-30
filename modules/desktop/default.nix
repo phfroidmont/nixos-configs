@@ -195,6 +195,7 @@ in
             beamMinimal27Packages.elixir
             jdk
             jetbrains.idea-community
+            jetbrains.idea-ultimate
             httpie
 
             zsh-syntax-highlighting

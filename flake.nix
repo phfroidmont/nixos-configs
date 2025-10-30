@@ -45,6 +45,7 @@
               "mongodb-compass"
               "nvidia-x11"
               "nvidia-settings"
+              "idea-ultimate"
             ];
           overlays =
             extraOverlays
