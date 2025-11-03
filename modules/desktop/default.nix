@@ -18,6 +18,11 @@ in
       type = lib.types.path;
       default = wallpaper;
     };
+
+    defaultBrowser = lib.mkOption {
+      type = lib.types.str;
+      default = "firefox";
+    };
   };
 
   config = lib.mkIf config.modules.desktop.wm.enable {
@@ -132,10 +137,10 @@ in
         defaultApplications = {
           "inode/directory" = "joshuto.desktop";
 
-          "text/html" = "firefox.desktop";
-          "x-scheme-handler/http" = "firefox.desktop";
-          "x-scheme-handler/https" = "firefox.desktop";
-          "x-scheme-handler/about" = "firefox.desktop";
+          "text/html" = "${config.modules.desktop.defaultBrowser}.desktop";
+          "x-scheme-handler/http" = "${config.modules.desktop.defaultBrowser}.desktop";
+          "x-scheme-handler/https" = "${config.modules.desktop.defaultBrowser}.desktop";
+          "x-scheme-handler/about" = "${config.modules.desktop.defaultBrowser}.desktop";
 
           "image/png" = "swayimg.desktop";
           "image/webp" = "swayimg.desktop";

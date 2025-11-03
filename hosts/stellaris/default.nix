@@ -3,7 +3,10 @@
   imports = [ ./hardware-configuration.nix ];
 
   modules = {
-    desktop.wm.enable = true;
+    desktop = {
+      wm.enable = true;
+      defaultBrowser = "brave";
+    };
     editor = {
       vim.enable = true;
       emacs.enable = true;
