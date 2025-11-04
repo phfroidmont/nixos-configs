@@ -6,10 +6,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay";
-    nixvim = {
-      url = "github:nix-community/nixvim/nixos-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     vim-org-roam = {
       url = "github:chipsenkbeil/org-roam.nvim";
       flake = false;
