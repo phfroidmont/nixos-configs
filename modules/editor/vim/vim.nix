@@ -131,6 +131,7 @@ in
           lazydev-nvim
           vim-startuptime
           yazi-nvim
+          zk-nvim
         ];
 
         extraPackages = with pkgs; [
@@ -290,6 +291,7 @@ in
         bash-language-server
         angular-language-server
         vtsls
+        zk
       ];
     };
   };
