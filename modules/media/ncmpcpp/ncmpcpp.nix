@@ -26,7 +26,7 @@ in
               configureFlags = old.configureFlags ++ [ (lib.withFeatureAs true "boost" boost.dev) ];
             })
           )
-          mpc_cli
+          mpc
         ];
 
         file.".config/ncmpcpp/config".source = ./config;

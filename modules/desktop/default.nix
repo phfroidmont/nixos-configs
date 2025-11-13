@@ -30,7 +30,7 @@ in
     fonts = {
       packages = with pkgs; [
         corefonts # Microsoft free fonts
-        noto-fonts-emoji
+        noto-fonts-color-emoji
         meslo-lg
         pkgs.nerd-fonts.meslo-lg
         pkgs.nerd-fonts.symbols-only
@@ -72,13 +72,13 @@ in
         gpg.enable = true;
         git = {
           enable = true;
-          userName = "Paul-Henri Froidmont";
-          userEmail = "git.contact-57n2p@froidmont.org";
           signing = {
             key = lib.mkDefault "3AC6F170F01133CE393BCD94BE948AFD7E7873BE";
             signByDefault = true;
           };
-          extraConfig = {
+          settings = {
+            user.name = "Paul-Henri Froidmont";
+            user.email = "git.contact-57n2p@froidmont.org";
             init.defaultBranch = "master";
           };
         };
@@ -189,7 +189,7 @@ in
             mumble
             libreoffice-fresh
             signal-desktop
-            onlyoffice-bin
+            onlyoffice-desktopeditors
             thunderbird
             portfolio
             gnucash
