@@ -32,7 +32,10 @@ in
       hardware = {
         audio.enable = true;
       };
-      apps.rofi.enable = true;
+      apps = {
+        rofi.enable = true;
+        newsboat.enable = true;
+      };
     };
 
     home-manager.users.${config.user.name} =
@@ -110,7 +113,7 @@ in
               "$mod, W, exec, firefox"
               "$mod, R, exec, ${term} -e yazi"
               "$mod, E, exec, emacsclient -c"
-              "$mod, N, exec, emacsclient -c --eval '(elfeed)'"
+              "$mod, N, exec, ${term} -e newsboat"
               "$mod, I, exec, ${term} -e htop"
               "$mod, M, exec, ${term} -e ncmpcpp"
               "$mod, V, exec, ${term} -e ncmpcpp -s visualizer"
