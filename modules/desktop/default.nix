@@ -194,7 +194,6 @@ in
             portfolio
             gnucash
             transmission-remote-gtk
-            monero-gui
 
             scala-cli
             beamMinimal27Packages.elixir
@@ -209,8 +208,10 @@ in
             kdePackages.ark
             perf
             keymapp
+            presenterm
 
             ledger-live-desktop
+            monero-gui
           ])
           ++ [ pkgs.jellyfin-mpv-shim ];
       };
