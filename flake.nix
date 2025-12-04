@@ -32,7 +32,6 @@
           config.allowUnfreePredicate =
             pkg:
             builtins.elem (pkgs.lib.getName pkg) [
-              "corefonts"
               "steam"
               "steam-original"
               "steam-run"
