@@ -134,6 +134,9 @@ in
             vim-startuptime
             yazi-nvim
             zk-nvim
+            avante-nvim
+            blink-cmp-avante
+            img-clip-nvim
           ];
 
           extraPackages = with pkgs; [
@@ -223,6 +226,7 @@ in
                   { import = "lazyvim.plugins.extras.lang.elixir" },
                   { import = "lazyvim.plugins.extras.test.core" },
                   { import = "lazyvim.plugins.extras.lang.typescript" },
+                  { import = "lazyvim.plugins.extras.ai.avante" },
                   -- import/override with your plugins
                   { import = "plugins" },
                 },
@@ -295,6 +299,8 @@ in
           angular-language-server
           vtsls
           zk
+
+          opencode
         ];
       };
   };
