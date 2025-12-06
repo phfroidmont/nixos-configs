@@ -11,4 +11,8 @@ return {
       }
     },
   },
+  keys = {
+    { "<leader>aa", "<cmd>AvanteAsk<CR>",  mode = { "n", "v" }, desc = "Ask Avante" },
+    { "<leader>ae", "<cmd>AvanteEdit<CR>", mode = { "n", "v" }, desc = "Edit Avante" },
+  },
 }
