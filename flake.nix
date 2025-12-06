@@ -10,6 +10,7 @@
       url = "github:chipsenkbeil/org-roam.nvim";
       flake = false;
     };
+    llm-agents.url = "github:numtide/llm-agents.nix";
     # Workaround until nvim-treesitter main branch is used in nixpkgs
     nvim-treesitter-main.url = "github:iofq/nvim-treesitter-main";
   };

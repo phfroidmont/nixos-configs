@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
@@ -300,7 +301,7 @@ in
           vtsls
           zk
 
-          opencode
+          inputs.llm-agents.packages.${pkgs.system}.opencode
         ];
       };
   };
