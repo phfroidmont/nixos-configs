@@ -138,6 +138,17 @@ in
             avante-nvim
             blink-cmp-avante
             img-clip-nvim
+
+            (pkgs.vimUtils.buildVimPlugin {
+              pname = "opencode.nvim";
+              version = "2025-12-04";
+              src = pkgs.fetchFromGitHub {
+                owner = "NickvanDyke";
+                repo = "opencode.nvim";
+                rev = "963fad75f794deb85d1c310d2e2cb033da44f670";
+                hash = "sha256-nKOsHgMptHnOS+SCTHa77sQ/ZiUY0aW26I8GN7ocRHE=";
+              };
+            })
           ];
 
           extraPackages = with pkgs; [
