@@ -8,6 +8,11 @@ return {
         kitty = {
           location = "tab"
         }
+      },
+      events = {
+        permissions = {
+          enabled = false
+        }
       }
     }
     vim.o.autoread = true
