@@ -27,6 +27,7 @@
       steam.enable = true;
       lutris.enable = true;
     };
+    ai.opencode.enable = true;
   };
 
   # Monitor backlight control

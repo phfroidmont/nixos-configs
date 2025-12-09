@@ -311,8 +311,7 @@ in
           angular-language-server
           vtsls
           zk
-
-          inputs.llm-agents.packages.${pkgs.system}.opencode
+          metals
         ];
       };
   };

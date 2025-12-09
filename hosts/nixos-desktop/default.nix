@@ -23,6 +23,7 @@
       steam.enable = true;
       lutris.enable = true;
     };
+    ai.opencode.enable = true;
   };
 
   user.name = "froidmpa";
