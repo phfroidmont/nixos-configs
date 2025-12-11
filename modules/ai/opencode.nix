@@ -42,6 +42,19 @@ in
                   };
                 };
               };
+              openai = {
+                models = {
+                  "gpt-5.1-codex" = {
+                    options = {
+                      store = false;
+                      # reasoningEffort = "high";
+                      # textVerbosity = "medium";
+                      # reasoningSummary = "auto";
+                      include = [ "reasoning.encrypted_content" ];
+                    };
+                  };
+                };
+              };
             };
             agent = {
               build = {
