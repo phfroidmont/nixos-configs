@@ -17,6 +17,7 @@ return {
         metals = {
           settings = {
             showImplicitArguments = false,
+            startMcpServer = true,
           },
         },
         elixirls = {
