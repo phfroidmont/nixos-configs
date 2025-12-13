@@ -17,19 +17,19 @@ return {
     }
     vim.o.autoread = true
 
-    vim.keymap.set({ "n", "x" }, "<leader>oa", function()
+    vim.keymap.set({ "n", "x" }, "<leader>aa", function()
       require("opencode").ask("@this: ", { submit = true })
     end, { desc = "Ask opencode" })
 
-    vim.keymap.set({ "n", "x" }, "<leader>oo", function()
+    vim.keymap.set({ "n", "x" }, "<leader>ao", function()
       require("opencode").select()
     end, { desc = "Execute opencode action…" })
 
-    vim.keymap.set({ "n", "x" }, "<leader>os", function()
+    vim.keymap.set({ "n", "x" }, "<leader>as", function()
       require("opencode").prompt("@this")
     end, { desc = "Add to opencode" })
 
-    vim.keymap.set({ "n", "t" }, "<leader>o.", function()
+    vim.keymap.set({ "n", "t" }, "<leader>a.", function()
       require("opencode").toggle()
     end, { desc = "Toggle opencode" })
   end,

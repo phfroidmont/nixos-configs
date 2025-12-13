@@ -1,5 +1,4 @@
 {
-  inputs,
   config,
   lib,
   pkgs,
@@ -135,9 +134,6 @@ in
             vim-startuptime
             yazi-nvim
             zk-nvim
-            avante-nvim
-            blink-cmp-avante
-            img-clip-nvim
 
             (pkgs.vimUtils.buildVimPlugin {
               pname = "opencode.nvim";
@@ -238,7 +234,6 @@ in
                   { import = "lazyvim.plugins.extras.lang.elixir" },
                   { import = "lazyvim.plugins.extras.test.core" },
                   { import = "lazyvim.plugins.extras.lang.typescript" },
-                  { import = "lazyvim.plugins.extras.ai.avante" },
                   -- import/override with your plugins
                   { import = "plugins" },
                 },
