@@ -64,10 +64,13 @@
       }
     ];
   };
-  users.users.root.openssh.authorizedKeys.keyFiles = [
-    ../../ssh_keys/phfroidmont-laptop.pub
-    ../../ssh_keys/phfroidmont-stellaris.pub
-  ];
+
+  users.users.${config.user.name} = {
+    openssh.authorizedKeys.keyFiles = [
+      ../../ssh_keys/phfroidmont-desktop.pub
+      ../../ssh_keys/phfroidmont-stellaris.pub
+    ];
+  };
 
   # Allow to externally control MPD
   networking.firewall.allowedTCPPorts = [ 6600 ];
