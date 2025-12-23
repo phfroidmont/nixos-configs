@@ -198,8 +198,8 @@ in
             scala-cli
             beamMinimal27Packages.elixir
             jdk
-            jetbrains.idea-community
-            jetbrains.idea-ultimate
+            jetbrains.idea-oss
+            jetbrains.idea
             httpie
 
             zsh-syntax-highlighting
