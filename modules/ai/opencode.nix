@@ -53,6 +53,12 @@ in
                       include = [ "reasoning.encrypted_content" ];
                     };
                   };
+                  "gpt-5.1-codex-max" = {
+                    options = {
+                      store = false;
+                      include = [ "reasoning.encrypted_content" ];
+                    };
+                  };
                 };
               };
             };
