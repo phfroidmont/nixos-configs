@@ -27,7 +27,7 @@
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keyFiles = [
     ../../ssh_keys/phfroidmont-desktop.pub
-    ../../ssh_keys/phfroidmont-laptop.pub
+    ../../ssh_keys/phfroidmont-stellaris.pub
   ];
 
   services.adguardhome = {
