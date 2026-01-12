@@ -20,6 +20,11 @@ in
       spiceUSBRedirection.enable = true;
     };
 
+    boot.extraModprobeConfig = ''
+      options kvm_amd nested=1
+      options kvm ignore_msrs=1
+    '';
+
     users.users.${config.user.name}.extraGroups = [ "libvirtd" ];
 
     environment.systemPackages = with pkgs; [ virt-manager ];
