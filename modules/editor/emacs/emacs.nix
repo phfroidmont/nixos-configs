@@ -36,7 +36,7 @@ in
           pkgs.pandoc
 
           # Formatters and linters
-          pkgs.nixfmt-rfc-style # nix formatter
+          pkgs.nixfmt # nix formatter
           pkgs.nixpkgs-fmt
           pkgs.shfmt # sh formatter
           pkgs.shellcheck # sh linter
@@ -46,7 +46,7 @@ in
 
           # LSPs
           pkgs.coursier
-          # metals # Scala
+          pkgs.metals # Scala
 
           # Nix
           pkgs.nil

@@ -49,8 +49,6 @@ in
       }
     ];
 
-    programs.adb.enable = true;
-
     programs.ssh.startAgent = true;
 
     services.udisks2.enable = true;
@@ -212,6 +210,8 @@ in
 
             ledger-live-desktop
             monero-gui
+
+            android-tools
           ])
           ++ [ pkgs.jellyfin-mpv-shim ];
       };

@@ -156,7 +156,7 @@ in
             # Nix
             nixd
             statix
-            nixfmt-rfc-style
+            nixfmt
 
             # SQL
             sqlfluff
