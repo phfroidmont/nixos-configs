@@ -27,7 +27,6 @@ in
     };
 
     security.pki.certificateFiles = [
-      "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
       ./certs/Foyer-Group-Root-CA.crt
       ./certs/Foyer-Sub-CA.crt
     ];
@@ -55,6 +54,7 @@ in
       (sbt.override { jre = jdk17; })
       mongodb-compass
       chisel
+      mia
     ];
   };
 }

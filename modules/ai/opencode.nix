@@ -21,22 +21,57 @@ in
           enable = true;
           package = inputs.llm-agents.packages.${pkgs.system}.opencode;
           settings = {
-            model = "glm_4_5_air";
+            model = "minimax_m2_1";
             permission = {
-              bash = "ask";
+              bash = {
+                "*" = "ask";
+
+                pwd = "allow";
+                whoami = "allow";
+                id = "allow";
+                "uname*" = "allow";
+                "date*" = "allow";
+
+                "ls*" = "allow";
+
+                "git status*" = "allow";
+                "git diff*" = "allow";
+                "git log*" = "allow";
+                "git branch*" = "allow";
+                "git rev-parse*" = "allow";
+                "git remote -v" = "allow";
+
+                "node -v" = "allow";
+                "npm -v" = "allow";
+                "python --version" = "allow";
+                "pip --version" = "allow";
+              };
+
               edit = "ask";
+
+              skill = {
+                "*" = "allow";
+              };
             };
             provider = {
               vllm = {
                 npm = "@ai-sdk/openai-compatible";
                 name = "vLLM";
+
                 options = {
                   baseURL = "http://model1.lefoyer.lu:8030/v1";
                   apiKey = "dummy";
                 };
+
                 models = {
                   glm_4_5_air = {
                     name = "GLM 4.5 Air (local)";
+                    temperature = true;
+                    default = true;
+                  };
+
+                  minimax_m2_1 = {
+                    name = "MiniMax M2.1 (local)";
                     temperature = true;
                     default = true;
                   };
@@ -65,11 +100,18 @@ in
             agent = {
               build = {
                 mode = "primary";
-                temperature = 0.4;
+                temperature = 0.1;
+                prompt = "{file:${./prompts/basic-rules.txt}}";
               };
               plan = {
                 mode = "primary";
                 temperature = 0.4;
+              };
+              debug = {
+                disable = false;
+              };
+              review = {
+                disable = false;
               };
             };
             lsp = {

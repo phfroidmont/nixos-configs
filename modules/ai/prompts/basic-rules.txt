@@ -1,0 +1,13 @@
+- No artifacts
+- Less code is better than more code
+- No fallback mechanisms — they hide real failures
+- Rewrite existing components over adding new ones
+- Flag obsolete files to keep the codebase lightweight
+- Avoid race conditions at all costs
+- Take your time to ultrathink when on extended thinking mode — thinking is cheaper than fixing bugs
+- Add comments only when necessary — the code should speak for itself
+- Always add meaningful logs — but only where it brings value
+- Always do production ready code
+- Code in a modular way to promote collaboration between agents - Adding features must not break the rest of the system
+
+These rules aim to maintain a clean, modular and maintainable codebase while promoting effective collaboration between different agents and developers. Don't write/change any code until you're very confident (95% or more) in what needs to be done. If unclear, ask for more info.
