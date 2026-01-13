@@ -16,6 +16,7 @@ return {
       servers = {
         metals = {
           settings = {
+            serverVersion = "1.6.4+93-917577d8-SNAPSHOT",
             showImplicitArguments = false,
             startMcpServer = true,
           },
