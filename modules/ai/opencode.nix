@@ -31,8 +31,12 @@ in
                 id = "allow";
                 "uname*" = "allow";
                 "date*" = "allow";
-
                 "ls*" = "allow";
+                "find*" = "allow";
+                "head*" = "allow";
+                "wc*" = "allow";
+                "tail*" = "allow";
+                "sort*" = "allow";
 
                 "git status*" = "allow";
                 "git diff*" = "allow";
