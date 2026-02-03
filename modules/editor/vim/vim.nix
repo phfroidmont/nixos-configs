@@ -135,16 +135,7 @@ in
             yazi-nvim
             zk-nvim
 
-            (pkgs.vimUtils.buildVimPlugin {
-              pname = "opencode.nvim";
-              version = "2025-12-04";
-              src = pkgs.fetchFromGitHub {
-                owner = "NickvanDyke";
-                repo = "opencode.nvim";
-                rev = "963fad75f794deb85d1c310d2e2cb033da44f670";
-                hash = "sha256-nKOsHgMptHnOS+SCTHa77sQ/ZiUY0aW26I8GN7ocRHE=";
-              };
-            })
+            opencode-nvim
           ];
 
           extraPackages = with pkgs; [
@@ -188,7 +179,7 @@ in
             shellcheck
           ];
 
-          extraLuaConfig = # lua
+          initLua = # lua
             ''
               require("gruvbox").setup({
                  overrides = {
@@ -265,7 +256,7 @@ in
                     }
                   },
                 dev = {
-                  path = "${pkgs.vimUtils.packDir config.programs.neovim.finalPackage.passthru.packpathDirs}/pack/myNeovimPackages/start",
+                  path = "${config.xdg.dataHome}/nvim/site/pack/hm/start",
                   patterns = {""},
                 },
                 install = {
