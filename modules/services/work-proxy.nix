@@ -32,6 +32,7 @@ in
     ];
 
     environment.variables = {
+      NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
       JAVAX_NET_SSL_TRUSTSTORE = ./certs/cacerts;
       JAVA_OPTS = "-Djavax.net.ssl.trustStore=${./certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
       JAVA_TOOL_OPTIONS = "-Djavax.net.ssl.trustStore=${./certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
