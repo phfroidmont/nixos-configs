@@ -19,6 +19,7 @@ in
         enable = true;
         package = pkgs.yazi;
         enableZshIntegration = true;
+        shellWrapperName = "y";
         settings = {
           manager = {
             sort_by = "alphabetical";
