@@ -11,8 +11,6 @@
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
-    # Workaround until nvim-treesitter main branch is used in nixpkgs
-    nvim-treesitter-main.url = "github:iofq/nvim-treesitter-main";
   };
 
   outputs =
@@ -43,10 +41,7 @@
               "nvidia-settings"
               "idea"
             ];
-          overlays =
-            extraOverlays
-            ++ (pkgs.lib.attrValues self.overlays)
-            ++ [ inputs.nvim-treesitter-main.overlays.default ];
+          overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };
 
       pkgs = mkPkgs nixpkgs [ ];
