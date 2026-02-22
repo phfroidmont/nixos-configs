@@ -1,4 +1,5 @@
 {
+  pkgs,
   config,
   lib,
   ...
@@ -25,7 +26,7 @@ in
           urls-source "ocnews"
           ocnews-url "https://cloud.banditlair.com"
           ocnews-login "paultrial"
-          ocnews-passwordeval "secret-tool lookup elfeed nextcloud"
+          ocnews-passwordeval "${pkgs.libsecret}/bin/secret-tool lookup elfeed nextcloud"
 
           cleanup-on-quit yes
 
