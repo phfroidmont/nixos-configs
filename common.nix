@@ -45,7 +45,7 @@
 
   zramSwap.enable = true;
   zramSwap.memoryPercent = 300;
-  systemd.oomd.enable = true;
+  systemd.oomd.enable = lib.mkDefault true;
 
   console = {
     keyMap = lib.mkDefault "fr";
