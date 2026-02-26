@@ -11,7 +11,7 @@
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
-    nixos-wsl.url = "github:nix-community/NixOS-WSL/release-24.11";
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
   };
 
   outputs =
