@@ -30,9 +30,6 @@
     ai.opencode.enable = true;
   };
 
-  # Monitor backlight control
-  programs.light.enable = true;
-
   services.tlp.enable = true;
 
   hardware.cpu.amd.updateMicrocode = true;

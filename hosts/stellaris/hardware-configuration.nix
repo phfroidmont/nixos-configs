@@ -71,12 +71,15 @@
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = true;
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = [
+    "amdgpu"
+    "nvidia"
+  ];
 
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = false;
-    powerManagement.finegrained = false;
+    powerManagement.finegrained = true;
     open = true;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
@@ -85,7 +88,8 @@
         enable = true;
         enableOffloadCmd = true;
       };
-      amdgpuBusId = "PCI:6:0:0";
+      # nix run github:eclairevoyant/pcids
+      amdgpuBusId = "PCI:7:0:0";
       nvidiaBusId = "PCI:1:0:0";
     };
   };

@@ -18,14 +18,7 @@ in
 
       home = {
         packages = with pkgs; [
-          (
-            (ncmpcpp.override { visualizerSupport = true; })
-            # Duplicate fix until it makes its way in unstable
-            .overrideAttrs
-            (old: {
-              configureFlags = old.configureFlags ++ [ (lib.withFeatureAs true "boost" boost.dev) ];
-            })
-          )
+          (ncmpcpp.override { visualizerSupport = true; })
           mpc
         ];
 
