@@ -40,6 +40,7 @@
   };
 
   hardware = {
+    acpilight.enable = true;
     bluetooth = {
       enable = true;
       # Enable A2DP Sink
@@ -68,6 +69,12 @@
         env = [
           "LIBVA_DRIVER_NAME,nvidia"
           "__GLX_VENDOR_LIBRARY_NAME,nvidia"
+        ];
+
+        monitor = [
+          "eDP-1, 2560x1600@240, 0x0, 1.6"
+          "desc:Microstep MPG321UX OLED 0x01010101, @239.99001, auto-right, 1.6"
+          ", preferred, auto, 1"
         ];
 
         workspace = [
