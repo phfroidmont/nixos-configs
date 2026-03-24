@@ -23,6 +23,11 @@ in
           settings = {
             model = "minimax_m2_1";
             permission = {
+              external_directory = {
+                "*" = "ask";
+                "/nix/store/**" = "allow";
+              };
+
               bash = {
                 "*" = "ask";
 
@@ -32,16 +37,30 @@ in
                 "uname*" = "allow";
                 "date*" = "allow";
                 "ls*" = "allow";
+                "stat*" = "allow";
+                "readlink*" = "allow";
+                "realpath*" = "allow";
+                "tree*" = "allow";
+                "du -sh*" = "allow";
+                "rg*" = "allow";
+                "fd*" = "allow";
                 "find*" = "allow";
+                "cat*" = "allow";
                 "head*" = "allow";
                 "wc*" = "allow";
                 "tail*" = "allow";
                 "sort*" = "allow";
+                "uniq*" = "allow";
+                "cut*" = "allow";
 
                 "git status*" = "allow";
                 "git diff*" = "allow";
                 "git log*" = "allow";
+                "git show*" = "allow";
+                "git ls-files*" = "allow";
+                "git blame*" = "allow";
                 "git branch*" = "allow";
+                "git tag*" = "allow";
                 "git rev-parse*" = "allow";
                 "git remote -v" = "allow";
 
@@ -49,9 +68,30 @@ in
                 "npm -v" = "allow";
                 "python --version" = "allow";
                 "pip --version" = "allow";
+                "nix --version" = "allow";
+
+                "nix path-info*" = "allow";
+                "nix-store --query*" = "allow";
+                "nix-store -q*" = "allow";
+                "nix eval*" = "allow";
+                "nix search*" = "allow";
+                "nix flake show*" = "allow";
+
+                "git commit*" = "ask";
+                "git push*" = "ask";
+                "npm install*" = "ask";
+                "nixos-rebuild*" = "ask";
+                "systemctl*" = "ask";
+                "rm *" = "ask";
               };
 
-              edit = "ask";
+              edit = {
+                "*" = "ask";
+                "/nix/store/**" = "deny";
+                "/run/current-system/**" = "deny";
+                "/nix/var/nix/profiles/system/**" = "deny";
+                "/etc/static/**" = "deny";
+              };
 
               skill = {
                 "*" = "allow";
@@ -68,35 +108,10 @@ in
                 };
 
                 models = {
-                  glm_4_5_air = {
-                    name = "GLM 4.5 Air (local)";
-                    temperature = true;
-                    default = true;
-                  };
-
                   minimax_m2_1 = {
                     name = "MiniMax M2.1 (local)";
                     temperature = true;
                     default = true;
-                  };
-                };
-              };
-              openai = {
-                models = {
-                  "gpt-5.1-codex" = {
-                    options = {
-                      store = false;
-                      # reasoningEffort = "high";
-                      # textVerbosity = "medium";
-                      # reasoningSummary = "auto";
-                      include = [ "reasoning.encrypted_content" ];
-                    };
-                  };
-                  "gpt-5.1-codex-max" = {
-                    options = {
-                      store = false;
-                      include = [ "reasoning.encrypted_content" ];
-                    };
                   };
                 };
               };
@@ -105,7 +120,6 @@ in
               build = {
                 mode = "primary";
                 temperature = 0.1;
-                prompt = "{file:${./prompts/basic-rules.txt}}";
               };
               plan = {
                 mode = "primary";
@@ -113,6 +127,17 @@ in
               };
               debug = {
                 disable = false;
+                temperature = 0.15;
+                steps = 12;
+                prompt = "{file:${./prompts/debug-rules.txt}}";
+                permission = {
+                  edit = "deny";
+                  task = {
+                    "*" = "deny";
+                    "explore" = "allow";
+                    "general" = "ask";
+                  };
+                };
               };
               review = {
                 disable = false;

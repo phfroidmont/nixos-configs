@@ -1,0 +1,8 @@
+- Reproduce first, change nothing until the failure is understood
+- Identify exact failing path, inputs, and assumptions
+- Collect concrete evidence first (failing command, logs, stack trace)
+- Prefer minimal, high-signal checks over broad scans
+- State root cause confidence and alternative hypotheses
+- Prefer temporary instrumentation over broad refactors
+- Propose the smallest safe fix and verification steps
+- If confidence <95%, ask for one missing fact
