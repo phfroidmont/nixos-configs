@@ -127,7 +127,7 @@ in
               "$mod, semicolon, splitratio, +0.1"
 
               "$mod, F, fullscreen, 0"
-              "$mod, X, exec, swaylock"
+              "$mod, X, exec, hyprlock"
 
               # Move focus
               "$mod, H, movefocus, l"
@@ -402,52 +402,85 @@ in
           ];
         };
 
-        programs.swaylock = {
+        programs.hyprlock = {
           enable = true;
-
-          package = pkgs.swaylock-effects;
-
           settings = {
-            ignore-empty-password = true;
-            daemonize = true;
-            # fade-in = 0.5;
-            indicator = true;
-            clock = true;
-            datestr = "%d/%m/%Y";
-            screenshots = true;
-            hide-keyboard-layout = true;
-            indicator-caps-lock = true;
-            bs-hl-color = "7daea3cc";
-            caps-lock-bs-hl-color = "7daea3cc";
-            caps-lock-key-hl-color = "d3869bcc";
-            font = "MesloLGS Nerd Font Propo";
-            font-size = "35";
-            indicator-idle-visible = true;
-            indicator-radius = 100;
-            indicator-thickness = 7;
-            inside-color = "32302f66";
-            inside-clear-color = "89b48266";
-            inside-caps-lock-color = "e78a4e66";
-            inside-ver-color = "7daea366";
-            inside-wrong-color = "ea696266";
-            key-hl-color = "a9b665cc";
-            layout-bg-color = "32302f00";
-            layout-text-color = "d4be98";
-            line-color = "00000000";
-            ring-color = "e78a4ecc";
-            ring-clear-color = "89b482cc";
-            ring-caps-lock-color = "e78a4ecc";
-            ring-ver-color = "7daea3cc";
-            ring-wrong-color = "ea6962cc";
-            separator-color = "00000000";
-            text-color = "d4be98";
-            text-clear-color = "d4be98";
-            text-caps-lock-color = "d4be98";
-            text-ver-color = "d4be98";
-            text-wrong-color = "d4be98";
-            effect-blur = "9x9";
-            effect-greyscale = true;
-            # effect-vignette = "0.5:0.5";
+            general = {
+              hide_cursor = true;
+              ignore_empty_input = true;
+            };
+
+            background = [
+              {
+                monitor = "";
+                path = "screenshot";
+                blur_passes = 3;
+                blur_size = 8;
+              }
+            ];
+
+            input-field = [
+              {
+                monitor = "";
+                size = "320, 58";
+                position = "0, -80";
+                halign = "center";
+                valign = "center";
+                dots_center = true;
+                fade_on_empty = false;
+                outline_thickness = 3;
+                inner_color = "rgb(50, 48, 47)";
+                outer_color = "rgb(231, 138, 78)";
+                font_color = "rgb(212, 190, 152)";
+                placeholder_text = "Password...";
+              }
+            ];
+
+            label = [
+              {
+                monitor = "";
+                text = "$TIME";
+                color = "rgb(212, 190, 152)";
+                font_size = 42;
+                font_family = "MesloLGS Nerd Font Propo";
+                position = "0, 160";
+                halign = "center";
+                valign = "center";
+              }
+              {
+                monitor = "";
+                text = "cmd[update:1000] date +%d/%m/%Y";
+                color = "rgb(212, 190, 152)";
+                font_size = 18;
+                font_family = "MesloLGS Nerd Font Propo";
+                position = "0, 120";
+                halign = "center";
+                valign = "center";
+              }
+            ];
+          };
+        };
+
+        services.hypridle = {
+          enable = true;
+          settings = {
+            general = {
+              lock_cmd = "pidof hyprlock || hyprlock";
+              before_sleep_cmd = "loginctl lock-session";
+              after_sleep_cmd = "hyprctl dispatch dpms on";
+            };
+
+            listener = [
+              {
+                timeout = 300;
+                on-timeout = "loginctl lock-session";
+              }
+              {
+                timeout = 330;
+                on-timeout = "hyprctl dispatch dpms off";
+                on-resume = "hyprctl dispatch dpms on";
+              }
+            ];
           };
         };
       };
@@ -466,7 +499,7 @@ in
 
     hardware.graphics.enable = true;
 
-    security.pam.services.swaylock = { };
+    security.pam.services.hyprlock = { };
 
   };
 }
