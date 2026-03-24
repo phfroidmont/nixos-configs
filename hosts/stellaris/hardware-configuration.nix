@@ -20,7 +20,14 @@
     "sdhci_pci"
   ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-amd" ];
+  boot.kernelModules = [
+    "kvm-amd"
+    "amdgpu"
+    "nvidia"
+    "nvidia_drm"
+    "nvidia_uvm"
+  ];
+  boot.kernelParams = [ "nvidia-drm.modeset=1" ];
   boot.extraModulePackages = [ ];
 
   boot.loader.systemd-boot.enable = true;
@@ -76,18 +83,20 @@
     "nvidia"
   ];
 
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = false;
-    powerManagement.finegrained = true;
+    powerManagement.finegrained = false;
     open = true;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
     prime = {
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
+      sync.enable = true;
       # nix run github:eclairevoyant/pcids
       amdgpuBusId = "PCI:7:0:0";
       nvidiaBusId = "PCI:1:0:0";
