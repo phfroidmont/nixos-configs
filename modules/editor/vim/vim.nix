@@ -141,6 +141,8 @@ in
           extraPackages = with pkgs; [
             gcc # needed for nvim-treesitter
 
+            tree-sitter
+
             # HTML, CSS, JSON
             vscode-langservers-extracted
 
