@@ -128,7 +128,6 @@ in
               debug = {
                 disable = false;
                 temperature = 0.15;
-                steps = 12;
                 prompt = "{file:${./prompts/debug-rules.txt}}";
                 permission = {
                   edit = "deny";
