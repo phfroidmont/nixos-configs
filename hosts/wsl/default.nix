@@ -34,6 +34,18 @@
       httpsProxy = "http://127.0.0.1:3128";
       noProxy = ".lefoyer.lu,.foyer.lu,.foyer.cloud,localhost,127.0.0.1";
     };
+    nat = {
+      enable = true;
+      internalInterfaces = [ "wg0" ];
+      externalInterface = "eth0";
+    };
+  };
+
+  boot.kernel.sysctl = {
+    "net.ipv4.ip_forward" = 1;
+    "net.ipv4.conf.all.rp_filter" = lib.mkForce 0;
+    "net.ipv4.conf.wg0.rp_filter" = lib.mkForce 0;
+    "net.ipv4.conf.eth0.rp_filter" = lib.mkForce 0;
   };
 
   services.tinyproxy = {
@@ -43,22 +55,58 @@
       Port = 2345;
       Listen = "0.0.0.0";
       Upstream = [
-        ''upstream socks5 127.0.0.1:5080 ".tailscale.com"''
-        ''upstream socks5 127.0.0.1:5080 "hs.banditlair.com"''
-        # ''upstream http 127.0.0.1:3128 "hs.banditlair.com"''
         ''upstream http 127.0.0.1:3128 "login.microsoftonline.com"''
       ];
     };
   };
 
-  services.tailscale = {
-    enable = true;
-    useRoutingFeatures = "both";
+  systemd.services.wstunnel-wg = {
+    description = "wstunnel client for WireGuard";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.wstunnel}/bin/wstunnel client --http-proxy http://127.0.0.1:3128 --tls-verify-certificate --log-lvl INFO -L udp://51820:127.0.0.1:51820?timeout_sec=0 wss://ws.banditlair.com:443";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
   };
 
-  systemd.services.tailscaled.serviceConfig.Environment = [
-    "HTTPS_PROXY=http://127.0.0.1:2345"
-  ];
+  networking.wg-quick.interfaces.wg0 = {
+    autostart = true;
+    address = [ "10.250.250.2/30" ];
+    mtu = 1300;
+    privateKeyFile = "/etc/secrets/wg-wsl.key";
+    peers = [
+      {
+        publicKey = "ycPnsgWTOgJzPTWi0y9BOLZQ8lwwGlpkp3i/QTjBXRk=";
+        endpoint = "127.0.0.1:51820";
+        persistentKeepalive = 20;
+        allowedIPs = [
+          "10.250.250.1/32"
+        ];
+      }
+    ];
+  };
+
+  systemd.services.wg-quick-wg0 = {
+    after = [ "wstunnel-wg.service" ];
+    wants = [ "wstunnel-wg.service" ];
+  };
+
+  systemd.services.wg-wsl-nat = {
+    description = "NAT and forwarding rules for wg0";
+    wantedBy = [ "wg-quick-wg0.service" ];
+    partOf = [ "wg-quick-wg0.service" ];
+    after = [ "wg-quick-wg0.service" ];
+    requires = [ "wg-quick-wg0.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -C FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT; ${pkgs.iptables}/bin/iptables -C FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ${pkgs.iptables}/bin/iptables -t nat -C POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE'";
+      ExecStop = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || true'";
+    };
+  };
 
   modules = {
     editor = {
@@ -66,6 +114,7 @@
     };
     desktop.file-manager.enable = true;
     desktop.zsh.enable = true;
+    ai.opencode.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
