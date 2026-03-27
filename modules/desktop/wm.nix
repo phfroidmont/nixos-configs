@@ -9,6 +9,7 @@ let
   cfg = config.modules.desktop.wm;
   term = "${config.home-manager.users.${config.user.name}.programs.kitty.package}/bin/kitty";
   wallpaper = config.modules.desktop.wallpaper;
+  c = (import ./themes/_palette.nix).semantic;
 in
 {
   options.modules.desktop.wm = {
@@ -62,8 +63,8 @@ in
               gaps_in = 7;
               gaps_out = 14;
               border_size = 2;
-              "col.active_border" = "rgb(B28121)";
-              "col.inactive_border" = "rgb(504945)";
+              "col.active_border" = c.borderActiveRgb;
+              "col.inactive_border" = c.borderInactiveRgb;
               no_focus_fallback = false;
               resize_on_border = false;
               hover_icon_on_border = false;
@@ -351,41 +352,41 @@ in
             }
 
             tooltip {
-              background: #282828;
+              background: ${c.bg};
               border: 0px solid;
               border-radius: 0px;
             }
 
             window#waybar {
-              background: #282828;
-              color: #ebdbb2;
+              background: ${c.bg};
+              color: ${c.fg};
             }
 
             #workspaces button {
               padding: 0 0.6em;
-              color: #a89984;
+              color: ${c.fgMuted};
               border-radius: 0px;
             }
 
             #workspaces button.active {
-              color: #ebdbb2;
-              background: #665c54;
+              color: ${c.fg};
+              background: ${c.bgHover};
             }
 
             #workspaces button.urgent {
-              color: #1d2021;
-              background: #fb4934;
+              color: ${c.bgStrong};
+              background: ${c.critical};
             }
 
             #workspaces button:hover {
-              background: #665c54;
+              background: ${c.bgHover};
             }
 
             #network,
             #workspaces,
             #bluetooth,
             #tray {
-              color: #ebdbb2;
+              color: ${c.fg};
               padding: 0 5px;
               margin: 0 5px;
             }
@@ -397,33 +398,33 @@ in
             #clock {
               padding: 0 5px;
               margin: 0 5px;
-              color: #83a598;
+              color: ${c.info};
             }
 
             #battery.charging,
             #battery.plugged,
             #battery.full {
-              color: #b8bb26;
+              color: ${c.success};
             }
 
             #battery.warning:not(.charging) {
-              color: #fabd2f;
+              color: ${c.warning};
             }
 
             #cpu.warning,
             #memory.warning,
             #disk.warning {
-              color: #fabd2f;
+              color: ${c.warning};
             }
 
             #battery.critical:not(.charging) {
-              color: #fb4934;
+              color: ${c.critical};
             }
 
             #cpu.critical,
             #memory.critical,
             #disk.critical {
-              color: #fb4934;
+              color: ${c.critical};
             }
           '';
           package = pkgs.waybar.override { wireplumberSupport = false; };
@@ -487,9 +488,9 @@ in
                 dots_center = true;
                 fade_on_empty = false;
                 outline_thickness = 3;
-                inner_color = "rgb(50, 48, 47)";
-                outer_color = "rgb(231, 138, 78)";
-                font_color = "rgb(212, 190, 152)";
+                inner_color = c.lockInnerRgb;
+                outer_color = c.lockOuterRgb;
+                font_color = c.lockTextRgb;
                 placeholder_text = "Password...";
               }
             ];
@@ -498,7 +499,7 @@ in
               {
                 monitor = "";
                 text = "$TIME";
-                color = "rgb(212, 190, 152)";
+                color = c.lockTextRgb;
                 font_size = 42;
                 font_family = "MesloLGS Nerd Font Propo";
                 position = "0, 160";
@@ -508,7 +509,7 @@ in
               {
                 monitor = "";
                 text = "cmd[update:1000] date +%d/%m/%Y";
-                color = "rgb(212, 190, 152)";
+                color = c.lockTextRgb;
                 font_size = 18;
                 font_family = "MesloLGS Nerd Font Propo";
                 position = "0, 120";

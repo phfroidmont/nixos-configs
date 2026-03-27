@@ -7,6 +7,7 @@
 
 let
   cfg = config.modules.desktop.dunst;
+  c = (import ./themes/_palette.nix).semantic;
 in
 {
   options.modules.desktop.dunst = {
@@ -38,7 +39,7 @@ in
             padding = 20;
             shrink = "no";
             transparency = 5;
-            font = "monospace 14";
+            font = "MesloLGS Nerd Font 12";
             idle_threshold = 120;
             indicate_hidden = "yes";
             markup = "full";
@@ -49,21 +50,21 @@ in
             sticky_history = "yes";
             sort = "yes";
             frame_width = 1;
-            frame_color = "#1d2021";
+            frame_color = c.bgStrong;
           };
           urgency_low = {
-            foreground = "#ebdbb2";
-            background = "#3c3836";
+            foreground = c.fg;
+            background = c.bgAlt;
             timeout = 8;
           };
           urgency_normal = {
-            foreground = "#ebdbb2";
-            background = "#32302f";
+            foreground = c.fg;
+            background = c.bg;
             timeout = 14;
           };
           urgency_critical = {
-            foreground = "#32302f";
-            background = "#cc241d";
+            foreground = c.bg;
+            background = c.critical;
             timeout = 0;
           };
         };
