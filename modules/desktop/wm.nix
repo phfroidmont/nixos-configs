@@ -287,19 +287,31 @@ in
 
               cpu = {
                 interval = 1;
-                format = "  {usage}%";
+                states = {
+                  warning = 60;
+                  critical = 85;
+                };
+                format = "<span size=\"120%\" rise=\"0\">󰍛</span> {usage}%";
                 tooltip = false;
               };
 
               memory = {
                 interval = 1;
-                format = " {percentage}%";
+                states = {
+                  warning = 70;
+                  critical = 90;
+                };
+                format = "<span size=\"120%\" rise=\"-80\">󰘚</span> {percentage}%";
                 tooltip = false;
               };
 
               disk = {
                 interval = 60;
-                format = "  {free}";
+                states = {
+                  warning = 75;
+                  critical = 90;
+                };
+                format = "<span size=\"120%\" rise=\"0\">󰋊</span> {free}";
                 tooltip = false;
               };
 
@@ -307,6 +319,25 @@ in
                 format = "󰥔 {:%A, %d %h %H:%M}";
                 format-alt = "󰥔 {:%d/%m/%Y %H:%M}";
                 tooltip = false;
+              };
+
+              battery = {
+                states = {
+                  warning = 30;
+                  critical = 15;
+                };
+                format = "<span size=\"120%\" rise=\"0\">{icon}</span> {capacity}%";
+                format-charging = "<span size=\"120%\" rise=\"0\">󱐋</span> {capacity}%";
+                format-plugged = "<span size=\"120%\" rise=\"0\"></span> {capacity}%";
+                format-full = "<span size=\"120%\" rise=\"0\"></span>";
+                format-icons = [
+                  ""
+                  ""
+                  ""
+                  ""
+                  ""
+                ];
+                tooltip-format = "{timeTo}";
               };
 
             };
@@ -362,10 +393,37 @@ in
             #cpu,
             #memory,
             #disk,
+            #battery,
             #clock {
               padding: 0 5px;
               margin: 0 5px;
               color: #83a598;
+            }
+
+            #battery.charging,
+            #battery.plugged,
+            #battery.full {
+              color: #b8bb26;
+            }
+
+            #battery.warning:not(.charging) {
+              color: #fabd2f;
+            }
+
+            #cpu.warning,
+            #memory.warning,
+            #disk.warning {
+              color: #fabd2f;
+            }
+
+            #battery.critical:not(.charging) {
+              color: #fb4934;
+            }
+
+            #cpu.critical,
+            #memory.critical,
+            #disk.critical {
+              color: #fb4934;
             }
           '';
           package = pkgs.waybar.override { wireplumberSupport = false; };
