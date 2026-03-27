@@ -50,6 +50,7 @@ in
           package = gruvboxPlus;
           name = "GruvboxPlus";
         };
+        gtk4.theme = null;
       };
 
       xdg.configFile = {
