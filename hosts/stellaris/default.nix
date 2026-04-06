@@ -5,7 +5,7 @@
   modules = {
     desktop = {
       wm.enable = true;
-      defaultBrowser = "brave";
+      defaultBrowser = "brave-browser";
     };
     editor = {
       vim.enable = true;
