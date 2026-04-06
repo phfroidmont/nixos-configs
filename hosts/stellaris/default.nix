@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   imports = [ ./hardware-configuration.nix ];
 
@@ -37,6 +37,47 @@
   hardware.tuxedo-rs = {
     enable = true;
     tailor-gui.enable = true;
+  };
+
+  # Keep LED state deterministic:
+  # - force key kbd_backlight_94 back to the default profile
+  # - force the lightbar to an off profile
+  systemd.services.tailord-led-profile-fix = {
+    description = "Fix TUXEDO LED profile quirks";
+    requiredBy = [ "tailord.service" ];
+    before = [ "tailord.service" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      set -eu
+      ${pkgs.python3}/bin/python - <<'PY'
+      import json
+      from pathlib import Path
+
+      profile_path = Path("/etc/tailord/profiles/default.json")
+      if not profile_path.exists():
+          raise SystemExit(0)
+
+      data = json.loads(profile_path.read_text())
+      changed = False
+
+      for led in data.get("leds", []):
+          if led.get("function") == "kbd_backlight_94" and led.get("profile") != "default":
+              led["profile"] = "default"
+              changed = True
+          if led.get("function") == "lightbar" and led.get("profile") != "off":
+              led["profile"] = "off"
+              changed = True
+
+      off_profile_path = Path("/etc/tailord/keyboard/off.json")
+      off_profile = '{"Single":{"r":0,"g":0,"b":0}}'
+      if (not off_profile_path.exists()) or off_profile_path.read_text().strip() != off_profile:
+          off_profile_path.write_text(off_profile)
+          changed = True
+
+      if changed:
+          profile_path.write_text(json.dumps(data, separators=(",", ":")))
+      PY
+    '';
   };
 
   hardware = {
