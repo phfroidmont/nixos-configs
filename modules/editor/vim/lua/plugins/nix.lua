@@ -27,8 +27,9 @@ return {
   },
   {
     "stevearc/conform.nvim",
+    lazy = false,
     opts = {
-      format = {
+      default_format_opts = {
         lsp_format = "first"
       },
       formatters_by_ft = {
