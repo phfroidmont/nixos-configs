@@ -9,6 +9,7 @@
       emacs.enable = true;
     };
     services = {
+      nix-auth.enable = true;
       flatpak.enable = true;
       belgian-eid.enable = true;
       docker.enable = true;

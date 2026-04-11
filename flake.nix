@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgsStable.url = "github:nixos/nixpkgs/nixos-25.11";
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,6 +19,7 @@
     inputs@{
       self,
       nixpkgs,
+      nixpkgsStable,
       ...
     }:
     let
@@ -46,11 +48,22 @@
         };
 
       pkgs = mkPkgs nixpkgs [ ];
+      stablePkgs = mkPkgs nixpkgsStable [ ];
 
       lib = nixpkgs.lib.extend (
         self: super: {
           my = import ./lib {
             inherit pkgs inputs;
+            lib = self;
+          };
+        }
+      );
+
+      stableLib = nixpkgsStable.lib.extend (
+        self: super: {
+          my = import ./lib {
+            pkgs = stablePkgs;
+            inherit inputs;
             lib = self;
           };
         }
@@ -64,12 +77,12 @@
       };
 
       nixosConfigurations = (mapHosts ./hosts { }) // {
-        rpi3 = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = {
-            inherit inputs;
-          };
-          modules = [ ./hosts/rpi3/default.nix ];
+        aegis = stableLib.my.mkHost ./hosts/aegis/default.nix {
+          nix.registry.nixpkgs.flake = stableLib.mkForce nixpkgsStable;
+        };
+
+        aegis-installer = stableLib.my.mkHost ./hosts/aegis-installer/default.nix {
+          nix.registry.nixpkgs.flake = stableLib.mkForce nixpkgsStable;
         };
       };
     };
