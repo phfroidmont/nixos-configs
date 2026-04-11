@@ -11,6 +11,7 @@ let
     SERVER_DIR="/etc/secrets/mullvad/servers"
     CURRENT_LINK="/etc/secrets/mullvad/current.conf"
     RUNTIME_CONF="/etc/secrets/mullvad/current-ipv4.conf"
+    WG_MTU="1280"
 
     ks_rule_exists() {
       ${pkgs.iptables}/bin/iptables -C "$KILLSWITCH_CHAIN" -i "$LAN_IF" ! -o "$WG_IF" -j REJECT >/dev/null 2>&1
@@ -25,6 +26,22 @@ let
     ks_disable() {
       while ks_rule_exists; do
         ${pkgs.iptables}/bin/iptables -D "$KILLSWITCH_CHAIN" -i "$LAN_IF" ! -o "$WG_IF" -j REJECT
+      done
+    }
+
+    mss_rule_exists() {
+      ${pkgs.iptables}/bin/iptables -t mangle -C FORWARD -i "$LAN_IF" -o "$WG_IF" -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu >/dev/null 2>&1
+    }
+
+    mss_enable() {
+      if ! mss_rule_exists; then
+        ${pkgs.iptables}/bin/iptables -t mangle -I FORWARD 1 -i "$LAN_IF" -o "$WG_IF" -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+      fi
+    }
+
+    mss_disable() {
+      while mss_rule_exists; do
+        ${pkgs.iptables}/bin/iptables -t mangle -D FORWARD -i "$LAN_IF" -o "$WG_IF" -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
       done
     }
 
@@ -85,6 +102,9 @@ let
         }
       ' "$src" | ${pkgs.coreutils}/bin/tee "$RUNTIME_CONF" >/dev/null
 
+      ${pkgs.gnused}/bin/sed -i '/^[[:space:]]*MTU[[:space:]]*=/d' "$RUNTIME_CONF"
+      ${pkgs.gnused}/bin/sed -i '0,/^\[Interface\]$/s//[Interface]\nMTU = '"$WG_MTU"'/' "$RUNTIME_CONF"
+
       ${pkgs.coreutils}/bin/chmod 0600 "$RUNTIME_CONF"
       ${pkgs.coreutils}/bin/chown root:root "$RUNTIME_CONF"
     }
@@ -96,12 +116,14 @@ let
         ensure_current_conf
         render_runtime_conf
         ks_enable
+        mss_enable
         ${pkgs.systemd}/bin/systemctl restart "$WG_UNIT"
         ${pkgs.systemd}/bin/systemctl --no-pager --full status "$WG_UNIT"
         ;;
 
       down)
         ks_disable
+        mss_disable
         ${pkgs.systemd}/bin/systemctl stop "$WG_UNIT"
         ;;
 
@@ -122,6 +144,7 @@ let
 
         if ${pkgs.systemd}/bin/systemctl is-active --quiet "$WG_UNIT"; then
           ks_enable
+          mss_enable
           ${pkgs.systemd}/bin/systemctl restart "$WG_UNIT"
         fi
 
@@ -157,6 +180,12 @@ let
           echo "killswitch: enabled"
         else
           echo "killswitch: disabled"
+        fi
+
+        if mss_rule_exists; then
+          echo "mss-clamp: enabled"
+        else
+          echo "mss-clamp: disabled"
         fi
 
         if [[ -e "$CURRENT_LINK" ]]; then
