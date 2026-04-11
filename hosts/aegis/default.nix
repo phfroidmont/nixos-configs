@@ -102,10 +102,9 @@ in
     enable = true;
     openFirewall = false;
     mutableSettings = false;
+    host = "192.168.1.1";
+    port = 3000;
     settings = {
-      http = {
-        address = "192.168.1.1:3000";
-      };
       auth_attempts = 5;
       block_auth_min = 15;
       dns = {
@@ -130,6 +129,29 @@ in
         interval = "8760h";
       };
     };
+  };
+
+  systemd.services.adguardhome = {
+    unitConfig.ConditionPathExists = "/etc/secrets/aegis-adguard-admin-password-hash";
+    preStart = lib.mkAfter ''
+      ADMIN_HASH_FILE=/etc/secrets/aegis-adguard-admin-password-hash
+      ADMIN_HASH="$(${pkgs.coreutils}/bin/tr -d '\r\n' < "$ADMIN_HASH_FILE")"
+
+      if [[ -z "$ADMIN_HASH" ]]; then
+        echo "AdGuard admin hash file is empty: $ADMIN_HASH_FILE" >&2
+        exit 1
+      fi
+
+      cat > /run/AdGuardHome/admin-user.yaml <<EOF
+      users:
+        - name: admin
+          password: $ADMIN_HASH
+      EOF
+
+      ${pkgs.yaml-merge}/bin/yaml-merge "$STATE_DIRECTORY/AdGuardHome.yaml" /run/AdGuardHome/admin-user.yaml > "$STATE_DIRECTORY/AdGuardHome.yaml.tmp"
+      mv "$STATE_DIRECTORY/AdGuardHome.yaml.tmp" "$STATE_DIRECTORY/AdGuardHome.yaml"
+      chmod 600 "$STATE_DIRECTORY/AdGuardHome.yaml"
+    '';
   };
 
   services.hostapd = {

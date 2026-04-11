@@ -50,6 +50,17 @@ After first boot, connect with SSH as user `admin` using your configured SSH key
 - The AdGuard web UI is available on LAN at `http://192.168.1.1:3000`.
 - `dnsmasq` provides DHCP on LAN (`192.168.1.100-192.168.1.199`).
 
+AdGuard web authentication is required. Create the admin hash file on `aegis`:
+
+[source,bash]
+----
+PASSWORD='choose-a-strong-password'
+HASH="$(nix shell nixpkgs#apacheHttpd -c htpasswd -nbBC 12 "" "$PASSWORD" | tr -d ':\n')"
+sudo install -d -m 0755 /etc/secrets
+sudo sh -c 'printf "%s\n" "$1" > /etc/secrets/aegis-adguard-admin-password-hash' _ "$HASH"
+sudo chmod 0644 /etc/secrets/aegis-adguard-admin-password-hash
+----
+
 == Aegis Wi-Fi (WPA2)
 - SSID: `NSA honeypot`.
 - Create the WPA2 passphrase file on `aegis`:
