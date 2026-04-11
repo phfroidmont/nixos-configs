@@ -71,3 +71,39 @@ sudo install -d -m 0755 /etc/secrets
 sudo install -m 0600 /dev/null /etc/secrets/aegis-wifi-passphrase
 sudo sh -c 'printf "%s\n" "your-8-to-63-char-passphrase" > /etc/secrets/aegis-wifi-passphrase'
 ----
+
+== Aegis Mullvad VPN gateway (kill-switch)
+`aegis` can run a Mullvad WireGuard client and route all LAN traffic through it.
+
+1. Copy your Mullvad WireGuard `.conf` files to `aegis`:
+
+[source,bash]
+----
+sudo install -d -m 0755 /etc/secrets/mullvad/servers
+sudo cp /path/to/mullvad/*.conf /etc/secrets/mullvad/servers/
+sudo ln -sfn /etc/secrets/mullvad/servers/your-default.conf /etc/secrets/mullvad/current.conf
+----
+
+2. Control it on `aegis`:
+
+[source,bash]
+----
+sudo mullvad-gw list
+sudo mullvad-gw up
+sudo mullvad-gw status
+sudo mullvad-gw switch nl-ams-wg-001
+sudo mullvad-gw down
+----
+
+`up` enables a LAN kill-switch (LAN forwarding is blocked unless traffic exits via `mullvad`).
+
+3. Control it remotely from `stellaris`:
+
+[source,bash]
+----
+aegis-vpn list
+aegis-vpn up
+aegis-vpn status
+aegis-vpn switch nl-ams-wg-001
+aegis-vpn down
+----

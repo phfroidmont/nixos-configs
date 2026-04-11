@@ -143,6 +143,22 @@
 
   services.tailscale.enable = true;
 
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "aegis-vpn" ''
+      set -euo pipefail
+
+      TARGET="''${AEGIS_SSH_TARGET:-admin@192.168.1.1}"
+
+      if [[ $# -lt 1 ]]; then
+        echo "Usage: aegis-vpn <up|down|status|list|switch SERVER>" >&2
+        exit 1
+      fi
+
+      printf -v remote_args '%q ' "$@"
+      exec ${pkgs.openssh}/bin/ssh "$TARGET" "sudo /run/current-system/sw/bin/mullvad-gw ''${remote_args}"
+    '')
+  ];
+
   services.openssh = {
     enable = true;
     settings.PasswordAuthentication = false;

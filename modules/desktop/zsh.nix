@@ -44,6 +44,33 @@ in
 
               bindkey "^P" up-line-or-beginning-search
               bindkey "^N" down-line-or-beginning-search
+
+              _aegis_vpn() {
+                local -a subcmds servers
+                local output
+
+                subcmds=(up down status list switch)
+
+                if (( CURRENT == 2 )); then
+                  _describe 'aegis-vpn command' subcmds
+                  return
+                fi
+
+                if [[ "''${words[2]}" != "switch" ]]; then
+                  return
+                fi
+
+                output="$(${pkgs.coreutils}/bin/timeout 1s aegis-vpn list 2>/dev/null || true)"
+                if [[ -z "$output" ]]; then
+                  return
+                fi
+
+                servers=("''${(@f)$(${pkgs.coreutils}/bin/printf '%s\n' "$output" | ${pkgs.gnused}/bin/sed -E 's/^[*[:space:]]+//')}")
+                if (( ''${#servers[@]} > 0 )); then
+                  _describe 'mullvad server' servers
+                fi
+              }
+              compdef _aegis_vpn aegis-vpn
             '';
           oh-my-zsh = {
             enable = true;
