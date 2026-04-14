@@ -152,7 +152,7 @@ in
                   "--transport"
                   "stdio"
                 ];
-                enabled = true;
+                enabled = false;
               };
             };
           };
