@@ -142,22 +142,24 @@ in
                 disable = false;
               };
             };
-            lsp = {
+            mcp = {
               metals = {
-                command = [ "${pkgs.metals}/bin/metals" ];
-                extensions = [
-                  ".scala"
-                  ".sbt"
-                  ".sc"
+                type = "local";
+                command = [
+                  "metals-mcp"
+                  "--workspace"
+                  "."
+                  "--transport"
+                  "stdio"
                 ];
-                initialization = {
-                  statusBarProvider = "log-message";
-                  doctorProvider = "json";
-                };
+                enabled = true;
               };
             };
           };
         };
+        home.packages = with pkgs; [
+          metals
+        ];
       };
   };
 }
