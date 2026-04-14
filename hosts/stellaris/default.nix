@@ -1,6 +1,14 @@
-{ config, pkgs, ... }:
 {
-  imports = [ ./hardware-configuration.nix ];
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
+{
+  imports = [
+    ./hardware-configuration.nix
+    inputs."hermes-agent".nixosModules.default
+  ];
 
   modules = {
     desktop = {
@@ -20,6 +28,14 @@
       languagetool.enable = true;
       work-proxy.enable = true;
       kanata.enable = true;
+      hermesAccounting = {
+        enable = true;
+        git = {
+          remoteUrl = "ssh://forgejo@forge.froidmont.org/phfroidmont/pta.git";
+          forgejoHost = "forge.froidmont.org";
+          branch = "master";
+        };
+      };
     };
     media = {
       mpd.enable = true;
