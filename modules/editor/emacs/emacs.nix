@@ -41,8 +41,8 @@ in
           pkgs.shfmt # sh formatter
           pkgs.shellcheck # sh linter
           pkgs.html-tidy # HTML formatter
-          pkgs.nodePackages.stylelint # CSS linter
-          pkgs.nodePackages.js-beautify # JS/CSS/HTML formatter
+          pkgs.stylelint # CSS linter
+          pkgs.js-beautify # JS/CSS/HTML formatter
 
           # LSPs
           pkgs.coursier

@@ -29,8 +29,7 @@
   ];
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
-    # Bose Companion USB audio intermittently disconnects on stellaris; disable USB LPM quirk.
-    "usbcore.quirks=05a7:1020:k"
+    "iommu=pt"
   ];
   boot.extraModulePackages = [ ];
 

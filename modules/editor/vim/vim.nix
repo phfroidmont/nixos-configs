@@ -20,10 +20,14 @@ in
 
         programs.neovim = {
           enable = true;
+
           package = pkgs.neovim-unwrapped;
           vimAlias = true;
           vimdiffAlias = true;
           withNodeJs = true;
+          withRuby = false;
+          withPython3 = false;
+
           plugins = with pkgs.vimPlugins; [
             # base distro
             LazyVim
@@ -168,7 +172,7 @@ in
             docker-compose-language-service
 
             # JSON and YAML extras
-            nodePackages.yaml-language-server
+            yaml-language-server
 
             # Java
             jdt-language-server
@@ -286,8 +290,8 @@ in
           # LSP
           yaml-language-server
           typos-lsp
-          nodePackages.typescript-language-server
-          nodePackages.prettier
+          typescript-language-server
+          prettier
           terraform-ls
           sqls
           nixd
