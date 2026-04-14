@@ -8,8 +8,12 @@
 {
   imports = [
     inputs.home-manager.nixosModules.home-manager
+    inputs.nix-index-database.nixosModules.nix-index
   ]
   ++ (lib.my.mapModulesRec' (toString ./modules) import);
+
+  programs.command-not-found.enable = false;
+  programs.nix-index-database.comma.enable = true;
 
   nix = {
     package = pkgs.nixVersions.stable;

@@ -172,7 +172,10 @@
         enable = true;
         enableZshIntegration = true;
       };
-      command-not-found.enable = true;
+      nix-index = {
+        enable = true;
+        enableZshIntegration = true;
+      };
       direnv = {
         enable = true;
         enableZshIntegration = true;
