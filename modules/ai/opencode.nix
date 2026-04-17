@@ -157,6 +157,13 @@ in
             };
           };
         };
+        xdg.configFile."opencode/AGENTS.md".text = ''
+          # Global OpenCode Rules
+
+          - Before any commit, try to run the project formatter on changed files.
+          - Prefer formatting only changed files instead of formatting the entire repository.
+          - If formatting fails, report the failure and continue only after explicit user approval.
+        '';
         home.packages = with pkgs; [
           metals
         ];
