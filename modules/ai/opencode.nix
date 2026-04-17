@@ -62,10 +62,14 @@ in
                 "git branch*" = "allow";
                 "git tag*" = "allow";
                 "git rev-parse*" = "allow";
+                "git symbolic-ref*" = "allow";
                 "git remote -v" = "allow";
 
                 "node -v" = "allow";
                 "npm -v" = "allow";
+                "npx prettier*" = "allow";
+                "npx eslint*" = "allow";
+                "sbt*" = "allow";
                 "python --version" = "allow";
                 "pip --version" = "allow";
                 "nix --version" = "allow";
@@ -153,6 +157,12 @@ in
                   "stdio"
                 ];
                 enabled = false;
+              };
+              dstudiodoc = {
+                type = "remote";
+                url = "http://iavideotranslation.lefoyer.lu:7860/mcp/";
+                enabled = false;
+                timeout = 10000;
               };
             };
           };
