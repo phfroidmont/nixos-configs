@@ -26,6 +26,7 @@ in
               external_directory = {
                 "*" = "ask";
                 "/nix/store/**" = "allow";
+                "~/Projects/**" = "allow";
               };
 
               bash = {
@@ -170,9 +171,22 @@ in
         xdg.configFile."opencode/AGENTS.md".text = ''
           # Global OpenCode Rules
 
+          ## Code Style
+          Rule 0: Complexity is the main failure mode. Keep it boring.
+          - Prefer the simplest solution that works; avoid unnecessary features, layers, and abstractions.
+          - Write for humans first: clear names, explicit control flow, and readable code over clever code.
+          - Break complex expressions into small, named steps; optimize for debuggability.
+          - Keep behavior local to where it is used; avoid needless indirection across files/modules.
+          - Accept small duplication when it is clearer than a “smart” abstraction.
+          - Add abstractions only after patterns are proven and stable (never speculative).
+          - Refactor in small, reversible steps; keep the system working throughout.
+          - Respect existing code: understand why it exists before replacing it (Chesterton’s Fence).
+          - For bugs, write a failing regression test first, then fix.
+          - Log important branches with enough context (e.g., request/correlation IDs) for production debugging.
+
+          # Commits
           - Use Conventional Commits
-          - Before any commit, try to run the project formatter on changed files.
-          - Prefer formatting only changed files instead of formatting the entire repository.
+          - Before any commit, try to run the project formatter and linter on changed files.
         '';
         home.packages = with pkgs; [
           metals
