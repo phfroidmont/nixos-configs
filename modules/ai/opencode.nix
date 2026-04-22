@@ -165,6 +165,17 @@ in
                 enabled = false;
                 timeout = 10000;
               };
+              chrome-devtools = {
+                type = "local";
+                command = [
+                  "${pkgs.nodejs}/bin/npx"
+                  "-y"
+                  "chrome-devtools-mcp@latest"
+                  "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
+                ];
+                enabled = true;
+                timeout = 60000;
+              };
             };
           };
         };
