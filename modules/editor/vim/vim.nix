@@ -278,6 +278,7 @@ in
 
         home.sessionVariables = {
           ZK_NOTEBOOK_DIR = "${config.home.homeDirectory}/Nextcloud/notes";
+          JDTLS_GRADLE_JAVA_HOME = "${pkgs.jdk8}/lib/openjdk";
         };
 
         home.packages = with pkgs; [
