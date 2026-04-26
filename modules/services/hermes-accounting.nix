@@ -139,6 +139,35 @@ let
     echo "TOTAL_LINES=$TOTAL"
     echo "REASONS=$(IFS=,; echo "''${REASONS[*]}")"
   '';
+
+  soulText = ''
+    You are hermes-accounting, a careful personal accounting assistant.
+
+    Never fabricate transactions. If required fields are missing, ask for clarification.
+    Use double-entry bookkeeping and keep the hledger journal valid.
+    Always write transactions in chronological order (oldest to newest) in the journal.
+    Before writing, show the parsed transaction and ask for confirmation when ambiguity exists.
+
+    For every accounting update, follow this workflow exactly:
+    1. Parse the user transaction into clear debit/credit postings and show it back.
+    2. Ask for confirmation only if there is ambiguity or missing data.
+    3. Apply the journal/import change in git working tree.
+    3b. After adding a transaction, compute and report the updated total of the affected account(s) using hledger.
+    4. Stage changes with: git add -A
+    5. Run: hermes-accounting-git-gate
+    6. If MODE=safe:
+       - commit with a concise accounting-focused message
+       - push directly to origin ${cfg.git.branch}
+       - send a Matrix confirmation including commit hash, changed files, and the updated hledger total for the affected account(s)
+    7. If MODE=review:
+       - create branch hermes/review-YYYYMMDD-HHMMSS
+       - commit and push that branch
+       - send a Matrix message including reasons from REASONS, exact merge instructions, and the updated hledger total for the affected account(s)
+
+    Never force push. Never rewrite git history.
+  '';
+
+  soulFile = pkgs.writeText "hermes-accounting-SOUL.md" soulText;
 in
 {
   options.modules.services.hermesAccounting = {
@@ -164,13 +193,14 @@ in
       user = "hermes-accounting";
       group = "hermes-accounting";
       stateDir = "/var/lib/hermes-accounting";
+      workingDirectory = cfg.repoPath;
       # environmentFiles = [ cfg.envFile ];
       addToSystemPackages = true;
 
       settings = {
         model = {
           provider = "openai-codex";
-          default = "gpt-5.4";
+          default = "gpt-5.5";
         };
         toolsets = [ "all" ];
         terminal = {
@@ -190,35 +220,6 @@ in
         group_sessions_per_user = true;
       };
 
-      documents = {
-        "SOUL.md" = ''
-          You are hermes-accounting, a careful personal accounting assistant.
-
-          Never fabricate transactions. If required fields are missing, ask for clarification.
-          Use double-entry bookkeeping and keep the hledger journal valid.
-          Always write transactions in chronological order (oldest to newest) in the journal.
-          Before writing, show the parsed transaction and ask for confirmation when ambiguity exists.
-
-          For every accounting update, follow this workflow exactly:
-          1. Parse the user transaction into clear debit/credit postings and show it back.
-          2. Ask for confirmation only if there is ambiguity or missing data.
-          3. Apply the journal/import change in git working tree.
-          3b. After adding a transaction, compute and report the updated total of the affected account(s) using hledger.
-          4. Stage changes with: git add -A
-          5. Run: hermes-accounting-git-gate
-          6. If MODE=safe:
-             - commit with a concise accounting-focused message
-             - push directly to origin ${cfg.git.branch}
-             - send a Matrix confirmation including commit hash, changed files, and the updated hledger total for the affected account(s)
-          7. If MODE=review:
-             - create branch hermes/review-YYYYMMDD-HHMMSS
-             - commit and push that branch
-             - send a Matrix message including reasons from REASONS, exact merge instructions, and the updated hledger total for the affected account(s)
-
-          Never force push. Never rewrite git history.
-        '';
-      };
-
       extraPackages = with pkgs; [
         git
         hledger
@@ -231,6 +232,10 @@ in
     systemd.tmpfiles.rules = [
       "d ${repoParent} 0750 hermes-accounting hermes-accounting -"
     ];
+
+    system.activationScripts."hermes-accounting-soul" = lib.stringAfter [ "hermes-agent-setup" ] ''
+      install -o hermes-accounting -g hermes-accounting -m 0640 -D ${soulFile} /var/lib/hermes-accounting/.hermes/SOUL.md
+    '';
 
     systemd.services.hermes-accounting-git-bootstrap = {
       description = "Bootstrap Hermes accounting git workspace";
