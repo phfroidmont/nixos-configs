@@ -42,7 +42,7 @@
       ncmpcpp.enable = true;
       emulators.gc.enable = true;
       steam.enable = true;
-      lutris.enable = true;
+      lutris.enable = false;
     };
     ai.opencode.enable = true;
   };
