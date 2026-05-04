@@ -177,6 +177,17 @@ in
                 enabled = true;
                 timeout = 60000;
               };
+              playwright = {
+                type = "local";
+                command = [
+                  "${pkgs.nodejs}/bin/npx"
+                  "-y"
+                  "@playwright/mcp@latest"
+                  "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
+                ];
+                enabled = true;
+                timeout = 60000;
+              };
             };
           };
         };
