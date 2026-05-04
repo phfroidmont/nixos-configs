@@ -47,7 +47,19 @@
     ai.opencode.enable = true;
   };
 
-  services.tlp.enable = true;
+  services.tlp = {
+    enable = true;
+    settings = {
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_AC = "performance";
+      RUNTIME_PM_ON_AC = "on";
+      PCIE_ASPM_ON_AC = "default";
+      WIFI_PWR_ON_AC = "off";
+      SOUND_POWER_SAVE_ON_AC = 0;
+      SATA_LINKPWR_ON_AC = "max_performance";
+      USB_AUTOSUSPEND = 0;
+    };
+  };
 
   hardware.cpu.amd.updateMicrocode = true;
   hardware.tuxedo-drivers.enable = true;
