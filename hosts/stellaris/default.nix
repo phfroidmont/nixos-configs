@@ -123,6 +123,38 @@
     {
       services.network-manager-applet.enable = true;
       services.blueman-applet.enable = true;
+      services.kanshi = {
+        enable = true;
+        settings = [
+          {
+            profile.name = "docked";
+            profile.outputs = [
+              {
+                criteria = "Microstep MPG321UX OLED 0x01010101";
+                mode = "3840x2160@239.99Hz";
+                position = "0,0";
+                scale = 1.6;
+              }
+              {
+                criteria = "eDP-1";
+                status = "disable";
+              }
+            ];
+          }
+          {
+            profile.name = "laptop";
+            profile.outputs = [
+              {
+                criteria = "eDP-1";
+                mode = "2560x1600@240Hz";
+                position = "0,0";
+                scale = 1.6;
+              }
+            ];
+          }
+        ];
+      };
+
       wayland.windowManager.hyprland.settings = {
         monitor = [
           "eDP-1, 2560x1600@240, 0x0, 1.6"
