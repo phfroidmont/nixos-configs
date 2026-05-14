@@ -15,7 +15,10 @@ in
   };
   config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} =
-      { ... }:
+      { config, ... }:
+      let
+        playwrightMcpUserDataDir = "${config.xdg.cacheHome}/opencode/playwright-mcp";
+      in
       {
         programs.opencode = {
           enable = true;
@@ -174,7 +177,7 @@ in
                   "chrome-devtools-mcp@latest"
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
                 ];
-                enabled = true;
+                enabled = false;
                 timeout = 60000;
               };
               playwright = {
@@ -184,6 +187,7 @@ in
                   "-y"
                   "@playwright/mcp@latest"
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
+                  "--user-data-dir=${playwrightMcpUserDataDir}"
                 ];
                 enabled = true;
                 timeout = 60000;
