@@ -124,7 +124,10 @@
 
   networking.networkmanager.enable = true;
 
-  services.blueman.enable = true;
+  services.blueman = {
+    enable = true;
+    withApplet = false;
+  };
 
   services.logind.settings.Login.HandleLidSwitch = "ignore";
 
