@@ -139,6 +139,27 @@
         enable = true;
         settings = [
           {
+            profile.name = "docked-dual";
+            profile.outputs = [
+              {
+                criteria = "Microstep MPG321UX OLED 0x01010101";
+                mode = "3840x2160@239.99Hz";
+                position = "0,0";
+                scale = 1.6;
+              }
+              {
+                criteria = "LG Electronics LG Ultra HD 0x0001AEB0";
+                mode = "3840x2160@59.997Hz";
+                position = "2400,0";
+                scale = 1.6;
+              }
+              {
+                criteria = "eDP-1";
+                status = "disable";
+              }
+            ];
+          }
+          {
             profile.name = "docked";
             profile.outputs = [
               {
