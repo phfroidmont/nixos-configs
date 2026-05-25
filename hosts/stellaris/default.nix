@@ -124,10 +124,7 @@
 
   networking.networkmanager.enable = true;
 
-  services.blueman = {
-    enable = true;
-    withApplet = false;
-  };
+  services.blueman.enable = true;
 
   services.logind.settings.Login.HandleLidSwitch = "ignore";
 
@@ -244,7 +241,7 @@
   ];
 
   services.openssh = {
-    enable = true;
+    enable = false;
     settings.PasswordAuthentication = false;
     listenAddresses = [
       {

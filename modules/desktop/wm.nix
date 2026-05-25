@@ -124,8 +124,8 @@ in
 
               # Layout manipulation
               "$mod SHIFT, O, layoutmsg, togglesplit"
-              "$mod, comma, splitratio, -0.1"
-              "$mod, semicolon, splitratio, +0.1"
+              "$mod, comma, layoutmsg, splitratio -0.1"
+              "$mod, semicolon, layoutmsg, splitratio +0.1"
 
               "$mod, F, fullscreen, 0"
               "$mod, X, exec, hyprlock"
