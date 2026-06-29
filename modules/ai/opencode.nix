@@ -18,6 +18,16 @@ in
       { config, ... }:
       let
         playwrightMcpUserDataDir = "${config.xdg.cacheHome}/opencode/playwright-mcp";
+        foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
+        foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
+        foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
+        foyerSkillPaths = [
+          "${foyerKitDir}/plugins/angular-dev/skills"
+          "${foyerKitDir}/plugins/design/skills"
+          "${foyerKitDir}/plugins/play-dev/skills"
+          "${foyerKitDir}/plugins/scala-dev/skills"
+          "${foyerKitDir}/plugins/context-engineering/skills"
+        ];
       in
       {
         programs.opencode = {
@@ -27,6 +37,7 @@ in
             model = "minimax_m2_1";
             plugin = [
               "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3"
+              foyerSkillsPlugin
             ];
             permission = {
               external_directory = {
@@ -217,6 +228,32 @@ in
           ## Commits
           - Use Conventional Commits
           - Before any commit, try to run the project formatter and linter on changed files.
+        '';
+        xdg.configFile."opencode/plugin/foyer-skills.ts".text = ''
+          import type { Plugin } from "@opencode-ai/plugin"
+
+          const foyerProjectsDir = ${builtins.toJSON foyerProjectsDir}
+          const foyerSkillPaths = ${builtins.toJSON foyerSkillPaths}
+
+          const isFoyerProject = (directory: string) =>
+            directory === foyerProjectsDir || directory.startsWith(foyerProjectsDir + "/")
+
+          export default (async ({ directory }) => {
+            return {
+              config: (cfg) => {
+                if (!isFoyerProject(directory)) return
+
+                cfg.skills ??= {}
+                cfg.skills.paths ??= []
+
+                for (const skillPath of foyerSkillPaths) {
+                  if (!cfg.skills.paths.includes(skillPath)) {
+                    cfg.skills.paths.push(skillPath)
+                  }
+                }
+              },
+            }
+          }) satisfies Plugin
         '';
         home.packages = with pkgs; [
           metals
