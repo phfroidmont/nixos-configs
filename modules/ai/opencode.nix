@@ -25,6 +25,9 @@ in
           package = inputs.llm-agents.packages.${pkgs.system}.opencode;
           settings = {
             model = "minimax_m2_1";
+            plugin = [
+              "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3"
+            ];
             permission = {
               external_directory = {
                 "*" = "ask";
