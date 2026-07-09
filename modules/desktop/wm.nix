@@ -229,8 +229,8 @@ in
               ", XF86AudioPrev, exec, mpc prev"
               "$mod, P, exec, mpc toggle"
 
-              ", XF86MonBrightnessDown, exec, light -U 5"
-              ", XF86MonBrightnessUp, exec, light -A 5"
+              ", XF86MonBrightnessDown, exec, xbacklight -ctrl amdgpu_bl1 -dec 5"
+              ", XF86MonBrightnessUp, exec, xbacklight -ctrl amdgpu_bl1 -inc 5"
 
               ", Print, exec, grim -g \"$(slurp)\" - | satty -f -"
               "SHIFT, Print, exec, grim - | satty -f -"
