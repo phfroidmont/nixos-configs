@@ -27,7 +27,7 @@
       libvirt.enable = true;
       languagetool.enable = true;
       work-proxy.enable = true;
-      kanata.enable = true;
+      kanata.enable = false;
       hermesAccounting = {
         enable = true;
         git = {

@@ -304,6 +304,7 @@ in
           vtsls
           zk
           metals
+          bloop
         ];
       };
   };
