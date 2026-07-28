@@ -21,6 +21,9 @@ in
         foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
         foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
         foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
+        superpowersConfig = builtins.toJSON {
+          plugin = [ "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3" ];
+        };
         foyerSkillPaths = [
           "${foyerKitDir}/plugins/angular-dev/skills"
           "${foyerKitDir}/plugins/design/skills"
@@ -35,10 +38,7 @@ in
           package = inputs.llm-agents.packages.${pkgs.system}.opencode;
           settings = {
             model = "minimax_m2_1";
-            plugin = [
-              "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3"
-              foyerSkillsPlugin
-            ];
+            plugin = [ foyerSkillsPlugin ];
             permission = {
               external_directory = {
                 "*" = "ask";
@@ -208,6 +208,10 @@ in
               };
             };
           };
+        };
+        programs.zsh.shellAliases = {
+          oc = "opencode";
+          oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode";
         };
         xdg.configFile."opencode/AGENTS.md".text = ''
           # Global OpenCode Rules
