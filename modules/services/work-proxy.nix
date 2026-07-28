@@ -56,6 +56,7 @@ in
       mongodb-compass
       chisel
       mia
+      jira-cli-go
     ];
   };
 }
