@@ -21,6 +21,27 @@ in
         foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
         foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
         foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
+        jiraMcp = pkgs.writeShellApplication {
+          name = "mcp-atlassian-jira";
+          runtimeInputs = [
+            pkgs.libsecret
+            pkgs.uv
+          ];
+          text = ''
+            if ! jiraPersonalToken="$(secret-tool lookup application opencode service jira.foyer.lu)"; then
+              echo "Unable to retrieve the Jira PAT from Secret Service" >&2
+              exit 1
+            fi
+
+            if [[ -z "$jiraPersonalToken" ]]; then
+              echo "The Jira PAT retrieved from Secret Service is empty" >&2
+              exit 1
+            fi
+
+            export JIRA_PERSONAL_TOKEN="$jiraPersonalToken"
+            exec uvx mcp-atlassian
+          '';
+        };
         superpowersConfig = builtins.toJSON {
           plugin = [ "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3" ];
         };
@@ -203,6 +224,16 @@ in
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
                   "--user-data-dir=${playwrightMcpUserDataDir}"
                 ];
+                enabled = true;
+                timeout = 60000;
+              };
+              jira = {
+                type = "local";
+                command = [ "${jiraMcp}/bin/mcp-atlassian-jira" ];
+                environment = {
+                  JIRA_URL = "https://jira.foyer.lu/";
+                  TOOLSETS = "all";
+                };
                 enabled = true;
                 timeout = 60000;
               };
