@@ -55,6 +55,7 @@ in
       (sbt.override { jre = jdk17; })
       mongodb-compass
       chisel
+      get-token
       mia
       jira-cli-go
     ];
