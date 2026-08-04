@@ -8,6 +8,7 @@
 let
   cfg = config.modules.desktop.wm;
   term = "${config.home-manager.users.${config.user.name}.programs.kitty.package}/bin/kitty";
+  btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
   wallpaper = config.modules.desktop.wallpaper;
   c = (import ./themes/_palette.nix).semantic;
 in
@@ -28,7 +29,7 @@ in
         file-manager.enable = true;
         zsh.enable = true;
         dunst.enable = true;
-        htop.enable = true;
+        btop.enable = true;
       };
       hardware = {
         audio.enable = true;
@@ -115,7 +116,7 @@ in
               "$mod, R, exec, ${term} -e yazi"
               "$mod, E, exec, emacsclient -c"
               "$mod, N, exec, ${term} -e newsboat"
-              "$mod, I, exec, ${term} -e htop"
+              "$mod SHIFT, T, exec, ${term} -e ${btop}"
               "$mod, M, exec, ${term} -e ncmpcpp"
               "$mod, V, exec, ${term} -e ncmpcpp -s visualizer"
               "$mod, T, togglefloating"

@@ -74,7 +74,7 @@
     inetutils
     man
 
-    htop-vim
+    btop
     ncdu
     nload
     pciutils
