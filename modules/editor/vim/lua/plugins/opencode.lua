@@ -1,13 +1,10 @@
 return {
   "NickvanDyke/opencode.nvim",
   config = function()
-    local function open_opencode_in_kitty_tab()
+    local function open_opencode_in_terminal()
       vim.fn.jobstart({
-        "kitty",
-        "@",
-        "launch",
-        "--type=tab",
-        "--cwd",
+        vim.env.TERMINAL,
+        "--directory",
         vim.fn.getcwd(),
         "sh",
         "-lc",
@@ -18,8 +15,8 @@ return {
     ---@type opencode.Opts
     vim.g.opencode_opts = {
       server = {
-        start = open_opencode_in_kitty_tab,
-        toggle = open_opencode_in_kitty_tab,
+        start = open_opencode_in_terminal,
+        toggle = open_opencode_in_terminal,
         stop = function() end,
       },
       events = {

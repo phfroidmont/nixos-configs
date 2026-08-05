@@ -7,7 +7,7 @@
 
 let
   cfg = config.modules.desktop.wm;
-  term = "${config.home-manager.users.${config.user.name}.programs.kitty.package}/bin/kitty";
+  applications = config.modules.applications.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
   wallpaper = config.modules.desktop.wallpaper;
   c = (import ./themes/_palette.nix).semantic;
@@ -31,6 +31,7 @@ in
         dunst.enable = true;
         btop.enable = true;
       };
+      editor.vim.enable = true;
       hardware = {
         audio.enable = true;
       };
@@ -108,17 +109,17 @@ in
             };
 
             bind = [
-              "$mod, Return, exec, ${term}"
+              "$mod, Return, exec, ${applications.terminal}"
               "$mod, C, killactive"
               # "$mod SHIFT, Q, exit"
-              "$mod SHIFT, A, exec, ${term} -e pulsemixer"
-              "$mod, W, exec, firefox"
-              "$mod, R, exec, ${term} -e yazi"
-              "$mod, E, exec, emacsclient -c"
-              "$mod, N, exec, ${term} -e newsboat"
-              "$mod SHIFT, T, exec, ${term} -e ${btop}"
-              "$mod, M, exec, ${term} -e ncmpcpp"
-              "$mod, V, exec, ${term} -e ncmpcpp -s visualizer"
+              "$mod SHIFT, A, exec, ${applications.terminal} -e pulsemixer"
+              "$mod, W, exec, ${applications.browser}"
+              "$mod, R, exec, ${applications.fileManager}"
+              "$mod, E, exec, ${applications.editor}"
+              "$mod, N, exec, ${applications.terminal} -e newsboat"
+              "$mod SHIFT, T, exec, ${applications.terminal} -e ${btop}"
+              "$mod, M, exec, ${applications.terminal} -e ncmpcpp"
+              "$mod, V, exec, ${applications.terminal} -e ncmpcpp -s visualizer"
               "$mod, T, togglefloating"
               "$mod, D, exec, rofi -show drun -show-icons"
               "$mod SHIFT, P, exec, rofi -show p -modi p:rofi-power-menu"

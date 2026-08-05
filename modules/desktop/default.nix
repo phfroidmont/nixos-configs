@@ -10,25 +10,6 @@ let
     url = "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/wallpapers/photography/houseonthesideofalake.jpg";
     sha256 = "sha256-obKI4qZvucogqRCl51lwV9X8SRaMqcbBwWMfc9TupIo=";
   };
-  # Brave GPU acceleration triggers AMDGPU page faults on stellaris under heavy
-  # Chromium workloads, causing a GPU reset and Hyprland crash. Keep this wrapper
-  # until the AMDGPU/Mesa/Chromium stack is stable enough to remove it.
-  braveNoGpu = pkgs.symlinkJoin {
-    name = "brave-no-gpu-${pkgs.brave.version}";
-    paths = [ pkgs.brave ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      rm "$out/bin/brave"
-      makeWrapper ${lib.getExe pkgs.brave} "$out/bin/brave" \
-        --add-flags "--disable-gpu"
-
-      desktopFile="$out/share/applications/brave-browser.desktop"
-      rm "$desktopFile"
-      cp ${pkgs.brave}/share/applications/brave-browser.desktop "$desktopFile"
-      substituteInPlace "$desktopFile" \
-        --replace-fail "${lib.getExe pkgs.brave}" "$out/bin/brave"
-    '';
-  };
 in
 {
 
@@ -38,10 +19,6 @@ in
       default = wallpaper;
     };
 
-    defaultBrowser = lib.mkOption {
-      type = lib.types.str;
-      default = "firefox";
-    };
   };
 
   config = lib.mkIf config.modules.desktop.wm.enable {
@@ -155,13 +132,6 @@ in
       xdg.mimeApps = {
         enable = true;
         defaultApplications = {
-          "inode/directory" = "joshuto.desktop";
-
-          "text/html" = "${config.modules.desktop.defaultBrowser}.desktop";
-          "x-scheme-handler/http" = "${config.modules.desktop.defaultBrowser}.desktop";
-          "x-scheme-handler/https" = "${config.modules.desktop.defaultBrowser}.desktop";
-          "x-scheme-handler/about" = "${config.modules.desktop.defaultBrowser}.desktop";
-
           "image/png" = "swayimg.desktop";
           "image/webp" = "swayimg.desktop";
           "image/jpeg" = "swayimg.desktop";
@@ -180,8 +150,6 @@ in
           "application/vnd.openxmlformats-officedocument.presentationml.presentation" =
             "onlyoffice-desktopeditors.desktop";
           "application/vnd.openxmlformats-officedocument*" = "onlyoffice-desktopeditors.desktop";
-
-          "text/*" = "nvim.desktop";
         };
       };
 
@@ -193,13 +161,11 @@ in
         };
 
         sessionVariables = {
-          EDITOR = "vim";
           NIXOS_OZONE_WL = 1;
         };
 
         packages =
           (with pkgs; [
-            braveNoGpu
             ungoogled-chromium
             mullvad-browser
             keepassxc

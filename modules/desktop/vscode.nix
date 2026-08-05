@@ -69,7 +69,7 @@ in
           "explorer.confirmDelete" = false;
           "explorer.confirmDragAndDrop" = false;
           "terminal.integrated.shellIntegration.enabled" = false;
-          "terminal.external.linuxExec" = "kitty";
+          "terminal.external.linuxExec" = config.modules.applications.commands.terminal;
           "terminal.integrated.scrollback" = 65535;
         };
       };

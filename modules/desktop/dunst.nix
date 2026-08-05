@@ -21,7 +21,7 @@ in
           global = {
             alignment = "left";
             monitor = 0;
-            browser = "firefox -new-tab";
+            browser = config.modules.applications.commands.browser;
             corner_radius = 5;
             dmenu = "${pkgs.rofi}/bin/rofi -dmenu -p dunst";
             follow = "none";

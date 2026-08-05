@@ -19,7 +19,7 @@ in
       programs.rofi = {
         enable = true;
         package = pkgs.rofi.override { plugins = [ pkgs.rofi-calc ]; };
-        terminal = "kitty";
+        terminal = config.modules.applications.commands.terminal;
         extraConfig = {
           icon-theme = "Paper";
           cycle = true;
