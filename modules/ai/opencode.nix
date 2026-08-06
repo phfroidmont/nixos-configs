@@ -59,6 +59,7 @@ in
           package = inputs.llm-agents.packages.${pkgs.system}.opencode;
           settings = {
             model = "minimax_m2_1";
+            compaction.auto = false;
             plugin = [ foyerSkillsPlugin ];
             permission = {
               external_directory = {
