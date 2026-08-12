@@ -7,10 +7,15 @@
 
 let
   cfg = config.modules.desktop.btop;
-  btop = pkgs.btop.override {
-    cudaSupport = true;
-    rocmSupport = true;
-  };
+  btop =
+    (pkgs.btop.override {
+      cudaSupport = true;
+      rocmSupport = true;
+    }).overrideAttrs
+      (oldAttrs: {
+        # https://github.com/aristocratos/btop/issues/1011
+        patches = (oldAttrs.patches or [ ]) ++ [ ./align-gpu-summary.patch ];
+      });
 in
 {
   options.modules.desktop.btop = {

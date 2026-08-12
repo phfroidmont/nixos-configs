@@ -1,0 +1,31 @@
+diff --git a/src/btop_draw.cpp b/src/btop_draw.cpp
+index 9ce7047..20e435a 100644
+--- a/src/btop_draw.cpp
++++ b/src/btop_draw.cpp
+@@ -676,6 +676,9 @@ namespace Cpu {
+ 		const bool gpu_always = show_gpu_info == "On";
+ 		const bool gpu_auto = show_gpu_info == "Auto";
+ 		const bool show_gpu = (gpus.size() > 0 and (gpu_always or (gpu_auto and Gpu::shown < Gpu::count)));
++		const bool show_gpu_watts = rng::any_of(gpus, [](const auto& gpu) {
++			return gpu.supported_functions.pwr_usage;
++		});
+ #endif // GPU_SUPPORT
+ 		auto graph_up_field = Config::getS("cpu_graph_upper");
+ 		if (graph_up_field == "Auto" or not v_contains(Cpu::available_fields, graph_up_field))
+@@ -763,6 +766,6 @@ namespace Cpu {
+ 					width_left -= (gpu.supported_functions.mem_used ? 5 : 0);
+ 					width_left -= (gpu.supported_functions.mem_total ? 6 : 0);
+-					width_left -= (gpu.supported_functions.pwr_usage ? 6 : 0);
++					width_left -= (show_gpu_watts ? 6 : 0);
+ 					if (gpu.supported_functions.gpu_utilization) {
+ 						gpu_meters[i] = Draw::Meter{width_left, "cpu" };
+ 					}
+@@ -1004,6 +1008,8 @@ namespace Cpu {
+ 					out += ' ' + Theme::g("cached").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll))
+ 						+ fmt::format("{:>4.{}f}", gpus[i].pwr_usage / 1000.0, gpus[i].pwr_usage < 10'000 ? 2 : gpus[i].pwr_usage < 100'000 ? 1 : 0) + Theme::c("main_fg") + 'W';
+ 				}
++				else if (show_gpu_watts)
++					out += Mv::r(6);
+ 
+ 				if (cy > b_height - 1) break;
+ 			}
