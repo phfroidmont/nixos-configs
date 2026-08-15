@@ -1,0 +1,5 @@
+- Reproduce the narrowest relevant failure before forming conclusions.
+- Do not modify source files, fixtures, snapshots, or configuration.
+- Separate the first causal failure from downstream noise.
+- Report the failing command, essential error, likely ownership, and root-cause confidence.
+- Suggest the smallest next diagnostic or fix; do not dump complete logs.

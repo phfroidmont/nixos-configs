@@ -39,8 +39,60 @@ in
             fi
 
             export JIRA_PERSONAL_TOKEN="$jiraPersonalToken"
-            exec uvx mcp-atlassian
+            exec uvx mcp-atlassian==0.23.0
           '';
+        };
+        jiraToolsets = [
+          "jira_issues"
+          "jira_fields"
+          "jira_comments"
+          "jira_transitions"
+          "jira_projects"
+          "jira_agile"
+          "jira_links"
+          "jira_worklog"
+          "jira_attachments"
+          "jira_users"
+          "jira_watchers"
+          "jira_forms"
+          "jira_metrics"
+          "jira_development"
+          "jira_project_analysis"
+        ];
+        readOnlyBash = {
+          "*" = "deny";
+          pwd = "allow";
+          "date*" = "allow";
+          "ls*" = "allow";
+          "stat*" = "allow";
+          "readlink*" = "allow";
+          "realpath*" = "allow";
+          "tree*" = "allow";
+          "du -sh*" = "allow";
+          "rg*" = "allow";
+          "fd*" = "allow";
+          "find*" = "allow";
+          "cat*" = "allow";
+          "head*" = "allow";
+          "wc*" = "allow";
+          "tail*" = "allow";
+          "sort*" = "allow";
+          "uniq*" = "allow";
+          "cut*" = "allow";
+          "git status*" = "allow";
+          "git diff*" = "allow";
+          "git log*" = "allow";
+          "git show*" = "allow";
+          "git ls-files*" = "allow";
+          "git blame*" = "allow";
+          "git branch*" = "allow";
+          "git tag*" = "allow";
+          "git rev-parse*" = "allow";
+          "git symbolic-ref*" = "allow";
+          "git remote -v" = "allow";
+        };
+        foyerConfig = builtins.toJSON {
+          mcp.jira.enabled = true;
         };
         superpowersConfig = builtins.toJSON {
           plugin = [ "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3" ];
@@ -58,8 +110,21 @@ in
           enable = true;
           package = inputs.llm-agents.packages.${pkgs.system}.opencode;
           settings = {
-            model = "minimax_m2_1";
-            compaction.auto = false;
+            model = "openai/gpt-5.6-sol";
+            small_model = "openai/gpt-5.6-luna";
+            default_agent = "build";
+            subagent_depth = 1;
+            compaction = {
+              auto = true;
+              prune = false;
+              reserved = 32000;
+              tail_turns = 4;
+              preserve_recent_tokens = 12000;
+            };
+            tool_output = {
+              max_lines = 400;
+              max_bytes = 24576;
+            };
             plugin = [ foyerSkillsPlugin ];
             permission = {
               external_directory = {
@@ -156,35 +221,148 @@ in
                   minimax_m2_1 = {
                     name = "MiniMax M2.1 (local)";
                     temperature = true;
-                    default = true;
                   };
                 };
               };
             };
             agent = {
               build = {
+                description = "Primary implementation agent and orchestrator for coding work.";
                 mode = "primary";
-                temperature = 0.1;
+                model = "openai/gpt-5.6-sol";
+                permission.task = {
+                  "*" = "deny";
+                  explore = "allow";
+                  scout = "allow";
+                  test-triage = "allow";
+                  scan = "allow";
+                  review = "allow";
+                  implement = "allow";
+                };
               };
               plan = {
+                description = "Read-only planning and architectural analysis.";
                 mode = "primary";
-                temperature = 0.4;
+                model = "openai/gpt-5.6-sol";
+                permission = {
+                  edit = "deny";
+                  bash = readOnlyBash;
+                  task = {
+                    "*" = "deny";
+                    explore = "allow";
+                    scout = "allow";
+                    test-triage = "allow";
+                    scan = "allow";
+                    review = "allow";
+                  };
+                };
               };
               debug = {
+                description = "Read-only primary agent for difficult, evidence-driven debugging.";
                 disable = false;
-                temperature = 0.15;
+                mode = "primary";
+                model = "openai/gpt-5.6-sol";
                 prompt = "{file:${./prompts/debug-rules.txt}}";
                 permission = {
                   edit = "deny";
                   task = {
                     "*" = "deny";
                     "explore" = "allow";
-                    "general" = "ask";
+                    "scout" = "allow";
+                    "test-triage" = "allow";
+                    "scan" = "allow";
                   };
                 };
               };
+              explore = {
+                description = "Read-only codebase exploration that returns concise evidence and file references.";
+                mode = "subagent";
+                model = "openai/gpt-5.6-terra";
+                steps = 16;
+                permission = {
+                  edit = "deny";
+                  bash = readOnlyBash;
+                  task = "deny";
+                };
+              };
+              scout = {
+                description = "Read-only dependency and external documentation research.";
+                mode = "subagent";
+                model = "openai/gpt-5.6-terra";
+                steps = 16;
+                permission = {
+                  edit = "deny";
+                  task = "deny";
+                };
+              };
+              test-triage = {
+                description = "Reproduces and analyzes test failures without modifying source files.";
+                mode = "subagent";
+                model = "openai/gpt-5.6-terra";
+                steps = 16;
+                prompt = "{file:${./prompts/test-triage-rules.txt}}";
+                permission = {
+                  edit = "deny";
+                  task = "deny";
+                };
+              };
+              scan = {
+                description = "Performs narrow mechanical searches, inventories, and consistency checks.";
+                mode = "subagent";
+                model = "openai/gpt-5.6-luna";
+                steps = 8;
+                prompt = "{file:${./prompts/scan-rules.txt}}";
+                permission = {
+                  edit = "deny";
+                  bash = "deny";
+                  task = "deny";
+                };
+              };
               review = {
+                description = "Reviews changes for defects, regressions, risks, and missing tests without editing.";
                 disable = false;
+                mode = "subagent";
+                model = "openai/gpt-5.6-sol";
+                steps = 16;
+                prompt = "{file:${./prompts/review-rules.txt}}";
+                permission = {
+                  edit = "deny";
+                  bash = readOnlyBash;
+                  task = "deny";
+                };
+              };
+              implement = {
+                description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent.";
+                mode = "subagent";
+                model = "openai/gpt-5.6-sol";
+                steps = 24;
+                prompt = "{file:${./prompts/implement-rules.txt}}";
+                permission = {
+                  edit = "allow";
+                  task = "deny";
+                  bash = {
+                    "git commit*" = "deny";
+                    "git push*" = "deny";
+                  };
+                };
+              };
+              general.disable = true;
+              compaction.model = "openai/gpt-5.6-sol";
+              title.model = "openai/gpt-5.6-luna";
+              summary.model = "openai/gpt-5.6-luna";
+            };
+            command = {
+              milestone-start = {
+                description = "Start or refine durable repository-local milestone state.";
+                agent = "build";
+                model = "openai/gpt-5.6-sol";
+                template = "{file:${./commands/milestone-start.md}}";
+              };
+              milestone-close = {
+                description = "Verify, summarize, and archive the current milestone.";
+                agent = "build";
+                model = "openai/gpt-5.6-sol";
+                template = "{file:${./commands/milestone-close.md}}";
               };
             };
             mcp = {
@@ -221,7 +399,7 @@ in
                 command = [
                   "${pkgs.nodejs}/bin/npx"
                   "-y"
-                  "@playwright/mcp@latest"
+                  "@playwright/mcp@0.0.79"
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
                   "--user-data-dir=${playwrightMcpUserDataDir}"
                 ];
@@ -233,9 +411,9 @@ in
                 command = [ "${jiraMcp}/bin/mcp-atlassian-jira" ];
                 environment = {
                   JIRA_URL = "https://jira.foyer.lu/";
-                  TOOLSETS = "all";
+                  TOOLSETS = lib.concatStringsSep "," jiraToolsets;
                 };
-                enabled = true;
+                enabled = false;
                 timeout = 60000;
               };
             };
@@ -243,6 +421,7 @@ in
         };
         programs.zsh.shellAliases = {
           oc = "opencode";
+          oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode";
           oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode";
         };
         xdg.configFile."opencode/AGENTS.md".text = ''
@@ -264,6 +443,19 @@ in
           ## Commits
           - Use Conventional Commits
           - Before any commit, try to run the project formatter and linter on changed files.
+
+          ## Delegation
+          - Delegate only bounded, independent work with an explicit expected report.
+          - Prefer read-only agents for exploration, dependency research, test triage, scans, and review.
+          - Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
+          - Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.
+          - The primary agent reviews and integrates writer results. Subagents do not commit, push, or delegate further.
+          - Subagents return concise findings, changed files, verification, and unresolved risks instead of raw output.
+
+          ## Milestones
+          - Treat compaction as a safety mechanism, not durable project memory.
+          - For substantial multi-session work, keep objectives, acceptance criteria, decisions, status, verification, and handoff notes in `.opencode/milestones/current.md`.
+          - Keep milestone state current at meaningful boundaries and before ending a session.
         '';
         xdg.configFile."opencode/plugin/foyer-skills.ts".text = ''
           import type { Plugin } from "@opencode-ai/plugin"

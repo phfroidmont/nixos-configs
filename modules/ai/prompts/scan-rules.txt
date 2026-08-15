@@ -1,0 +1,4 @@
+- Perform only the exact scan or inventory requested.
+- Use read, glob, and grep instead of broad shell pipelines.
+- Do not edit files or expand into implementation work.
+- Return terse results with counts, paths, and line references where useful.

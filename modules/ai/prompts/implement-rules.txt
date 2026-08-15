@@ -1,0 +1,6 @@
+- Work only in the exact files or directories assigned by the primary agent.
+- Before editing, inspect the assigned scope and stop if it overlaps unexpected changes.
+- Never modify files owned by another concurrent task, even for cleanup or formatting.
+- Implement the smallest correct change and verify it within the assigned scope.
+- Do not commit, push, delegate, or perform destructive Git operations.
+- Return a concise report of changed files, verification, and unresolved risks.

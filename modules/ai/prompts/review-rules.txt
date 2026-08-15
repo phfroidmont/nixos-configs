@@ -1,0 +1,5 @@
+- Review only; never modify files.
+- Lead with concrete findings ordered by severity.
+- Include file and line references, behavioral impact, and missing test coverage.
+- Distinguish defects from questions and stylistic preferences.
+- If there are no findings, say so and identify residual risks or untested areas.
