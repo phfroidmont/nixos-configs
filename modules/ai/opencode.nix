@@ -278,7 +278,7 @@ in
                 description = "Read-only codebase exploration that returns concise evidence and file references.";
                 mode = "subagent";
                 model = "openai/gpt-5.6-terra";
-                steps = 16;
+                steps = 100;
                 permission = {
                   edit = "deny";
                   bash = readOnlyBash;
@@ -289,7 +289,7 @@ in
                 description = "Read-only dependency and external documentation research.";
                 mode = "subagent";
                 model = "openai/gpt-5.6-terra";
-                steps = 16;
+                steps = 100;
                 permission = {
                   edit = "deny";
                   task = "deny";
@@ -299,7 +299,7 @@ in
                 description = "Reproduces and analyzes test failures without modifying source files.";
                 mode = "subagent";
                 model = "openai/gpt-5.6-terra";
-                steps = 16;
+                steps = 100;
                 prompt = "{file:${./prompts/test-triage-rules.txt}}";
                 permission = {
                   edit = "deny";
@@ -310,7 +310,7 @@ in
                 description = "Performs narrow mechanical searches, inventories, and consistency checks.";
                 mode = "subagent";
                 model = "openai/gpt-5.6-luna";
-                steps = 8;
+                steps = 100;
                 prompt = "{file:${./prompts/scan-rules.txt}}";
                 permission = {
                   edit = "deny";
@@ -323,7 +323,7 @@ in
                 disable = false;
                 mode = "subagent";
                 model = "openai/gpt-5.6-sol";
-                steps = 16;
+                steps = 100;
                 prompt = "{file:${./prompts/review-rules.txt}}";
                 permission = {
                   edit = "deny";
@@ -335,7 +335,7 @@ in
                 description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent.";
                 mode = "subagent";
                 model = "openai/gpt-5.6-sol";
-                steps = 24;
+                steps = 100;
                 prompt = "{file:${./prompts/implement-rules.txt}}";
                 permission = {
                   edit = "allow";
