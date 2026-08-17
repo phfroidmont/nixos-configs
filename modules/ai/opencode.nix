@@ -130,73 +130,38 @@ in
               external_directory = {
                 "*" = "ask";
                 "/nix/store/**" = "allow";
+                "/tmp/opencode/**" = "allow";
+                "~/.config/opencode/**" = "allow";
+                "~/.local/share/opencode/log/**" = "allow";
                 "~/Projects/**" = "allow";
               };
 
               bash = {
-                "*" = "ask";
+                "*" = "allow";
 
-                pwd = "allow";
-                whoami = "allow";
-                id = "allow";
-                "uname*" = "allow";
-                "date*" = "allow";
-                "ls*" = "allow";
-                "stat*" = "allow";
-                "readlink*" = "allow";
-                "realpath*" = "allow";
-                "tree*" = "allow";
-                "du -sh*" = "allow";
-                "rg*" = "allow";
-                "fd*" = "allow";
-                "find*" = "allow";
-                "cat*" = "allow";
-                "head*" = "allow";
-                "wc*" = "allow";
-                "tail*" = "allow";
-                "sort*" = "allow";
-                "uniq*" = "allow";
-                "cut*" = "allow";
-
-                "git status*" = "allow";
-                "git diff*" = "allow";
-                "git log*" = "allow";
-                "git show*" = "allow";
-                "git ls-files*" = "allow";
-                "git blame*" = "allow";
-                "git branch*" = "allow";
-                "git tag*" = "allow";
-                "git rev-parse*" = "allow";
-                "git symbolic-ref*" = "allow";
-                "git remote -v" = "allow";
-
-                "node -v" = "allow";
-                "npm -v" = "allow";
-                "npx prettier*" = "allow";
-                "npx eslint*" = "allow";
-                "mill*" = "allow";
-                "sbt*" = "allow";
-                "python --version" = "allow";
-                "pip --version" = "allow";
-                "nix --version" = "allow";
-
-                "nix path-info*" = "allow";
-                "nix-store --query*" = "allow";
-                "nix-store -q*" = "allow";
-                "nix eval*" = "allow";
-                "nix search*" = "allow";
-                "nix flake show*" = "allow";
-
-                "git commit*" = "ask";
+                "gh pr close*" = "ask";
+                "gh pr create*" = "ask";
+                "gh pr edit*" = "ask";
+                "gh pr merge*" = "ask";
+                "git checkout --*" = "ask";
+                "git clean*" = "ask";
                 "git push*" = "ask";
-                "npm install*" = "ask";
+                "git rebase*" = "ask";
+                "git reset*" = "ask";
+                "git restore*" = "ask";
+                "kill *" = "ask";
+                "nix profile*" = "ask";
+                "nix-env*" = "ask";
                 "nixos-rebuild*" = "ask";
-                "systemctl*" = "ask";
+                "npm publish*" = "ask";
+                "pkill*" = "ask";
                 "rm *" = "ask";
+                "sudo*" = "ask";
+                "systemctl*" = "ask";
               };
 
               edit = {
-                "*" = "ask";
+                "*" = "allow";
                 "/nix/store/**" = "deny";
                 "/run/current-system/**" = "deny";
                 "/nix/var/nix/profiles/system/**" = "deny";
