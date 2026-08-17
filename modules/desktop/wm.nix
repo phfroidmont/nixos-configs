@@ -11,6 +11,46 @@ let
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
   wallpaper = config.modules.desktop.wallpaper;
   c = (import ./themes/_palette.nix).semantic;
+  lua = lib.generators.mkLuaInline;
+  toLua = lib.generators.toLua { };
+  modKey = key: lua "mod .. ${toLua " + ${key}"}";
+  mkBind = key: dispatcher: {
+    _args = [
+      key
+      dispatcher
+    ];
+  };
+  mkMouseBind = key: dispatcher: {
+    _args = [
+      key
+      dispatcher
+      { mouse = true; }
+    ];
+  };
+  exec = command: lua "hl.dsp.exec_cmd(${toLua command})";
+  workspaceBinds = lib.concatMap (
+    workspace:
+    let
+      key = toString (lib.mod workspace 10);
+      code = toString (workspace + 9);
+      moveWorkspace = lua "hl.dsp.workspace.move(${
+        toLua {
+          inherit workspace;
+          monitor = "current";
+        }
+      })";
+      focusWorkspace = lua "hl.dsp.focus(${toLua { inherit workspace; }})";
+      moveWindow = lua "hl.dsp.window.move(${toLua { inherit workspace; }})";
+    in
+    [
+      (mkBind (modKey "code:${code}") moveWorkspace)
+      (mkBind (modKey "code:${code}") focusWorkspace)
+      (mkBind (modKey key) moveWorkspace)
+      (mkBind (modKey key) focusWorkspace)
+      (mkBind (modKey "SHIFT + code:${code}") moveWindow)
+      (mkBind (modKey "SHIFT + ${key}") moveWindow)
+    ]
+  ) (lib.range 1 10);
 in
 {
   options.modules.desktop.wm = {
@@ -46,215 +86,195 @@ in
       {
         wayland.windowManager.hyprland = {
           enable = true;
-          configType = "hyprlang";
+          configType = "lua";
           systemd.enable = true;
           xwayland.enable = true;
           settings = {
-            "$mod" = "SUPER";
+            mod._var = "SUPER";
 
             env = [
-              "XCURSOR_SIZE,24"
-              "WLR_NO_HARDWARE_CURSORS,1"
+              {
+                _args = [
+                  "XCURSOR_SIZE"
+                  "24"
+                ];
+              }
+              {
+                _args = [
+                  "WLR_NO_HARDWARE_CURSORS"
+                  "1"
+                ];
+              }
             ];
 
-            xwayland = {
-              force_zero_scaling = true;
-            };
+            config = {
+              xwayland.force_zero_scaling = true;
 
-            general = {
-              layout = "dwindle";
-              gaps_in = 7;
-              gaps_out = 14;
-              border_size = 2;
-              "col.active_border" = c.borderActiveRgb;
-              "col.inactive_border" = c.borderInactiveRgb;
-              no_focus_fallback = false;
-              resize_on_border = false;
-              hover_icon_on_border = false;
-            };
+              general = {
+                layout = "dwindle";
+                gaps_in = 7;
+                gaps_out = 14;
+                border_size = 2;
+                col = {
+                  active_border = c.borderActiveRgb;
+                  inactive_border = c.borderInactiveRgb;
+                };
+                no_focus_fallback = false;
+                resize_on_border = false;
+                hover_icon_on_border = false;
+              };
 
-            dwindle = {
-              preserve_split = true;
-            };
+              dwindle.preserve_split = true;
 
-            debug = {
-              disable_logs = false;
-              enable_stdout_logs = true;
-            };
+              debug = {
+                disable_logs = false;
+                enable_stdout_logs = true;
+              };
 
-            input = {
-              kb_layout = "fr";
-              kb_options = "caps:escape";
-              numlock_by_default = "true";
-              touchpad = {
-                natural_scroll = false;
-                disable_while_typing = true;
-                tap-to-click = false;
-                middle_button_emulation = false;
+              input = {
+                kb_layout = "fr";
+                kb_options = "caps:escape";
+                numlock_by_default = true;
+                touchpad = {
+                  natural_scroll = false;
+                  disable_while_typing = true;
+                  tap_to_click = false;
+                  middle_button_emulation = false;
+                };
+              };
+
+              animations.enabled = true;
+
+              misc = {
+                force_default_wallpaper = 0;
+                disable_hyprland_logo = true;
+                disable_splash_rendering = true;
+                animate_manual_resizes = true;
               };
             };
 
-            gesture = [
-              "3, horizontal, workspace"
-            ];
-
-            animations = {
-              enabled = true;
-              animation = [
-                "windows, 1, 2, default, popin 80%"
-                "windowsOut, 1, 2, default, popin 85%"
-                "windowsMove, 1, 2, default"
-                "workspaces, 1, 2, default"
-                "specialWorkspace, 1, 2, default"
-              ];
+            gesture = {
+              fingers = 3;
+              direction = "horizontal";
+              action = "workspace";
             };
 
+            animation = [
+              {
+                leaf = "windows";
+                enabled = true;
+                speed = 2;
+                bezier = "default";
+                style = "popin 80%";
+              }
+              {
+                leaf = "windowsOut";
+                enabled = true;
+                speed = 2;
+                bezier = "default";
+                style = "popin 85%";
+              }
+              {
+                leaf = "windowsMove";
+                enabled = true;
+                speed = 2;
+                bezier = "default";
+              }
+              {
+                leaf = "workspaces";
+                enabled = true;
+                speed = 2;
+                bezier = "default";
+              }
+              {
+                leaf = "specialWorkspace";
+                enabled = true;
+                speed = 2;
+                bezier = "default";
+              }
+            ];
+
             bind = [
-              "$mod, Return, exec, ${applications.terminal}"
-              "$mod, C, killactive"
-              # "$mod SHIFT, Q, exit"
-              "$mod SHIFT, A, exec, ${applications.terminal} -e pulsemixer"
-              "$mod, W, exec, ${applications.browser}"
-              "$mod, R, exec, ${applications.fileManager}"
-              "$mod, E, exec, ${applications.editor}"
-              "$mod, N, exec, ${applications.terminal} -e newsboat"
-              "$mod SHIFT, T, exec, ${applications.terminal} -e ${btop}"
-              "$mod, M, exec, ${applications.terminal} -e ncmpcpp"
-              "$mod, V, exec, ${applications.terminal} -e ncmpcpp -s visualizer"
-              "$mod, T, togglefloating"
-              "$mod, D, exec, rofi -show drun -show-icons"
-              "$mod SHIFT, P, exec, rofi -show p -modi p:rofi-power-menu"
+              (mkBind (modKey "Return") (exec applications.terminal))
+              (mkBind (modKey "C") (lua "hl.dsp.window.close()"))
+              (mkBind (modKey "SHIFT + A") (exec "${applications.terminal} -e pulsemixer"))
+              (mkBind (modKey "W") (exec applications.browser))
+              (mkBind (modKey "R") (exec applications.fileManager))
+              (mkBind (modKey "E") (exec applications.editor))
+              (mkBind (modKey "N") (exec "${applications.terminal} -e newsboat"))
+              (mkBind (modKey "SHIFT + T") (exec "${applications.terminal} -e ${btop}"))
+              (mkBind (modKey "M") (exec "${applications.terminal} -e ncmpcpp"))
+              (mkBind (modKey "V") (exec "${applications.terminal} -e ncmpcpp -s visualizer"))
+              (mkBind (modKey "T") (lua ''hl.dsp.window.float({ action = "toggle" })''))
+              (mkBind (modKey "D") (exec "rofi -show drun -show-icons"))
+              (mkBind (modKey "SHIFT + P") (exec "rofi -show p -modi p:rofi-power-menu"))
 
               # Layout manipulation
-              "$mod SHIFT, O, layoutmsg, togglesplit"
-              "$mod, comma, layoutmsg, splitratio -0.1"
-              "$mod, semicolon, layoutmsg, splitratio +0.1"
+              (mkBind (modKey "SHIFT + O") (lua ''hl.dsp.layout("togglesplit")''))
+              (mkBind (modKey "comma") (lua ''hl.dsp.layout("splitratio -0.1")''))
+              (mkBind (modKey "semicolon") (lua ''hl.dsp.layout("splitratio +0.1")''))
 
-              "$mod, F, fullscreen, 0"
-              "$mod, X, exec, hyprlock"
+              (mkBind (modKey "F") (lua ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })''))
+              (mkBind (modKey "X") (exec "hyprlock"))
 
               # Move focus
-              "$mod, H, movefocus, l"
-              "$mod, L, movefocus, r"
-              "$mod, K, movefocus, u"
-              "$mod, J, movefocus, d"
-              "$mod, left, movefocus, l"
-              "$mod, right, movefocus, r"
-              "$mod, up, movefocus, u"
-              "$mod, down, movefocus, d"
+              (mkBind (modKey "H") (lua ''hl.dsp.focus({ direction = "left" })''))
+              (mkBind (modKey "L") (lua ''hl.dsp.focus({ direction = "right" })''))
+              (mkBind (modKey "K") (lua ''hl.dsp.focus({ direction = "up" })''))
+              (mkBind (modKey "J") (lua ''hl.dsp.focus({ direction = "down" })''))
+              (mkBind (modKey "left") (lua ''hl.dsp.focus({ direction = "left" })''))
+              (mkBind (modKey "right") (lua ''hl.dsp.focus({ direction = "right" })''))
+              (mkBind (modKey "up") (lua ''hl.dsp.focus({ direction = "up" })''))
+              (mkBind (modKey "down") (lua ''hl.dsp.focus({ direction = "down" })''))
 
               # Move window
-              "$mod SHIFT, H, movewindow, l"
-              "$mod SHIFT, L, movewindow, r"
-              "$mod SHIFT, K, movewindow, u"
-              "$mod SHIFT, J, movewindow, d"
-              "$mod SHIFT, left, movewindow, l"
-              "$mod SHIFT, right, movewindow, r"
-              "$mod SHIFT, up, movewindow, u"
-              "$mod SHIFT, down, movewindow, d"
-
-              # Switch workspaces with mainMod + [0-9]
-              "$mod, code:10, moveworkspacetomonitor, 1 current"
-              "$mod, code:10, workspace, 1"
-              "$mod, 1, moveworkspacetomonitor, 1 current"
-              "$mod, 1, workspace, 1"
-              "$mod, code:11, moveworkspacetomonitor, 2 current"
-              "$mod, code:11, workspace, 2"
-              "$mod, 2, moveworkspacetomonitor, 2 current"
-              "$mod, 2, workspace, 2"
-              "$mod, code:12, moveworkspacetomonitor, 3 current"
-              "$mod, code:12, workspace, 3"
-              "$mod, 3, moveworkspacetomonitor, 3 current"
-              "$mod, 3, workspace, 3"
-              "$mod, code:13, moveworkspacetomonitor, 4 current"
-              "$mod, code:13, workspace, 4"
-              "$mod, 4, moveworkspacetomonitor, 4 current"
-              "$mod, 4, workspace, 4"
-              "$mod, code:14, moveworkspacetomonitor, 5 current"
-              "$mod, code:14, workspace, 5"
-              "$mod, 5, moveworkspacetomonitor, 5 current"
-              "$mod, 5, workspace, 5"
-              "$mod, code:15, moveworkspacetomonitor, 6 current"
-              "$mod, code:15, workspace, 6"
-              "$mod, 6, moveworkspacetomonitor, 6 current"
-              "$mod, 6, workspace, 6"
-              "$mod, code:16, moveworkspacetomonitor, 7 current"
-              "$mod, code:16, workspace, 7"
-              "$mod, 7, moveworkspacetomonitor, 7 current"
-              "$mod, 7, workspace, 7"
-              "$mod, code:17, moveworkspacetomonitor, 8 current"
-              "$mod, code:17, workspace, 8"
-              "$mod, 8, moveworkspacetomonitor, 8 current"
-              "$mod, 8, workspace, 8"
-              "$mod, code:18, moveworkspacetomonitor, 9 current"
-              "$mod, code:18, workspace, 9"
-              "$mod, 9, moveworkspacetomonitor, 9 current"
-              "$mod, 9, workspace, 9"
-              "$mod, code:19, moveworkspacetomonitor, 10 current"
-              "$mod, code:19, workspace, 10"
-              "$mod, 0, moveworkspacetomonitor, 10 current"
-              "$mod, 0, workspace, 10"
-
-              # Move active window to a workspace with mainMod + SHIFT + [0-9]
-              "$mod SHIFT, code:10, movetoworkspace, 1"
-              "$mod SHIFT, 1, movetoworkspace, 1"
-              "$mod SHIFT, code:11, movetoworkspace, 2"
-              "$mod SHIFT, 2, movetoworkspace, 2"
-              "$mod SHIFT, code:12, movetoworkspace, 3"
-              "$mod SHIFT, 3, movetoworkspace, 3"
-              "$mod SHIFT, code:13, movetoworkspace, 4"
-              "$mod SHIFT, 4, movetoworkspace, 4"
-              "$mod SHIFT, code:14, movetoworkspace, 5"
-              "$mod SHIFT, 5, movetoworkspace, 5"
-              "$mod SHIFT, code:15, movetoworkspace, 6"
-              "$mod SHIFT, 6, movetoworkspace, 6"
-              "$mod SHIFT, code:16, movetoworkspace, 7"
-              "$mod SHIFT, 7, movetoworkspace, 7"
-              "$mod SHIFT, code:17, movetoworkspace, 8"
-              "$mod SHIFT, 8, movetoworkspace, 8"
-              "$mod SHIFT, code:18, movetoworkspace, 9"
-              "$mod SHIFT, 9, movetoworkspace, 9"
-              "$mod SHIFT, code:19, movetoworkspace, 10"
-              "$mod SHIFT, 0, movetoworkspace, 10"
+              (mkBind (modKey "SHIFT + H") (lua ''hl.dsp.window.move({ direction = "left" })''))
+              (mkBind (modKey "SHIFT + L") (lua ''hl.dsp.window.move({ direction = "right" })''))
+              (mkBind (modKey "SHIFT + K") (lua ''hl.dsp.window.move({ direction = "up" })''))
+              (mkBind (modKey "SHIFT + J") (lua ''hl.dsp.window.move({ direction = "down" })''))
+              (mkBind (modKey "SHIFT + left") (lua ''hl.dsp.window.move({ direction = "left" })''))
+              (mkBind (modKey "SHIFT + right") (lua ''hl.dsp.window.move({ direction = "right" })''))
+              (mkBind (modKey "SHIFT + up") (lua ''hl.dsp.window.move({ direction = "up" })''))
+              (mkBind (modKey "SHIFT + down") (lua ''hl.dsp.window.move({ direction = "down" })''))
+            ]
+            ++ workspaceBinds
+            ++ [
 
               # Scroll through existing workspaces with mainMod + scroll
-              "$mod, mouse_down, workspace, e-1"
-              "$mod, mouse_up, workspace, e+1"
+              (mkBind (modKey "mouse_down") (lua ''hl.dsp.focus({ workspace = "e-1" })''))
+              (mkBind (modKey "mouse_up") (lua ''hl.dsp.focus({ workspace = "e+1" })''))
 
               # Media controls
-              ", XF86AudioRaiseVolume, exec, pulsemixer --change-volume +1"
-              ", XF86AudioLowerVolume, exec, pulsemixer --change-volume -1"
-              # ", XF86AudioMicMute, exec, pulsemixer --toggle-mute"
-              ", XF86AudioMute, exec, pulsemixer --toggle-mute"
-              ", XF86AudioPlay, exec, mpc toggle"
-              ", XF86AudioPause, exec, mpc toggle"
-              ", XF86AudioNext, exec, mpc next"
-              ", XF86AudioPrev, exec, mpc prev"
-              "$mod, P, exec, mpc toggle"
+              (mkBind "XF86AudioRaiseVolume" (exec "pulsemixer --change-volume +1"))
+              (mkBind "XF86AudioLowerVolume" (exec "pulsemixer --change-volume -1"))
+              (mkBind "XF86AudioMute" (exec "pulsemixer --toggle-mute"))
+              (mkBind "XF86AudioPlay" (exec "mpc toggle"))
+              (mkBind "XF86AudioPause" (exec "mpc toggle"))
+              (mkBind "XF86AudioNext" (exec "mpc next"))
+              (mkBind "XF86AudioPrev" (exec "mpc prev"))
+              (mkBind (modKey "P") (exec "mpc toggle"))
 
-              ", XF86MonBrightnessDown, exec, xbacklight -ctrl amdgpu_bl1 -dec 5"
-              ", XF86MonBrightnessUp, exec, xbacklight -ctrl amdgpu_bl1 -inc 5"
+              (mkBind "XF86MonBrightnessDown" (exec "xbacklight -ctrl amdgpu_bl1 -dec 5"))
+              (mkBind "XF86MonBrightnessUp" (exec "xbacklight -ctrl amdgpu_bl1 -inc 5"))
 
-              ", Print, exec, grim -g \"$(slurp)\" - | satty -f -"
-              "SHIFT, Print, exec, grim - | satty -f -"
-            ];
+              (mkBind "Print" (exec ''grim -g "$(slurp)" - | satty -f -''))
+              (mkBind "SHIFT + Print" (exec "grim - | satty -f -"))
 
-            bindm = [
               # Move/resize windows with mainMod + LMB/RMB and dragging
-              "$mod, mouse:272, movewindow"
-              "$mod, mouse:273, resizewindow"
+              (mkMouseBind (modKey "mouse:272") (lua "hl.dsp.window.drag()"))
+              (mkMouseBind (modKey "mouse:273") (lua "hl.dsp.window.resize()"))
             ];
 
-            exec-once = [
-              "${pkgs.swaybg}/bin/swaybg --image ${wallpaper} --mode fill"
-              "keepassxc"
-            ];
-
-            misc = {
-              force_default_wallpaper = 0;
-              disable_hyprland_logo = true;
-              disable_splash_rendering = true;
-              animate_manual_resizes = true;
+            on = {
+              _args = [
+                "hyprland.start"
+                (lua ''
+                  function()
+                    hl.exec_cmd(${toLua "${pkgs.swaybg}/bin/swaybg --image ${wallpaper} --mode fill"})
+                    hl.exec_cmd("keepassxc")
+                  end
+                '')
+              ];
             };
           };
         };

@@ -81,7 +81,12 @@
     {
       wayland.windowManager.hyprland.settings = {
         monitor = [
-          "DP-1, 4096x2160@240, 0x0, 1.5"
+          {
+            output = "DP-1";
+            mode = "4096x2160@240";
+            position = "0x0";
+            scale = 1.5;
+          }
         ];
       };
     };

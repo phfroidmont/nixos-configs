@@ -190,20 +190,55 @@
 
       wayland.windowManager.hyprland.settings = {
         monitor = [
-          "eDP-1, 2560x1600@240, 0x0, 1.6"
-          "desc:Microstep MPG321UX OLED 0x01010101, 3840x2160@239.99001, auto-right, 1.6"
-          ", preferred, auto, 1"
+          {
+            output = "eDP-1";
+            mode = "2560x1600@240";
+            position = "0x0";
+            scale = 1.6;
+          }
+          {
+            output = "desc:Microstep MPG321UX OLED 0x01010101";
+            mode = "3840x2160@239.99001";
+            position = "auto-right";
+            scale = 1.6;
+          }
+          {
+            output = "";
+            mode = "preferred";
+            position = "auto";
+            scale = 1;
+          }
         ];
 
-        workspace = [
-          "w[tv1], gapsout:0, gapsin:0"
-          "f[1], gapsout:0, gapsin:0"
+        workspace_rule = [
+          {
+            workspace = "w[tv1]";
+            gaps_out = 0;
+            gaps_in = 0;
+          }
+          {
+            workspace = "f[1]";
+            gaps_out = 0;
+            gaps_in = 0;
+          }
         ];
-        windowrule = [
-          "border_size 0, match:float 0, match:workspace w[tv1]"
-          "rounding 0, match:float 0, match:workspace w[tv1]"
-          "border_size 0, match:float 0, match:workspace f[1]"
-          "rounding 0, match:float 0, match:workspace f[1]"
+        window_rule = [
+          {
+            match = {
+              float = false;
+              workspace = "w[tv1]";
+            };
+            border_size = 0;
+            rounding = 0;
+          }
+          {
+            match = {
+              float = false;
+              workspace = "f[1]";
+            };
+            border_size = 0;
+            rounding = 0;
+          }
         ];
       };
     };
