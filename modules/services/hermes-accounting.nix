@@ -54,7 +54,7 @@ let
     "${aiosqlitePy}/${pySitePackages}"
   ];
 
-  baseHermesPackage = inputs."hermes-agent".packages.${pkgs.system}.default;
+  baseHermesPackage = inputs."hermes-agent".packages.${pkgs.stdenv.hostPlatform.system}.default;
   hermesWithMatrixDeps = pkgs.symlinkJoin {
     name = "hermes-agent-with-matrix-deps";
     paths = [ baseHermesPackage ];

@@ -68,6 +68,4 @@
   };
 
   hardware.cpu.amd.updateMicrocode = true;
-
-  services.resolved.dnssec = "false";
 }

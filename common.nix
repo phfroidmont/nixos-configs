@@ -90,5 +90,5 @@
       "membres.yourcoop.local"
     ];
   };
-  services.resolved.dnssec = "false";
+  services.resolved.settings.Resolve.DNSSEC = "false";
 }

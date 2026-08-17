@@ -64,6 +64,7 @@ in
 
       home = {
         pointerCursor = {
+          enable = true;
           package = pkgs.paper-icon-theme;
           name = "Paper";
           size = 24;

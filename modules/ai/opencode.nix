@@ -108,7 +108,7 @@ in
       {
         programs.opencode = {
           enable = true;
-          package = inputs.llm-agents.packages.${pkgs.system}.opencode;
+          package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
           settings = {
             model = "openai/gpt-5.6-sol";
             small_model = "openai/gpt-5.6-luna";
