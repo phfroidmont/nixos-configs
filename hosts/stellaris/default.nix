@@ -197,6 +197,12 @@
             scale = 1.6;
           }
           {
+            output = "desc:HP Inc. HP E24m G4 CNC2191PK5";
+            mode = "preferred";
+            position = "auto-left";
+            scale = 1;
+          }
+          {
             output = "desc:Microstep MPG321UX OLED 0x01010101";
             mode = "3840x2160@239.99001";
             position = "auto-right";
