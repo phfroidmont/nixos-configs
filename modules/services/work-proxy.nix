@@ -7,6 +7,17 @@
 
 let
   cfg = config.modules.services.work-proxy;
+  mongodbCompass = pkgs.symlinkJoin {
+    name = "mongodb-compass-${pkgs.mongodb-compass.version}";
+    paths = [ pkgs.mongodb-compass ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      rm "$out/bin/mongodb-compass"
+      makeWrapper ${lib.getExe pkgs.mongodb-compass} "$out/bin/mongodb-compass" \
+        --add-flags "--ignore-additional-command-line-flags" \
+        --add-flags "--password-store=gnome-libsecret"
+    '';
+  };
 in
 {
   options.modules.services.work-proxy = {
@@ -53,7 +64,7 @@ in
 
     environment.systemPackages = with pkgs; [
       (sbt.override { jre = jdk17; })
-      mongodb-compass
+      mongodbCompass
       chisel
       get-token
       mia
