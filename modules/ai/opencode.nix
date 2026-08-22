@@ -17,7 +17,6 @@ in
     home-manager.users.${config.user.name} =
       { config, ... }:
       let
-        playwrightMcpUserDataDir = "${config.xdg.cacheHome}/opencode/playwright-mcp";
         foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
         foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
         foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
@@ -366,7 +365,7 @@ in
                   "-y"
                   "@playwright/mcp@0.0.79"
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
-                  "--user-data-dir=${playwrightMcpUserDataDir}"
+                  "--isolated"
                 ];
                 enabled = true;
                 timeout = 60000;
