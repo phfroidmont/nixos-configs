@@ -89,6 +89,49 @@ in
           "git rev-parse*" = "allow";
           "git symbolic-ref*" = "allow";
           "git remote -v" = "allow";
+          "git grep*" = "allow";
+          "git grep*-O*" = "deny";
+          "git grep*--open-files-in-pager*" = "deny";
+          "git ls-tree*" = "allow";
+          "git worktree list*" = "allow";
+          "git check-ignore*" = "allow";
+          "gh pr view*" = "allow";
+          "gh run list*" = "allow";
+          "gh search*" = "allow";
+          "command -v*" = "allow";
+          "jar tf*" = "allow";
+          "unzip -l*" = "allow";
+          "unzip -p*" = "allow";
+        };
+        reviewBash = readOnlyBash // {
+          "mill*test*" = "allow";
+          "mill*compile*" = "allow";
+          "mill*check*" = "allow";
+          "mill*resolve*" = "allow";
+          "mill inspect*" = "allow";
+          "mill path*" = "allow";
+          "bloop test*" = "allow";
+          "bloop compile*" = "allow";
+          "bloop projects*" = "allow";
+          "sbt*test*" = "allow";
+          "sbt*compile*" = "allow";
+          "sbtn*test*" = "allow";
+          "sbtn*compile*" = "allow";
+          "node --test*" = "allow";
+          "npm run build" = "allow";
+          "npm run build -- *" = "allow";
+          "yarn build" = "allow";
+          "yarn build *" = "allow";
+          "nix eval --no-write-lock-file*" = "allow";
+          "nix eval*--commit-lock-file*" = "deny";
+          "nix eval*--recreate-lock-file*" = "deny";
+          "nix eval*--update-input*" = "deny";
+          "nix flake check --no-write-lock-file*" = "allow";
+          "nix flake check*--commit-lock-file*" = "deny";
+          "nix flake check*--recreate-lock-file*" = "deny";
+          "nix flake check*--update-input*" = "deny";
+          "nix flake metadata --no-write-lock-file*" = "allow";
+          "nix flake show --no-write-lock-file*" = "allow";
         };
         foyerConfig = builtins.toJSON {
           mcp.jira.enabled = true;
@@ -130,18 +173,86 @@ in
                 "*" = "ask";
                 "/nix/store/**" = "allow";
                 "/tmp/opencode/**" = "allow";
+                "~/.cache/JNA/**" = "allow";
+                "~/.cache/Tectonic/**" = "allow";
+                "~/.cache/bloop/**" = "allow";
+                "~/.cache/coursier/**" = "allow";
+                "~/.cache/deno/**" = "allow";
+                "~/.cache/elixir_make/**" = "allow";
+                "~/.cache/goimports/**" = "allow";
+                "~/.cache/google-chrome-for-testing/**" = "allow";
+                "~/.cache/lua-language-server/**" = "allow";
+                "~/.cache/main.kts.compiled.cache/**" = "allow";
+                "~/.cache/metals/**" = "allow";
+                "~/.cache/mill/**" = "allow";
+                "~/.cache/mix/**" = "allow";
+                "~/.cache/ms-playwright/**" = "allow";
+                "~/.cache/nix-index/**" = "allow";
+                "~/.cache/nix/**" = "allow";
+                "~/.cache/node-gyp/**" = "allow";
+                "~/.cache/org.graalvm.polyglot/**" = "allow";
+                "~/.cache/rustler_precompiled/**" = "allow";
+                "~/.cache/scalacli/**" = "allow";
+                "~/.cache/scalablytyped/**" = "allow";
+                "~/.cache/tree-sitter/**" = "allow";
+                "~/.cache/typescript/**" = "allow";
+                "~/.cache/uv/**" = "allow";
+                "~/.cache/yarn/**" = "allow";
                 "~/.config/opencode/**" = "allow";
+                "~/.ivy2/**" = "allow";
                 "~/.local/share/opencode/log/**" = "allow";
+                "~/.m2/**" = "allow";
                 "~/Projects/**" = "allow";
               };
 
               bash = {
                 "*" = "allow";
 
-                "gh pr close*" = "ask";
-                "gh pr create*" = "ask";
-                "gh pr edit*" = "ask";
-                "gh pr merge*" = "ask";
+                "curl*-X DELETE*" = "ask";
+                "curl*-X PATCH*" = "ask";
+                "curl*-X POST*" = "ask";
+                "curl*-X PUT*" = "ask";
+                "curl*-XDELETE*" = "ask";
+                "curl*-XPATCH*" = "ask";
+                "curl*-XPOST*" = "ask";
+                "curl*-XPUT*" = "ask";
+                "curl*-F*" = "ask";
+                "curl*-T*" = "ask";
+                "curl*-d*" = "ask";
+                "curl*--data*" = "ask";
+                "curl*--form*" = "ask";
+                "curl*--json*" = "ask";
+                "curl*--request DELETE*" = "ask";
+                "curl*--request PATCH*" = "ask";
+                "curl*--request POST*" = "ask";
+                "curl*--request PUT*" = "ask";
+                "curl*--request=DELETE*" = "ask";
+                "curl*--request=PATCH*" = "ask";
+                "curl*--request=POST*" = "ask";
+                "curl*--request=PUT*" = "ask";
+                "curl*--upload-file*" = "ask";
+                "deploy *" = "ask";
+                "gh *" = "ask";
+                "gh --version*" = "allow";
+                "gh api*" = "ask";
+                "gh auth status*" = "allow";
+                "gh issue list*" = "allow";
+                "gh issue status*" = "allow";
+                "gh issue view*" = "allow";
+                "gh pr checks*" = "allow";
+                "gh pr diff*" = "allow";
+                "gh pr list*" = "allow";
+                "gh pr status*" = "allow";
+                "gh pr view*" = "allow";
+                "gh release list*" = "allow";
+                "gh release view*" = "allow";
+                "gh repo list*" = "allow";
+                "gh repo view*" = "allow";
+                "gh run list*" = "allow";
+                "gh run view*" = "allow";
+                "gh search*" = "allow";
+                "gh workflow list*" = "allow";
+                "gh workflow view*" = "allow";
                 "git checkout --*" = "ask";
                 "git clean*" = "ask";
                 "git push*" = "ask";
@@ -155,6 +266,8 @@ in
                 "npm publish*" = "ask";
                 "pkill*" = "ask";
                 "rm *" = "ask";
+                "sops *" = "ask";
+                "ssh *" = "ask";
                 "sudo*" = "ask";
                 "systemctl*" = "ask";
               };
@@ -170,6 +283,12 @@ in
               skill = {
                 "*" = "allow";
               };
+
+              playwright_browser_run_code_unsafe = "ask";
+              "grafana-production_alerting_manage_routing" = "ask";
+              "grafana-production_alerting_manage_rules" = "ask";
+              "grafana-staging_alerting_manage_routing" = "ask";
+              "grafana-staging_alerting_manage_rules" = "ask";
             };
             provider = {
               vllm = {
@@ -291,7 +410,7 @@ in
                 prompt = "{file:${./prompts/review-rules.txt}}";
                 permission = {
                   edit = "deny";
-                  bash = readOnlyBash;
+                  bash = reviewBash;
                   task = "deny";
                 };
               };
@@ -407,6 +526,9 @@ in
           ## Commits
           - Use Conventional Commits
           - Before any commit, try to run the project formatter and linter on changed files.
+
+          ## Filesystem
+          - Search known dependency caches directly; never glob or search all of `~/.cache`.
 
           ## Delegation
           - Delegate only bounded, independent work with an explicit expected report.
