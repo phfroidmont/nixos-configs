@@ -145,6 +145,8 @@ return {
 			servers = {
 				metals = {
 					settings = {
+						mcpClient = "opencode",
+						millScript = vim.fn.exepath("mill"),
 						showImplicitArguments = false,
 						startMcpServer = true,
 						useGlobalExecutable = true,
