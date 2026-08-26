@@ -8,6 +8,7 @@
 let
   cfg = config.modules.desktop.wm;
   applications = config.modules.applications.commands;
+  herdr = config.modules.desktop.herdr.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
   wallpaper = config.modules.desktop.wallpaper;
   c = (import ./themes/_palette.nix).semantic;
@@ -66,6 +67,7 @@ in
           qt.enable = true;
         };
         terminal.enable = true;
+        herdr.enable = true;
         file-manager.enable = true;
         zsh.enable = true;
         dunst.enable = true;
@@ -196,6 +198,8 @@ in
 
             bind = [
               (mkBind (modKey "Return") (exec applications.terminal))
+              (mkBind (modKey "CTRL + Return") (exec herdr.launch))
+              (mkBind (modKey "CTRL + K") (exec herdr.showKeybindings))
               (mkBind (modKey "C") (lua "hl.dsp.window.close()"))
               (mkBind (modKey "SHIFT + A") (exec "${applications.terminal} -e pulsemixer"))
               (mkBind (modKey "W") (exec applications.browser))

@@ -16,6 +16,10 @@
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    herdr = {
+      url = "github:herdrdev/herdr/v0.8.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hermes-agent.url = "github:NousResearch/hermes-agent";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
   };
