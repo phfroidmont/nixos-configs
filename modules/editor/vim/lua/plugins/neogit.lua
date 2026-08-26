@@ -10,6 +10,9 @@ return {
         desc = "Neogit",
       },
     },
-    config = true,
+    opts = {
+      treesitter_diff_highlight = true,
+      word_diff_highlight = true,
+    },
   },
 }
