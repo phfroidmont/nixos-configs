@@ -29,6 +29,74 @@ let
       set -euo pipefail
 
       projects_directory=${lib.escapeShellArg projectsDirectory}
+      runtime_directory="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+      pane_is_idle() {
+        local pane_id="$1"
+        local process_json
+
+        if ! process_json="$(herdr pane process-info --pane "$pane_id")"; then
+          return 1
+        fi
+        jq -e '
+          .result.process_info as $process
+          | ($process.foreground_processes | length == 0)
+            or (
+              $process.foreground_process_group_id == $process.shell_pid
+              and any($process.foreground_processes[]; .pid == $process.shell_pid)
+            )
+        ' <<<"$process_json" >/dev/null
+      }
+
+      wait_until_busy() {
+        local pane_id="$1"
+
+        for _ in {1..50}; do
+          if ! pane_is_idle "$pane_id"; then
+            return
+          fi
+          sleep 0.1
+        done
+
+        printf 'Pane %s did not start its command within five seconds\n' "$pane_id" >&2
+        return 1
+      }
+
+      restore_editors() {
+        local tabs_json panes_json tab_id pane_id
+
+        exec 8>"$runtime_directory/herdr-restore-editors.lock"
+        flock 8
+
+        for _ in {1..100}; do
+          if tabs_json="$(herdr tab list 2>/dev/null)" \
+            && panes_json="$(herdr pane list 2>/dev/null)"; then
+            break
+          fi
+          sleep 0.1
+        done
+
+        if [[ -z "''${tabs_json:-}" || -z "''${panes_json:-}" ]]; then
+          return
+        fi
+
+        while IFS= read -r tab_id; do
+          while IFS= read -r pane_id; do
+            if [[ -n "$pane_id" ]] && pane_is_idle "$pane_id"; then
+              if ! herdr pane run "$pane_id" 'nvim .' >/dev/null \
+                || ! wait_until_busy "$pane_id"; then
+                continue
+              fi
+            fi
+          done < <(jq -r --arg tab_id "$tab_id" \
+            '.result.panes[] | select(.tab_id == $tab_id) | .pane_id' <<<"$panes_json")
+        done < <(jq -r '.result.tabs[] | select(.label == "edit") | .tab_id' <<<"$tabs_json")
+      }
+
+      if [[ "''${1:-}" == "--restore-editors" ]]; then
+        restore_editors
+        exit
+      fi
 
       choose_project() {
         local git_path project selected
@@ -72,7 +140,6 @@ let
       fi
       project="$(realpath -- "$project")"
 
-      runtime_directory="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
       exec 9>"$runtime_directory/herdr-project.lock"
       flock 9
 
@@ -87,35 +154,6 @@ let
         <<<"$panes_json")"
       edit_created=false
       agent_created=false
-
-      pane_is_idle() {
-        local pane_id="$1"
-        local process_json
-
-        process_json="$(herdr pane process-info --pane "$pane_id")"
-        jq -e '
-          .result.process_info as $process
-          | ($process.foreground_processes | length == 0)
-            or (
-              $process.foreground_process_group_id == $process.shell_pid
-              and any($process.foreground_processes[]; .pid == $process.shell_pid)
-            )
-        ' <<<"$process_json" >/dev/null
-      }
-
-      wait_until_busy() {
-        local pane_id="$1"
-
-        for _ in {1..50}; do
-          if ! pane_is_idle "$pane_id"; then
-            return
-          fi
-          sleep 0.1
-        done
-
-        printf 'Pane %s did not start its command within five seconds\n' "$pane_id" >&2
-        return 1
-      }
 
       if [[ -z "$workspace_id" ]]; then
         workspace_json="$(herdr workspace create --cwd "$project" --label "$label" --no-focus)"
@@ -186,6 +224,67 @@ let
     '';
   };
 
+  checkpointHerdrEditors = pkgs.writeShellApplication {
+    name = "checkpoint-herdr-editors";
+    runtimeInputs = [
+      pkgs.coreutils
+      herdr
+      pkgs.jq
+    ];
+    text = ''
+      set -euo pipefail
+
+      if ! tabs_json="$(herdr tab list 2>/dev/null)" \
+        || ! panes_json="$(herdr pane list 2>/dev/null)"; then
+        exit 0
+      fi
+
+      checkpoint_dir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/herdr-nvim-checkpoints"
+      mkdir -p "$checkpoint_dir"
+      declare -a checkpoint_files=()
+
+      while IFS= read -r tab_id; do
+        while IFS= read -r pane_id; do
+          [[ -n "$pane_id" ]] || continue
+
+          if ! process_json="$(herdr pane process-info --pane "$pane_id" 2>/dev/null)"; then
+            continue
+          fi
+          nvim_pid="$(jq -r '
+            [.result.process_info.foreground_processes[]
+              | select(.name == "nvim")
+              | select((.argv | index("--embed")) == null)
+              | .pid][0] // empty
+          ' <<<"$process_json")"
+          [[ -n "$nvim_pid" ]] || continue
+
+          checkpoint_file="$checkpoint_dir/$nvim_pid"
+          rm -f -- "$checkpoint_file"
+          if kill -USR1 "$nvim_pid" 2>/dev/null; then
+            checkpoint_files+=("$checkpoint_file")
+          fi
+        done < <(jq -r --arg tab_id "$tab_id" \
+          '.result.panes[] | select(.tab_id == $tab_id) | .pane_id' <<<"$panes_json")
+      done < <(jq -r '.result.tabs[] | select(.label == "edit") | .tab_id' <<<"$tabs_json")
+
+      (( ''${#checkpoint_files[@]} > 0 )) || exit 0
+
+      for _ in {1..50}; do
+        pending=0
+        for checkpoint_file in "''${checkpoint_files[@]}"; do
+          [[ -e "$checkpoint_file" ]] || pending=1
+        done
+        (( pending )) || break
+        sleep 0.1
+      done
+
+      if (( pending )); then
+        printf 'Timed out waiting for one or more Neovim session checkpoints\n' >&2
+      fi
+      rm -f -- "''${checkpoint_files[@]}"
+    '';
+  };
+
   launchHerdr = pkgs.writeShellApplication {
     name = "launch-herdr";
     runtimeInputs = [
@@ -199,6 +298,9 @@ let
         exec hyprctl dispatch focuswindow 'class:^(herdr)$'
       fi
 
+      if ! herdr pane list >/dev/null 2>&1; then
+        ${lib.getExe herdrProject} --restore-editors &
+      fi
       exec kitty --class herdr --title Herdr --directory ${lib.escapeShellArg projectsDirectory} herdr
     '';
   };
@@ -261,6 +363,28 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    systemd.services.checkpoint-herdr-editors = lib.mkIf config.modules.editor.vim.enable {
+      description = "Checkpoint Herdr Neovim sessions before shutdown";
+      wantedBy = [ "multi-user.target" ];
+      after = [
+        "display-manager.service"
+        "systemd-user-sessions.service"
+      ];
+      restartIfChanged = false;
+      environment = {
+        HOME = homeDirectory;
+        XDG_CONFIG_HOME = "${homeDirectory}/.config";
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        User = user;
+        ExecStart = "${pkgs.coreutils}/bin/true";
+        ExecStop = lib.getExe checkpointHerdrEditors;
+        TimeoutStopSec = "8s";
+      };
+    };
+
     home-manager.users.${user} = {
       home.packages = [
         herdr
