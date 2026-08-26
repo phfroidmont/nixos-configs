@@ -601,9 +601,9 @@ in
           };
         };
         programs.zsh.shellAliases = {
-          oc = "opencode";
-          oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode";
-          oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode";
+          oc = "opencode --auto";
+          oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode --auto";
+          oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode --auto";
         };
         xdg.configFile."opencode/AGENTS.md".text = ''
           # Global OpenCode Rules

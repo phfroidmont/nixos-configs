@@ -144,7 +144,7 @@ let
       if [[ -z "$agent_tab_id" ]]; then
         agent_json="$(herdr tab create --workspace "$workspace_id" --cwd "$project" --label agent --no-focus)"
         agent_pane_id="$(jq -r '.result.root_pane.pane_id' <<<"$agent_json")"
-        herdr pane run "$agent_pane_id" 'opencode --port' >/dev/null
+        herdr pane run "$agent_pane_id" 'opencode --auto --port' >/dev/null
         agent_created=true
       fi
 
@@ -172,7 +172,7 @@ let
         run_if_idle "$edit_tab_id" 'nvim .'
       fi
       if [[ "$agent_created" == false ]]; then
-        run_if_idle "$agent_tab_id" 'opencode --port'
+        run_if_idle "$agent_tab_id" 'opencode --auto --port'
       fi
       if [[ "$edit_created" == true ]]; then
         wait_until_busy "$edit_pane_id"
@@ -224,13 +224,16 @@ let
           'Ctrl+Alt+Shift+Arrow     Resize pane' \
           'Ctrl+Space Shift+O       Rename pane' \
           'Ctrl+Space C/R/K         New/rename/close tab' \
+          'Alt+Shift+T              New tab' \
           'Ctrl+Space P/N           Previous/next tab' \
-          'Ctrl+, / Ctrl+;          Previous/next tab' \
-          'Ctrl+Shift+, / Ctrl+Shift+;  Move tab' \
+          'Alt+H / Alt+L            Previous/next tab' \
+          'Alt+Shift+H / Alt+Shift+L  Move tab' \
           'Ctrl+Space 1-9           Switch tab' \
           'Ctrl+Space Shift+C/R/K   New/rename/close workspace' \
           'Ctrl+Space Shift+P/N     Previous/next workspace' \
+          'Alt+K / Alt+J            Previous/next workspace' \
           'Ctrl+Space Alt+P/N       Previous/next agent' \
+          'Alt+Shift+K / Alt+Shift+J  Previous/next agent' \
           'Ctrl+Space Shift+G       New Git worktree'
       } | rofi -dmenu -i -no-custom -p 'Herdr shortcuts')" || true
 
@@ -326,32 +329,47 @@ in
             resize_pane_right = "ctrl+alt+shift+right";
             rename_pane = "prefix+shift+o";
 
-            new_tab = "prefix+c";
+            new_tab = [
+              "prefix+c"
+              "alt+shift+t"
+            ];
             rename_tab = "prefix+r";
             close_tab = "prefix+k";
             switch_tab = "prefix+1..9";
             previous_tab = [
               "prefix+p"
-              "ctrl+comma"
+              "alt+h"
             ];
             next_tab = [
               "prefix+n"
-              "ctrl+semicolon"
+              "alt+l"
             ];
-            move_tab_previous = "ctrl+shift+comma";
-            move_tab_next = "ctrl+shift+semicolon";
+            move_tab_previous = "alt+shift+h";
+            move_tab_next = "alt+shift+l";
 
             new_workspace = "prefix+shift+c";
             rename_workspace = "prefix+shift+r";
             close_workspace = "prefix+shift+k";
-            previous_workspace = "prefix+shift+p";
-            next_workspace = "prefix+shift+n";
+            previous_workspace = [
+              "prefix+shift+p"
+              "alt+k"
+            ];
+            next_workspace = [
+              "prefix+shift+n"
+              "alt+j"
+            ];
             workspace_picker = "prefix+w";
             goto = "prefix+g";
             new_worktree = "prefix+shift+g";
 
-            previous_agent = "prefix+alt+p";
-            next_agent = "prefix+alt+n";
+            previous_agent = [
+              "prefix+alt+p"
+              "alt+shift+k"
+            ];
+            next_agent = [
+              "prefix+alt+n"
+              "alt+shift+j"
+            ];
 
             command = [
               {
