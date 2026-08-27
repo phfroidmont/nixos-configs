@@ -198,7 +198,7 @@ in
 
             bind = [
               (mkBind (modKey "Return") (exec applications.terminal))
-              (mkBind (modKey "CTRL + Return") (exec herdr.launch))
+              (mkBind (modKey "SHIFT + Return") (exec herdr.launch))
               (mkBind (modKey "CTRL + K") (exec herdr.showKeybindings))
               (mkBind (modKey "C") (lua "hl.dsp.window.close()"))
               (mkBind (modKey "SHIFT + A") (exec "${applications.terminal} -e pulsemixer"))
