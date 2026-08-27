@@ -12,6 +12,13 @@ let
   homeDirectory = config.home-manager.users.${user}.home.homeDirectory;
   projectsDirectory = "${homeDirectory}/Projects";
   herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  # Keep child prompt transitions scoped to the root session until herdrdev/herdr#3052 is fixed.
+  herdrAgentState = pkgs.runCommand "herdr-agent-state.js" { } ''
+    substitute ${inputs.herdr}/src/integration/assets/opencode/herdr-agent-state.js "$out" \
+      --replace-fail \
+      'await reportState(state);' \
+      'await reportState(state, reportedRootSessionID);'
+  '';
   toml = pkgs.formats.toml { };
 
   herdrProject = pkgs.writeShellApplication {
@@ -508,8 +515,7 @@ in
           };
         };
 
-        "opencode/plugins/herdr-agent-state.js".source =
-          "${inputs.herdr}/src/integration/assets/opencode/herdr-agent-state.js";
+        "opencode/plugins/herdr-agent-state.js".source = herdrAgentState;
         "opencode/herdr-tui-session.js".source =
           "${inputs.herdr}/src/integration/assets/opencode/herdr-tui-session.js";
         "opencode/tui.jsonc".text = builtins.toJSON {
