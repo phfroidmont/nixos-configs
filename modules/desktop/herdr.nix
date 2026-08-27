@@ -83,7 +83,7 @@ let
         while IFS= read -r tab_id; do
           while IFS= read -r pane_id; do
             if [[ -n "$pane_id" ]] && pane_is_idle "$pane_id"; then
-              if ! herdr pane run "$pane_id" 'nvim .' >/dev/null \
+              if ! herdr pane run "$pane_id" 'nvim' >/dev/null \
                 || ! wait_until_busy "$pane_id"; then
                 continue
               fi
@@ -162,7 +162,7 @@ let
         edit_pane_id="$(jq -r '.result.root_pane.pane_id' <<<"$workspace_json")"
 
         herdr tab rename "$edit_tab_id" edit >/dev/null
-        herdr pane run "$edit_pane_id" 'nvim .' >/dev/null
+        herdr pane run "$edit_pane_id" 'nvim' >/dev/null
         edit_created=true
       else
         tabs_json="$(herdr tab list --workspace "$workspace_id")"
@@ -172,7 +172,7 @@ let
           edit_json="$(herdr tab create --workspace "$workspace_id" --cwd "$project" --label edit --no-focus)"
           edit_tab_id="$(jq -r '.result.tab.tab_id' <<<"$edit_json")"
           edit_pane_id="$(jq -r '.result.root_pane.pane_id' <<<"$edit_json")"
-          herdr pane run "$edit_pane_id" 'nvim .' >/dev/null
+          herdr pane run "$edit_pane_id" 'nvim' >/dev/null
           edit_created=true
         fi
       fi
@@ -207,7 +207,7 @@ let
       }
 
       if [[ "$edit_created" == false ]]; then
-        run_if_idle "$edit_tab_id" 'nvim .'
+        run_if_idle "$edit_tab_id" 'nvim'
       fi
       if [[ "$agent_created" == false ]]; then
         run_if_idle "$agent_tab_id" 'opencode --auto --port'
