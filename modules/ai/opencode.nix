@@ -605,6 +605,24 @@ in
           oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode --auto";
           oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode --auto";
         };
+        programs.zsh.initContent = lib.mkAfter ''
+          opencode() {
+            local arg restore_session=false has_auto=false
+
+            for arg in "$@"; do
+              case "$arg" in
+                --session|--session=*) restore_session=true ;;
+                --auto) has_auto=true ;;
+              esac
+            done
+
+            if [[ "$restore_session" == true && "$has_auto" == false ]]; then
+              command opencode --auto "$@"
+              return
+            fi
+            command opencode "$@"
+          }
+        '';
         xdg.configFile."opencode/AGENTS.md".text = ''
           # Global OpenCode Rules
 
