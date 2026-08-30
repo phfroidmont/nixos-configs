@@ -209,7 +209,7 @@ in
               (mkBind (modKey "N") (exec "${applications.terminal} -e newsboat"))
               (mkBind (modKey "SHIFT + T") (exec "${applications.terminal} -e ${btop}"))
               (mkBind (modKey "M") (exec "${applications.terminal} -e ncmpcpp"))
-              (mkBind (modKey "V") (exec "${applications.terminal} -e ncmpcpp -s visualizer"))
+              (mkBind (modKey "V") (exec "${quickshell} -c desktop ipc call -- clipboard toggle"))
               (mkBind (modKey "T") (lua ''hl.dsp.window.float({ action = "toggle" })''))
               (mkBind (modKey "SPACE") (exec "${quickshell} -c desktop ipc call -- launcher toggle"))
 

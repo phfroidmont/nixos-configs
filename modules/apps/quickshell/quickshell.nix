@@ -47,6 +47,32 @@ let
       done
     '';
   };
+  clipboardCapture = pkgs.writeShellApplication {
+    name = "clipboard-capture";
+    runtimeInputs = with pkgs; [
+      coreutils
+      file
+      gnugrep
+      jq
+      perl
+      wl-clipboard
+    ];
+    bashOptions = [ "pipefail" ];
+    text = builtins.readFile ./scripts/clipboard-capture.sh;
+  };
+  clipboardAction = pkgs.writeShellApplication {
+    name = "clipboard-action";
+    runtimeInputs = with pkgs; [
+      coreutils
+      findutils
+      gnugrep
+      jq
+      wl-clipboard
+      wtype
+      xdg-utils
+    ];
+    text = builtins.readFile ./scripts/clipboard-action.sh;
+  };
 in
 {
   options.modules.apps.quickshell = {
@@ -67,11 +93,19 @@ in
       };
 
       systemd.user.services.quickshell.Service.Environment = [
+        "CLIPBOARD_ACTION=${lib.getExe clipboardAction}"
+        "CLIPBOARD_BROWSER=${config.modules.applications.commands.browser}"
+        "CLIPBOARD_CAPTURE=${lib.getExe clipboardCapture}"
+        "CLIPBOARD_EDITOR=${config.modules.applications.commands.editor}"
+        "CLIPBOARD_PKILL=${lib.getExe' pkgs.procps "pkill"}"
+        "CLIPBOARD_SETPRIV=${lib.getExe' pkgs.util-linux "setpriv"}"
+        "CLIPBOARD_WL_PASTE=${lib.getExe' pkgs.wl-clipboard "wl-paste"}"
         "LAUNCHER_ENV=${lib.getExe' pkgs.coreutils "env"}"
         "LAUNCHER_ICON_INDEX=${lib.getExe launcherIconIndex}"
         "LAUNCHER_ICON_THEME=Gruvbox-Plus-Dark"
         "LAUNCHER_TERMINAL=${config.modules.applications.commands.terminal}"
       ];
+      systemd.user.services.quickshell.Service.UMask = "0077";
       systemd.user.services.quickshell.Unit.X-Restart-Triggers = [ "${quickshellConfig}" ];
     };
   };
