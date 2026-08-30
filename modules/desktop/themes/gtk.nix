@@ -17,8 +17,8 @@ let
     };
     dontUnpack = true;
     installPhase = ''
-      mkdir -p $out
-      ${pkgs.unzip}/bin/unzip $src -d $out/
+      mkdir -p $out/share/icons
+      ${pkgs.unzip}/bin/unzip $src -d $out/share/icons/
     '';
 
   };
@@ -48,7 +48,7 @@ in
         };
         iconTheme = {
           package = gruvboxPlus;
-          name = "GruvboxPlus";
+          name = "Gruvbox-Plus-Dark";
         };
         gtk4.theme = null;
       };

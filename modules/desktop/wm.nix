@@ -10,6 +10,7 @@ let
   applications = config.modules.applications.commands;
   herdr = config.modules.desktop.herdr.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
+  quickshell = lib.getExe' pkgs.quickshell "qs";
   wallpaper = config.modules.desktop.wallpaper;
   c = (import ./themes/_palette.nix).semantic;
   lua = lib.generators.mkLuaInline;
@@ -78,6 +79,7 @@ in
         audio.enable = true;
       };
       apps = {
+        quickshell.enable = true;
         rofi.enable = true;
         newsboat.enable = true;
       };
@@ -199,7 +201,6 @@ in
             bind = [
               (mkBind (modKey "Return") (exec applications.terminal))
               (mkBind (modKey "SHIFT + Return") (exec herdr.launch))
-              (mkBind (modKey "CTRL + K") (exec herdr.showKeybindings))
               (mkBind (modKey "C") (lua "hl.dsp.window.close()"))
               (mkBind (modKey "SHIFT + A") (exec "${applications.terminal} -e pulsemixer"))
               (mkBind (modKey "W") (exec applications.browser))
@@ -210,8 +211,7 @@ in
               (mkBind (modKey "M") (exec "${applications.terminal} -e ncmpcpp"))
               (mkBind (modKey "V") (exec "${applications.terminal} -e ncmpcpp -s visualizer"))
               (mkBind (modKey "T") (lua ''hl.dsp.window.float({ action = "toggle" })''))
-              (mkBind (modKey "D") (exec "rofi -show drun -show-icons"))
-              (mkBind (modKey "SHIFT + P") (exec "rofi -show p -modi p:rofi-power-menu"))
+              (mkBind (modKey "SPACE") (exec "${quickshell} -c desktop ipc call -- launcher toggle"))
 
               # Layout manipulation
               (mkBind (modKey "SHIFT + O") (lua ''hl.dsp.layout("togglesplit")''))

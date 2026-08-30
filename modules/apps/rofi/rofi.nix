@@ -40,7 +40,6 @@ in
       };
       home.packages = with pkgs; [
         paper-icon-theme
-        rofi-power-menu
       ];
     };
   };

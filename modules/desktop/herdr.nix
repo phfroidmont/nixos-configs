@@ -312,43 +312,6 @@ let
     '';
   };
 
-  showHerdrKeybindings = pkgs.writeShellApplication {
-    name = "show-herdr-keybindings";
-    runtimeInputs = [ pkgs.rofi ];
-    text = ''
-      selection="$({
-        printf '%s\n' \
-          'Ctrl+Space ?             Help' \
-          'Ctrl+Space F             Find/open project' \
-          'Ctrl+Space W             Workspace navigator' \
-          'Ctrl+Space G             Global/agent navigator' \
-          'Ctrl+Space D             Detach' \
-          'Ctrl+Space Q             Reload configuration' \
-          'Ctrl+Space Y / [         Copy mode' \
-          'Ctrl+Space H / Alt+Enter Split horizontally' \
-          'Ctrl+Space V / Alt+Shift+Enter  Split vertically' \
-          'Ctrl+Space X             Close pane' \
-          'Ctrl+Space Z / ;         Zoom / last pane' \
-          'Ctrl+Alt+Arrow           Focus pane' \
-          'Ctrl+Alt+Shift+Arrow     Resize pane' \
-          'Ctrl+Space Shift+O       Rename pane' \
-          'Ctrl+Space C/R/K         New/rename/close tab' \
-          'Alt+Shift+T              New tab' \
-          'Ctrl+Space P/N           Previous/next tab' \
-          'Alt+H / Alt+L            Previous/next tab' \
-          'Alt+Shift+H / Alt+Shift+L  Move tab' \
-          'Ctrl+Space 1-9           Switch tab' \
-          'Ctrl+Space Shift+C/R/K   New/rename/close workspace' \
-          'Ctrl+Space Shift+P/N     Previous/next workspace' \
-          'Alt+K / Alt+J            Previous/next workspace' \
-          'Ctrl+Space Alt+P/N       Previous/next agent' \
-          'Alt+Shift+K / Alt+Shift+J  Previous/next agent' \
-          'Ctrl+Space Shift+G       New Git worktree'
-      } | rofi -dmenu -i -no-custom -p 'Herdr shortcuts')" || true
-
-      : "$selection"
-    '';
-  };
 in
 {
   options.modules.desktop.herdr = {
@@ -359,12 +322,6 @@ in
         readOnly = true;
         default = lib.getExe launchHerdr;
         description = "Launch or focus the shared Herdr session.";
-      };
-      showKeybindings = lib.mkOption {
-        type = lib.types.str;
-        readOnly = true;
-        default = lib.getExe showHerdrKeybindings;
-        description = "Show the configured Herdr keybindings.";
       };
     };
   };
@@ -397,7 +354,6 @@ in
         herdr
         herdrProject
         launchHerdr
-        showHerdrKeybindings
       ];
 
       xdg.configFile = {
