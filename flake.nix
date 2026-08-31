@@ -93,6 +93,9 @@
         my = import ./overlay.nix;
       };
 
+      packages.${system}.fos = pkgs.fos;
+      checks.${system}.fos = pkgs.fos.tests;
+
       nixosConfigurations = (mapHosts ./hosts { }) // {
         aegis = stableLib.my.mkHost ./hosts/aegis/default.nix {
           nix.registry.nixpkgs.flake = stableLib.mkForce nixpkgsStable;

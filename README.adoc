@@ -1,21 +1,54 @@
-== Build a config and switch to it
+== Manage Stellaris with FOS
+
+`fos` is the Froidmont Operating System command center. It uses the configured
+NixOS checkout from `programs.nh.flake` and can be run from any directory.
+
+[source,bash]
+----
+fos hosts
+fos build
+fos build aegis
+fos test
+fos switch
+fos boot
+fos update
+fos update nixpkgs home-manager
+fos generations
+fos rollback
+fos rollback 42
+----
+
+Only `fos build` accepts another host. Activation and rollback commands always
+target the local machine. `fos update` updates the selected inputs and builds
+the local configuration without activating it.
+
+== Bootstrap or manage without FOS
+
 [source,bash]
 ----
 sudo nixos-rebuild switch --flake .#thehostname
 ----
-If `#thehostname` is not provided, it defaults to the current hostname
 
-== Try to build a configuration
+If `#thehostname` is omitted, `nixos-rebuild` defaults to the current hostname.
+Build another host without activation with:
+
 [source,bash]
 ----
 nix build .#nixosConfigurations.thehostname.config.system.build.toplevel
 ----
 
-== Update lock file to the latest inputs
+Update the lock file without FOS with `nix flake update`.
+
+== Refresh Nix GitLab authentication
+
 [source,bash]
 ----
-nix flake update
+fos auth refresh
+fos auth refresh gitlab.example.com
 ----
+
+The GitLab host defaults to `gitlab.com`. Authenticate with `glab auth login`
+before refreshing a missing token.
 
 == Build the Aegis installer ISO
 [source,bash]
@@ -101,9 +134,11 @@ sudo mullvad-gw down
 
 [source,bash]
 ----
-aegis-vpn list
-aegis-vpn up
-aegis-vpn status
-aegis-vpn switch nl-ams-wg-001
-aegis-vpn down
+fos vpn list
+fos vpn up
+fos vpn status
+fos vpn switch nl-ams-wg-001
+fos vpn down
 ----
+
+The underlying `aegis-vpn` command remains available for direct use.

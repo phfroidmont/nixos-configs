@@ -1,4 +1,5 @@
 final: prev: {
+  fos = prev.callPackage ./packages/fos/package.nix { };
   get-token = prev.callPackage ./packages/get-token/package.nix { };
   metals = prev.metals.overrideAttrs (oldAttrs: {
     extraJavaOpts = prev.lib.concatStringsSep " " [

@@ -1,0 +1,67 @@
+#compdef fos
+
+_fos() {
+  local -a commands hosts auth_commands vpn_commands servers
+  local output
+
+  commands=(
+    'hosts:List operational host configurations'
+    'build:Build a host without activating it'
+    'test:Temporarily activate the local host'
+    'switch:Activate and persist the local host'
+    'boot:Select the local host for the next boot'
+    'update:Update inputs and build the local host'
+    'generations:List local NixOS generations'
+    'rollback:Roll back the local NixOS generation'
+    'auth:Manage Nix authentication'
+    'vpn:Control the Aegis Mullvad gateway'
+  )
+
+  if ((CURRENT == 2)); then
+    _describe 'fos command' commands
+    return
+  fi
+
+  case ${words[2]} in
+    build)
+      if ((CURRENT == 3)); then
+        hosts=("${(@f)$(fos hosts 2>/dev/null)}")
+        _describe 'NixOS host' hosts
+      fi
+      ;;
+    auth)
+      auth_commands=('refresh:Refresh Nix GitLab credentials')
+      if ((CURRENT == 3)); then
+        _describe 'auth command' auth_commands
+      elif [[ ${words[3]} == refresh && CURRENT == 4 ]]; then
+        _message 'GitLab host'
+      fi
+      ;;
+    vpn)
+      vpn_commands=(
+        'up:Start the Aegis Mullvad gateway'
+        'down:Stop the Aegis Mullvad gateway'
+        'status:Show gateway and kill-switch status'
+        'list:List available Mullvad servers'
+        'switch:Select a Mullvad server'
+      )
+      if ((CURRENT == 3)); then
+        _describe 'VPN command' vpn_commands
+      elif [[ ${words[3]} == switch && CURRENT == 4 ]]; then
+        output="$(@timeout@ 1s fos vpn list 2>/dev/null || true)"
+        if [[ -n $output ]]; then
+          servers=("${(@f)$(@sed@ -E 's/^[*[:space:]]+//' <<<"$output")}")
+          _describe 'Mullvad server' servers
+        fi
+      fi
+      ;;
+    update)
+      _message 'flake input'
+      ;;
+    rollback)
+      _message 'generation number'
+      ;;
+  esac
+}
+
+_fos "$@"

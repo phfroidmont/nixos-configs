@@ -45,6 +45,11 @@
     ai.opencode.enable = true;
   };
 
+  programs.nh = {
+    enable = true;
+    flake = "/home/phfroidmont/Projects/nixos-configs";
+  };
+
   services.power-profiles-daemon.enable = true;
   services.upower.enable = true;
 
@@ -253,6 +258,7 @@
   services.tailscale.enable = true;
 
   environment.systemPackages = [
+    pkgs.fos
     (pkgs.writeShellScriptBin "aegis-vpn" ''
       set -euo pipefail
 
