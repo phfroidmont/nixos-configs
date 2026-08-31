@@ -11,15 +11,20 @@ let
   quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
   panelTools = import ./_omarchy-tools.nix { inherit pkgs; };
   shellRuntimePath = lib.makeBinPath ([
+    quickshellConfig
     panelTools
     pkgs.bash
+    pkgs.codex
     pkgs.coreutils
     pkgs.curl
     pkgs.findutils
     pkgs.fontconfig
     pkgs.hyprland
     pkgs.inotify-tools
+    pkgs.jq
     pkgs.networkmanager
+    pkgs.python3
+    pkgs.ripgrep
     pkgs.util-linux
     pkgs.wl-clipboard
   ]);
@@ -41,7 +46,11 @@ let
   quickshellConfig =
     pkgs.runCommandLocal "quickshell-desktop-config"
       {
-        nativeBuildInputs = [ pkgs.patch ];
+        nativeBuildInputs = [
+          pkgs.bash
+          pkgs.patch
+          pkgs.python3
+        ];
       }
       ''
         mkdir -p "$out"
@@ -61,6 +70,14 @@ let
         cp ${./omarchy/colors.toml} "$out/theme/colors.toml"
         cp ${./omarchy/shell.toml} "$out/theme/shell.toml"
         cp ${inputs.omarchy}/LICENSE "$out/share/licenses/omarchy/LICENSE"
+
+        mkdir -p "$out/bin"
+        for command in update claude codex fireworks; do
+          install -Dm755 \
+            ${inputs.omarchy}/bin/omarchy-agent-usage-$command \
+            "$out/bin/omarchy-agent-usage-$command"
+        done
+        patchShebangs "$out/bin"
       '';
   launcherIconIndex = pkgs.writeShellApplication {
     name = "launcher-icon-index";
@@ -152,6 +169,7 @@ in
       };
 
       systemd.user.services.quickshell.Service.Environment = [
+        "AGENTS_LAUNCH=${config.modules.desktop.herdr.commands.launch}"
         "CLIPBOARD_ACTION=${lib.getExe clipboardAction}"
         "CLIPBOARD_BROWSER=${config.modules.applications.commands.browser}"
         "CLIPBOARD_CAPTURE=${lib.getExe clipboardCapture}"

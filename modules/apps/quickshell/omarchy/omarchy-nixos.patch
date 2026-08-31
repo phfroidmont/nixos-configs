@@ -21,6 +21,18 @@ index 622db3d..54d1e4a 100644
    property real slotSize: Style.bar.iconSlot
    property real opticalSize: Style.bar.iconCanvas
    property bool debugOpticalBounds: Quickshell.env("OMARCHY_DEBUG_BAR_ICONS") === "1"
+diff --git a/shell/plugins/agents/Panel.qml b/shell/plugins/agents/Panel.qml
+--- a/shell/plugins/agents/Panel.qml
++++ b/shell/plugins/agents/Panel.qml
+@@ -60,7 +60,7 @@ Panel {
+   }
+ 
+   function launchAgent() {
+-    if (root.bar) root.bar.run("omarchy-agent --pick")
++    if (root.bar) root.bar.run(Quickshell.env("AGENTS_LAUNCH"))
+     root.close()
+   }
+ 
 diff --git a/shell/plugins/bar/Bar.qml b/shell/plugins/bar/Bar.qml
 index 2cc819b..2f75983 100644
 --- a/shell/plugins/bar/Bar.qml

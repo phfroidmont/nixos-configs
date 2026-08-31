@@ -3,6 +3,7 @@
 set -euo pipefail
 
 : "${QUICKSHELL_BIN:?set QUICKSHELL_BIN to the quickshell executable}"
+: "${PYTHON_BIN:?set PYTHON_BIN to the Python executable}"
 : "${QS_BIN:?set QS_BIN to the qs executable}"
 : "${SHELL_PATH:?set SHELL_PATH to the derived shell directory}"
 
@@ -10,6 +11,42 @@ test_root=$(mktemp -d)
 log="$test_root/quickshell.log"
 shell_root=$(dirname "$SHELL_PATH")
 pid=""
+
+mkdir -p "$test_root/home/.local/share/opencode"
+"$PYTHON_BIN" - "$test_root/home/.local/share/opencode/opencode.db" <<'PYTHON'
+import json
+import sqlite3
+import sys
+import time
+
+connection = sqlite3.connect(sys.argv[1])
+connection.execute("CREATE TABLE message (session_id TEXT, data TEXT)")
+connection.execute(
+    "INSERT INTO message VALUES (?, ?)",
+    (
+        "fixture-session",
+        json.dumps(
+            {
+                "role": "assistant",
+                "providerID": "openai",
+                "modelID": "gpt-fixture",
+                "time": {"created": int(time.time() * 1000)},
+                "tokens": {
+                    "input": 50,
+                    "output": 40,
+                    "reasoning": 10,
+                    "cache": {"read": 0, "write": 0},
+                },
+            }
+        ),
+    ),
+)
+connection.commit()
+connection.close()
+PYTHON
+
+grep -Fq 'root.bar.run(Quickshell.env("AGENTS_LAUNCH"))' \
+  "$SHELL_PATH/plugins/agents/Panel.qml"
 
 cleanup() {
   if [[ -n $pid ]] && kill -0 "$pid" 2>/dev/null; then
@@ -23,6 +60,7 @@ trap cleanup EXIT
 HOME="$test_root/home" \
 XDG_CONFIG_HOME="$test_root/home/.config" \
 XDG_STATE_HOME="$test_root/home/.local/state" \
+AGENTS_LAUNCH=true \
 OMARCHY_PATH="$shell_root" \
 QUICKSHELL_THEME_PATH="$shell_root/theme" \
 CLIPBOARD_ACTION=true \
@@ -52,7 +90,26 @@ done
 
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell ping) == ok ]]
 
-geometry=$("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell debugBarGeometry)
+usage_record="$test_root/home/.local/state/omarchy/agents/usage/codex.json"
+geometry=""
+for _ in {1..400}; do
+  if [[ -f $usage_record ]] \
+    && jq -e '.id == "codex" and .totalPrompts == 1 and .modelUsage["gpt-fixture"]' "$usage_record" >/dev/null; then
+    geometry=$("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell debugBarGeometry)
+    if jq -e 'any(.[]; .id == "omarchy.agents" and .visible and .itemVisible)' <<<"$geometry" >/dev/null; then
+      break
+    fi
+  fi
+  kill -0 "$pid" 2>/dev/null || {
+    cat "$log" >&2
+    exit 1
+  }
+  sleep 0.1
+done
+
+jq -e '.id == "codex" and .totalPrompts == 1 and .modelUsage["gpt-fixture"]' "$usage_record" >/dev/null
+jq -e 'any(.[]; .id == "omarchy.agents" and .visible and .itemVisible)' <<<"$geometry" >/dev/null
+
 jq -e '
   map(.id) as $ids
   | all([
@@ -61,6 +118,7 @@ jq -e '
       "omarchy.clock",
       "omarchy.weather",
       "omarchy.tray",
+      "omarchy.agents",
       "phfroidmont.nextcloud",
       "omarchy.bluetooth",
       "omarchy.network",
@@ -70,7 +128,7 @@ jq -e '
     ][]; $ids | index(.))
 ' <<<"$geometry" >/dev/null
 
-for panel in omarchy.audio omarchy.bluetooth omarchy.clock omarchy.monitor omarchy.network omarchy.power; do
+for panel in omarchy.agents omarchy.audio omarchy.bluetooth omarchy.clock omarchy.monitor omarchy.network omarchy.power; do
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell summon "$panel" '{}' >/dev/null
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell hide "$panel" >/dev/null
 done

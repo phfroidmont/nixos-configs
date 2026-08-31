@@ -19,6 +19,14 @@
       ],
       "right": [
         { "id": "omarchy.tray" },
+        {
+          "id": "omarchy.agents",
+          "providers": {
+            "claude": { "enabled": false },
+            "codex": { "enabled": true },
+            "fireworks": { "enabled": false }
+          }
+        },
         { "id": "phfroidmont.nextcloud" },
         { "id": "omarchy.bluetooth" },
         { "id": "omarchy.network" },
@@ -31,7 +39,6 @@
   "plugins": [],
   "disabledPlugins": [
     "omarchy.active-window",
-    "omarchy.agents",
     "omarchy.background",
     "omarchy.clipboard",
     "omarchy.dev-gallery",
