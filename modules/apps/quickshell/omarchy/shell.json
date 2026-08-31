@@ -11,6 +11,10 @@
       ],
       "center": [
         {
+          "id": "omarchy.indicators",
+          "items": ["Dnd"]
+        },
+        {
           "id": "omarchy.clock",
           "format": "dddd HH:mm",
           "formatAlt": "d MMMM 'W'ww yyyy"
@@ -46,12 +50,10 @@
     "omarchy.emojis",
     "omarchy.idle",
     "omarchy.image-picker",
-    "omarchy.indicators",
     "omarchy.keyboard-layout",
     "omarchy.lock",
     "omarchy.microphone",
     "omarchy.nightlight",
-    "omarchy.notifications",
     "omarchy.polkit",
     "omarchy.reminders",
     "omarchy.system-update",

@@ -1,0 +1,186 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+temporary=$(mktemp -d)
+trap 'rm -rf "$temporary"' EXIT
+
+fake_bin="$temporary/bin"
+args="$temporary/notification-args"
+mkdir -p "$fake_bin"
+
+cat >"$fake_bin/omarchy-notification-send" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >"$NOTIFICATION_ARGS"
+EOF
+chmod +x "$fake_bin/omarchy-notification-send"
+
+NOTIFICATION_ARGS="$args" PATH="$fake_bin:$PATH" \
+  bash "$root/omarchy/scripts/battery-low.sh" 10
+
+mapfile -t actual <"$args"
+expected=(
+  --urgency critical
+  --icon battery-caution
+  --expire-time 30000
+  "Time to recharge!"
+  "Battery is down to 10%"
+)
+[[ ${#actual[@]} -eq ${#expected[@]} ]]
+for index in "${!expected[@]}"; do
+  [[ ${actual[$index]} == "${expected[$index]}" ]]
+done
+
+if PATH="$fake_bin:$PATH" bash "$root/omarchy/scripts/battery-low.sh" invalid 2>/dev/null; then
+  exit 1
+fi
+if PATH="$fake_bin:$PATH" bash "$root/omarchy/scripts/battery-low.sh" 101 2>/dev/null; then
+  exit 1
+fi
+
+jq -e '
+  (.disabledPlugins | index("omarchy.notifications") | not)
+  and (.disabledPlugins | index("omarchy.indicators") | not)
+  and any(.bar.layout.center[];
+    .id == "omarchy.indicators" and .items == ["Dnd"])
+' "$root/omarchy/shell.json" >/dev/null
+
+sync_home="$temporary/sync-home"
+sync_config="$sync_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$sync_config")"
+cat >"$sync_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {
+    "position": "bottom",
+    "layout": {
+      "left": [
+        {"id": "omarchy.menu"}
+      ],
+      "center": [
+        {"id": "omarchy.indicators", "items": "Dnd"},
+        {"id": "omarchy.clock", "birthYear": 1984},
+        {"id": "omarchy.weather"}
+      ],
+      "right": [
+        {"id": "omarchy.indicators", "items": ["NightLight"]},
+        {"id": "omarchy.agents", "providers": {"codex": {"enabled": true}}}
+      ]
+    }
+  },
+  "disabledPlugins": [
+    "omarchy.idle",
+    "omarchy.indicators",
+    "omarchy.notifications"
+  ]
+}
+EOF
+
+chmod 640 "$sync_config"
+HOME="$sync_home" bash "$root/scripts/sync-shell-config.sh"
+[[ $(stat -c %a "$sync_config") == 640 ]]
+jq -e '
+  .disabledPlugins == ["omarchy.idle"]
+  and .nixosConfigMigrations.notifications == 1
+' "$sync_config" >/dev/null
+jq -e '
+  .bar.layout.center[0] == {
+    "id": "omarchy.indicators",
+    "items": ["Dnd"]
+  }
+  and (.bar.layout.center[0] | has("alwaysShow") | not)
+  and .bar.layout.center[1].birthYear == 1984
+  and .bar.layout.right[0] == {
+    "id": "omarchy.indicators",
+    "items": ["NightLight"]
+  }
+  and .bar.layout.right[1].providers.codex.enabled
+' "$sync_config" >/dev/null
+
+jq '
+  .disabledPlugins += ["omarchy.notifications"]
+  | .bar.layout.center |= map(select(.id != "omarchy.indicators"))
+' "$sync_config" >"$temporary/user-edited.json"
+mv "$temporary/user-edited.json" "$sync_config"
+cp "$sync_config" "$temporary/after-user-edit.json"
+HOME="$sync_home" bash "$root/scripts/sync-shell-config.sh"
+cmp "$temporary/after-user-edit.json" "$sync_config"
+
+legacy_home="$temporary/legacy-home"
+legacy_config="$legacy_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$legacy_config")"
+cat >"$legacy_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {
+    "layout": {
+      "left": [{"id": "omarchy.menu"}],
+      "center": [{"id": "omarchy.clock"}],
+      "right": [{"id": "omarchy.power"}]
+    }
+  },
+  "disabledPlugins": ["omarchy.indicators", "omarchy.notifications"],
+  "nixosConfigMigrations": {"notifications": "pending"}
+}
+EOF
+HOME="$legacy_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .disabledPlugins == []
+  and .bar.layout.center[0] == {
+    "id": "omarchy.indicators",
+    "items": ["Dnd"]
+  }
+  and (.bar.layout.center[0] | has("alwaysShow") | not)
+  and .bar.layout.center[1].id == "omarchy.clock"
+  and .nixosConfigMigrations.notifications == 1
+' "$legacy_config" >/dev/null
+
+missing_home="$temporary/missing-home"
+HOME="$missing_home" bash "$root/scripts/sync-shell-config.sh"
+[[ ! -e $missing_home/.config/omarchy/shell.json ]]
+
+invalid_home="$temporary/invalid-home"
+invalid_config="$invalid_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$invalid_config")"
+printf '{ invalid json\n' >"$invalid_config"
+cp "$invalid_config" "$temporary/invalid-before.json"
+HOME="$invalid_home" bash "$root/scripts/sync-shell-config.sh" 2>/dev/null
+cmp "$temporary/invalid-before.json" "$invalid_config"
+
+multiple_home="$temporary/multiple-home"
+multiple_config="$multiple_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$multiple_config")"
+printf '%s\n%s\n' '{"version":1}' '{"version":1}' >"$multiple_config"
+cp "$multiple_config" "$temporary/multiple-before.json"
+HOME="$multiple_home" bash "$root/scripts/sync-shell-config.sh" 2>/dev/null
+cmp "$temporary/multiple-before.json" "$multiple_config"
+
+symlink_home="$temporary/symlink-home"
+symlink_config="$symlink_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$symlink_config")"
+printf '%s\n' '{"version":1}' >"$temporary/managed-shell.json"
+ln -s "$temporary/managed-shell.json" "$symlink_config"
+HOME="$symlink_home" bash "$root/scripts/sync-shell-config.sh" 2>/dev/null
+[[ -L $symlink_config ]]
+
+readonly_home="$temporary/readonly-home"
+readonly_directory="$readonly_home/.config/omarchy"
+readonly_config="$readonly_directory/shell.json"
+mkdir -p "$readonly_directory"
+printf '%s\n' '{"version":1}' >"$readonly_config"
+cp "$readonly_config" "$temporary/readonly-before.json"
+chmod 500 "$readonly_directory"
+HOME="$readonly_home" bash "$root/scripts/sync-shell-config.sh" 2>/dev/null
+chmod 700 "$readonly_directory"
+cmp "$temporary/readonly-before.json" "$readonly_config"
+
+nonfinite_home="$temporary/nonfinite-home"
+nonfinite_config="$nonfinite_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$nonfinite_config")"
+printf '%s\n' '{"version":1,"value":NaN}' >"$nonfinite_config"
+cp "$nonfinite_config" "$temporary/nonfinite-before.json"
+HOME="$nonfinite_home" bash "$root/scripts/sync-shell-config.sh" 2>/dev/null
+cmp "$temporary/nonfinite-before.json" "$nonfinite_config"
+
+printf 'notification tools test passed\n'

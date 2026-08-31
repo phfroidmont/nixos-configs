@@ -3,16 +3,33 @@
 set -euo pipefail
 
 : "${QUICKSHELL_BIN:?set QUICKSHELL_BIN to the quickshell executable}"
+: "${BUSCTL_BIN:?set BUSCTL_BIN to the busctl executable}"
+: "${NOTIFICATION_SEND_BIN:?set NOTIFICATION_SEND_BIN to omarchy-notification-send}"
 : "${PYTHON_BIN:?set PYTHON_BIN to the Python executable}"
 : "${QS_BIN:?set QS_BIN to the qs executable}"
 : "${SHELL_PATH:?set SHELL_PATH to the derived shell directory}"
 
 test_root=$(mktemp -d)
 log="$test_root/quickshell.log"
+module_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 shell_root=$(dirname "$SHELL_PATH")
 pid=""
 
-mkdir -p "$test_root/home/.local/share/opencode"
+mkdir -p \
+  "$test_root/home/.config/omarchy" \
+  "$test_root/home/.local/share/opencode"
+jq '
+  .disabledPlugins += ["omarchy.indicators", "omarchy.notifications"]
+  | .bar.layout.center |= map(select(.id != "omarchy.indicators"))
+' "$module_root/omarchy/shell.json" \
+  >"$test_root/home/.config/omarchy/shell.json"
+HOME="$test_root/home" bash "$module_root/scripts/sync-shell-config.sh"
+jq -e '
+  (.disabledPlugins | index("omarchy.notifications") | not)
+  and any(.bar.layout.center[];
+    .id == "omarchy.indicators" and .items == ["Dnd"])
+' "$test_root/home/.config/omarchy/shell.json" >/dev/null
+
 "$PYTHON_BIN" - "$test_root/home/.local/share/opencode/opencode.db" <<'PYTHON'
 import json
 import sqlite3
@@ -47,6 +64,9 @@ PYTHON
 
 grep -Fq 'root.bar.run(Quickshell.env("AGENTS_LAUNCH"))' \
   "$SHELL_PATH/plugins/agents/Panel.qml"
+grep -Fq 'Border.localOrSurfaceSpec("notifications", "border", effectiveBorderColor' \
+  "$SHELL_PATH/plugins/notifications/components/NotificationCard.qml"
+test -x "$shell_root/bin/omarchy-hyprland-focus-app"
 
 cleanup() {
   if [[ -n $pid ]] && kill -0 "$pid" 2>/dev/null; then
@@ -89,6 +109,35 @@ for _ in {1..100}; do
 done
 
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell ping) == ok ]]
+[[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications ping) == ok ]]
+[[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications dndState) == off ]]
+[[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications toggleDnd) == on ]]
+[[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications toggleDnd) == off ]]
+"$BUSCTL_BIN" --user status org.freedesktop.Notifications >/dev/null
+
+HOME="$test_root/home" "$NOTIFICATION_SEND_BIN" \
+  --app-name runtime-test \
+  --urgency normal \
+  --expire-time 30000 \
+  "Runtime notification" \
+  "Delivered over D-Bus"
+
+notification_record=""
+for _ in {1..100}; do
+  for candidate in "$test_root/home/.local/state/omarchy/notifications/"*.json; do
+    [[ -f $candidate ]] || continue
+    if jq -e '
+      .app == "runtime-test"
+      and .summary == "Runtime notification"
+      and .body == "Delivered over D-Bus"
+    ' "$candidate" >/dev/null; then
+      notification_record=$candidate
+      break 2
+    fi
+  done
+  sleep 0.1
+done
+[[ -n $notification_record ]]
 
 usage_record="$test_root/home/.local/state/omarchy/agents/usage/codex.json"
 geometry=""
@@ -115,6 +164,7 @@ jq -e '
   | all([
       "omarchy.menu",
       "omarchy.workspaces",
+      "omarchy.indicators",
       "omarchy.clock",
       "omarchy.weather",
       "omarchy.tray",

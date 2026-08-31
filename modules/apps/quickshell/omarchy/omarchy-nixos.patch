@@ -226,3 +226,11 @@ index fdb2a5c..26cd173 100644
    property string home: Quickshell.env("HOME")
  
    // The omarchy-shell host is the long-running entry point. Plugins live in
+diff --git a/shell/plugins/notifications/components/NotificationCard.qml b/shell/plugins/notifications/components/NotificationCard.qml
+index bfcd7f5..b798ce1 100644
+--- a/shell/plugins/notifications/components/NotificationCard.qml
++++ b/shell/plugins/notifications/components/NotificationCard.qml
+@@ -52 +52,2 @@ BorderSurface {
+-  readonly property var cardBorderSpec: Border.surfaceSpec("notifications", "border", Color.notifications.border, Math.max(1, Style.space(2)))
++  readonly property color effectiveBorderColor: urgency === 2 ? Color.urgent : Color.notifications.border
++  readonly property var cardBorderSpec: Border.localOrSurfaceSpec("notifications", "border", effectiveBorderColor, Color.notifications.border, Math.max(1, Style.space(2)))

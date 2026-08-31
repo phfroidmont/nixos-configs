@@ -54,3 +54,12 @@ background-alpha = 0.97
 text = "#ebdbb2"
 border = "#ebdbb2"
 border-alpha = 1.0
+
+[notifications]
+background = "#282828"
+background-alpha = 1.0
+text = "#ebdbb2"
+border = "#fe8019"
+border-alpha = 1.0
+border-width = 2
+countdown = "#fe8019"

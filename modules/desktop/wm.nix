@@ -33,6 +33,7 @@ let
     ];
   };
   exec = command: lua "hl.dsp.exec_cmd(${toLua command})";
+  notification = method: exec "${quickshell} -c desktop ipc call -- notifications ${method}";
   togglePanel = id: exec "${quickshell} -c desktop ipc call -- shell toggle ${id} '{}'";
   workspaceBinds = lib.concatMap (
     workspace:
@@ -75,7 +76,6 @@ in
         herdr.enable = true;
         file-manager.enable = true;
         zsh.enable = true;
-        dunst.enable = true;
         btop.enable = true;
       };
       editor.vim.enable = true;
@@ -208,12 +208,17 @@ in
               (mkBind (modKey "C") (lua "hl.dsp.window.close()"))
               (mkBind (modKey "SHIFT + A") (exec "${applications.terminal} -e pulsemixer"))
               (mkBind (modKey "W") (exec applications.browser))
-              (mkBind (modKey "R") (exec applications.fileManager))
+              (mkBind (modKey "SHIFT + F") (exec applications.fileManager))
               (mkBind (modKey "E") (exec applications.editor))
-              (mkBind (modKey "N") (exec "${applications.terminal} -e newsboat"))
+              (mkBind (modKey "SHIFT + R") (exec "${applications.terminal} -e newsboat"))
               (mkBind (modKey "SHIFT + T") (exec "${applications.terminal} -e ${btop}"))
               (mkBind (modKey "M") (exec "${applications.terminal} -e ncmpcpp"))
               (mkBind (modKey "V") (exec "${quickshell} -c desktop ipc call -- clipboard toggle"))
+              (mkBind (modKey "N") (notification "dismissOne"))
+              (mkBind (modKey "SHIFT + N") (notification "dismissAll"))
+              (mkBind (modKey "CTRL + N") (notification "toggleDnd"))
+              (mkBind (modKey "ALT + N") (notification "invokeLast"))
+              (mkBind (modKey "SHIFT + ALT + N") (notification "showHistory"))
               (mkBind (modKey "T") (lua ''hl.dsp.window.float({ action = "toggle" })''))
               (mkBind (modKey "SPACE") (exec "${quickshell} -c desktop ipc call -- launcher toggle"))
               (mkBind (modKey "CTRL + A") (togglePanel "omarchy.audio"))

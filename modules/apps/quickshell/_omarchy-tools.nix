@@ -1,4 +1,4 @@
-{ pkgs }:
+{ inputs, pkgs }:
 
 let
   scripts = ./omarchy/scripts;
@@ -14,6 +14,15 @@ let
       inherit name runtimeInputs;
       text = builtins.readFile (scripts + "/${file}");
     };
+  notificationSend = pkgs.writeShellApplication {
+    name = "omarchy-notification-send";
+    excludeShellChecks = [ "SC1083" ];
+    runtimeInputs = with pkgs; [
+      jq
+      systemd
+    ];
+    text = builtins.readFile "${inputs.omarchy}/bin/omarchy-notification-send";
+  };
   tools = [
     (mkTool "omarchy-audio-input-set-default" (
       commonInputs
@@ -33,7 +42,7 @@ let
     (mkTool "omarchy-audio-sink-availability" (
       commonInputs ++ [ pkgs.pulseaudio ]
     ) "audio-sink-availability.sh")
-    (mkTool "omarchy-battery-low" (commonInputs ++ [ pkgs.libnotify ]) "battery-low.sh")
+    (mkTool "omarchy-battery-low" (commonInputs ++ [ notificationSend ]) "battery-low.sh")
     (mkTool "omarchy-battery-status" commonInputs "battery-status.sh")
     (mkTool "omarchy-bluetooth-device" (
       commonInputs
@@ -105,7 +114,7 @@ let
         networkmanager
       ])
     ) "network-status.sh")
-    (mkTool "omarchy-notification-send" (commonInputs ++ [ pkgs.libnotify ]) "notification-send.sh")
+    notificationSend
     (mkTool "omarchy-powerprofiles-list" (
       commonInputs ++ [ pkgs.power-profiles-daemon ]
     ) "powerprofiles-list.sh")

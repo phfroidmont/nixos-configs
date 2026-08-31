@@ -9,7 +9,7 @@
 let
   cfg = config.modules.apps.quickshell;
   quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
-  panelTools = import ./_omarchy-tools.nix { inherit pkgs; };
+  panelTools = import ./_omarchy-tools.nix { inherit inputs pkgs; };
   shellRuntimePath = lib.makeBinPath ([
     quickshellConfig
     panelTools
@@ -19,6 +19,7 @@ let
     pkgs.curl
     pkgs.findutils
     pkgs.fontconfig
+    pkgs.gawk
     pkgs.hyprland
     pkgs.inotify-tools
     pkgs.jq
@@ -77,6 +78,9 @@ let
             ${inputs.omarchy}/bin/omarchy-agent-usage-$command \
             "$out/bin/omarchy-agent-usage-$command"
         done
+        install -Dm755 \
+          ${inputs.omarchy}/bin/omarchy-hyprland-focus-app \
+          "$out/bin/omarchy-hyprland-focus-app"
         patchShebangs "$out/bin"
       '';
   launcherIconIndex = pkgs.writeShellApplication {
@@ -144,6 +148,18 @@ let
     ];
     text = builtins.readFile ./scripts/clipboard-action.sh;
   };
+  shellConfigSync = pkgs.writeShellApplication {
+    name = "quickshell-sync-shell-config";
+    bashOptions = [
+      "nounset"
+      "pipefail"
+    ];
+    runtimeInputs = with pkgs; [
+      coreutils
+      jq
+    ];
+    text = builtins.readFile ./scripts/sync-shell-config.sh;
+  };
 in
 {
   options.modules.apps.quickshell = {
@@ -152,6 +168,7 @@ in
 
   config = lib.mkIf cfg.enable {
     fonts.packages = [
+      pkgs.liberation_ttf
       omarchyFont
       pkgs.nerd-fonts.jetbrains-mono
     ];
@@ -187,6 +204,7 @@ in
         "OMARCHY_PATH=${quickshellConfig}"
         "QUICKSHELL_THEME_PATH=${quickshellConfig}/theme"
       ];
+      systemd.user.services.quickshell.Service.ExecStartPre = "-${lib.getExe shellConfigSync}";
       systemd.user.services.quickshell.Service.UMask = "0077";
       systemd.user.services.quickshell.Unit.X-Restart-Triggers = [ quickshellConfig ];
     };
