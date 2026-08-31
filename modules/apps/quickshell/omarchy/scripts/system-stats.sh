@@ -7,7 +7,7 @@ case "${1:-}" in
     awk '/MemTotal/{t=$2}/MemAvailable/{a=$2}END{printf "memory\t%.2f\n",(t-a)*100/t}' /proc/meminfo
     awk '{print "load\t" $1}' /proc/loadavg
     exit ;;
-  *) echo "Usage: system-stats [--bar-widget]" >&2; exit 2 ;;
+  *) echo "Usage: fos-internal-system-stats [--bar-widget]" >&2; exit 2 ;;
 esac
 read -r _ u n s i w q sq st _ < /proc/stat; total1=$((u+n+s+i+w+q+sq+st)); idle1=$((i+w)); sleep 0.1
 read -r _ u n s i w q sq st _ < /proc/stat; total2=$((u+n+s+i+w+q+sq+st)); idle2=$((i+w))

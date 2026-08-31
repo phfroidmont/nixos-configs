@@ -1,7 +1,7 @@
 set -euo pipefail
 
 shell=false
-case "${1:-}" in "") ;; --shell) shell=true;; *) echo "Usage: battery-status [--shell]" >&2; exit 2;; esac
+case "${1:-}" in "") ;; --shell) shell=true;; *) echo "Usage: fos-internal-battery-status [--shell]" >&2; exit 2;; esac
 base=${OMARCHY_POWER_SUPPLY_PATH:-/sys/class/power_supply}
 battery=""
 for candidate in "$base"/BAT*; do [[ -r $candidate/capacity ]] && { battery=$candidate; break; }; done

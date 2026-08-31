@@ -1,12 +1,12 @@
 set -euo pipefail
 
-usage() { echo "Usage: bluetooth-device <pair|connect|disconnect|forget> <address>" >&2; exit 2; }
+usage() { echo "Usage: fos-internal-bluetooth-device <pair|connect|disconnect|forget> <address>" >&2; exit 2; }
 (( $# == 2 )) || usage
 [[ $2 =~ ^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$ ]] || usage
 
 case "$1" in
   pair|connect)
-    omarchy-bluetooth-power on
+    fos-internal-bluetooth-power on
     [[ $1 != pair ]] || timeout 20 bluetoothctl pair "$2" >/dev/null
     bluetoothctl trust "$2" >/dev/null 2>&1 || true
     timeout 20 bluetoothctl connect "$2" >/dev/null

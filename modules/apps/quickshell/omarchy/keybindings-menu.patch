@@ -1,7 +1,7 @@
-diff --git a/bin/omarchy-menu-keybindings b/bin/omarchy-menu-keybindings
+diff --git a/bin/fos-internal-menu-keybindings b/bin/fos-internal-menu-keybindings
 index 76133ce..f884d20 100755
---- a/bin/omarchy-menu-keybindings
-+++ b/bin/omarchy-menu-keybindings
+--- a/bin/fos-internal-menu-keybindings
++++ b/bin/fos-internal-menu-keybindings
 @@ -16 +16,17 @@ parse_keycodes() {
 -  awk '
 +  local rules model layout variant options

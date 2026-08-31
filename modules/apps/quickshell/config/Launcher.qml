@@ -103,8 +103,11 @@ Scope {
         const command = []
         const workingDirectory = String(application.workingDirectory || "")
         const environment = Quickshell.env("LAUNCHER_ENV")
-        if (workingDirectory && environment)
-          command.push(environment, "-C", workingDirectory)
+        if (environment) {
+          command.push(environment)
+          if (workingDirectory)
+            command.push("-C", workingDirectory)
+        }
         command.push(terminal, "-e")
         for (let index = 0; index < application.command.length; index++)
           command.push(application.command[index])
@@ -112,6 +115,14 @@ Scope {
       } else {
         application.execute()
       }
+    } else if (Quickshell.env("LAUNCHER_ENV") && application.command.length > 0) {
+      const command = [Quickshell.env("LAUNCHER_ENV")]
+      const workingDirectory = String(application.workingDirectory || "")
+      if (workingDirectory)
+        command.push("-C", workingDirectory)
+      for (let index = 0; index < application.command.length; index++)
+        command.push(application.command[index])
+      Quickshell.execDetached(command)
     } else {
       application.execute()
     }

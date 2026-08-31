@@ -90,7 +90,7 @@
       lib = lib.my;
 
       overlays = {
-        my = import ./overlay.nix;
+        my = import ./overlay.nix { inherit inputs; };
       };
 
       packages.${system}.fos = pkgs.fos;

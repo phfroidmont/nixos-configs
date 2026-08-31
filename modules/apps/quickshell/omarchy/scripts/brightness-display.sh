@@ -9,7 +9,7 @@ while (( $# )); do
     *) break ;;
   esac
 done
-(( $# <= 1 )) || { echo "Usage: brightness-display [--no-osd] [--monitor name] [value]" >&2; exit 2; }
+(( $# <= 1 )) || { echo "Usage: fos-internal-brightness-display [--no-osd] [--monitor name] [value]" >&2; exit 2; }
 if [[ -z $monitor ]]; then
   monitor=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .name' | awk 'NR == 1')
 fi

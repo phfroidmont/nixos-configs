@@ -1,7 +1,7 @@
 { inputs, pkgs }:
 
 let
-  scripts = ./omarchy/scripts;
+  scripts = ../../modules/apps/quickshell/omarchy/scripts;
   commonInputs = with pkgs; [
     coreutils
     gawk
@@ -15,50 +15,54 @@ let
       text = builtins.readFile (scripts + "/${file}");
     };
   notificationSend = pkgs.writeShellApplication {
-    name = "omarchy-notification-send";
+    name = "fos-internal-notification-send";
     excludeShellChecks = [ "SC1083" ];
     runtimeInputs = with pkgs; [
       jq
       systemd
     ];
-    text = builtins.readFile "${inputs.omarchy}/bin/omarchy-notification-send";
+    text =
+      builtins.replaceStrings [ "omarchy-notification-send" ] [ "fos-internal-notification-send" ]
+        (builtins.readFile "${inputs.omarchy}/bin/omarchy-notification-send");
   };
   tools = [
-    (mkTool "omarchy-audio-input-set-default" (
+    (mkTool "fos-internal-audio-input-set-default" (
       commonInputs
       ++ (with pkgs; [
         pulseaudio
         wireplumber
       ])
     ) "audio-input-set-default.sh")
-    (mkTool "omarchy-audio-output-set-default" (
+    (mkTool "fos-internal-audio-output-set-default" (
       commonInputs
       ++ (with pkgs; [
         pulseaudio
         wireplumber
       ])
     ) "audio-output-set-default.sh")
-    (mkTool "omarchy-audio-output-sink" (commonInputs ++ [ pkgs.pulseaudio ]) "audio-output-sink.sh")
-    (mkTool "omarchy-audio-sink-availability" (
+    (mkTool "fos-internal-audio-output-sink" (
+      commonInputs ++ [ pkgs.pulseaudio ]
+    ) "audio-output-sink.sh")
+    (mkTool "fos-internal-audio-sink-availability" (
       commonInputs ++ [ pkgs.pulseaudio ]
     ) "audio-sink-availability.sh")
-    (mkTool "omarchy-battery-low" (commonInputs ++ [ notificationSend ]) "battery-low.sh")
-    (mkTool "omarchy-battery-status" commonInputs "battery-status.sh")
-    (mkTool "omarchy-bluetooth-device" (
+    (mkTool "fos-internal-battery-low" (commonInputs ++ [ notificationSend ]) "battery-low.sh")
+    (mkTool "fos-internal-battery-status" commonInputs "battery-status.sh")
+    (mkTool "fos-internal-bluetooth-device" (
       commonInputs
       ++ (with pkgs; [
         bluez
         util-linux
       ])
     ) "bluetooth-device.sh")
-    (mkTool "omarchy-bluetooth-power" (
+    (mkTool "fos-internal-bluetooth-power" (
       commonInputs
       ++ (with pkgs; [
         bluez
         util-linux
       ])
     ) "bluetooth-power.sh")
-    (mkTool "omarchy-brightness-display" (
+    (mkTool "fos-internal-brightness-display" (
       commonInputs
       ++ (with pkgs; [
         brightnessctl
@@ -66,37 +70,39 @@ let
         jq
       ])
     ) "brightness-display.sh")
-    (mkTool "omarchy-display-text-size" commonInputs "display-text-size.sh")
-    (mkTool "omarchy-hyprland-monitor-scaling" (
+    (mkTool "fos-internal-display-text-size" commonInputs "display-text-size.sh")
+    (mkTool "fos-internal-hyprland-monitor-scaling" (
       commonInputs
       ++ (with pkgs; [
         hyprland
         jq
       ])
     ) "monitor-scaling.sh")
-    (mkTool "omarchy-monitor-state" (
+    (mkTool "fos-internal-monitor-state" (
       commonInputs
       ++ (with pkgs; [
         hyprland
         jq
       ])
     ) "monitor-state.sh")
-    (mkTool "omarchy-network-band" (
+    (mkTool "fos-internal-network-band" (
       commonInputs
       ++ (with pkgs; [
         iw
         networkmanager
       ])
     ) "network-band.sh")
-    (mkTool "omarchy-network-password" (commonInputs ++ [ pkgs.networkmanager ]) "network-password.sh")
-    (mkTool "omarchy-network-qr" (
+    (mkTool "fos-internal-network-password" (
+      commonInputs ++ [ pkgs.networkmanager ]
+    ) "network-password.sh")
+    (mkTool "fos-internal-network-qr" (
       commonInputs
       ++ (with pkgs; [
         networkmanager
         qrencode
       ])
     ) "network-qr.sh")
-    (mkTool "omarchy-network-speedtest" (
+    (mkTool "fos-internal-network-speedtest" (
       commonInputs
       ++ (with pkgs; [
         curl
@@ -104,7 +110,7 @@ let
         jq
       ])
     ) "network-speedtest.sh")
-    (mkTool "omarchy-network-status" (
+    (mkTool "fos-internal-network-status" (
       commonInputs
       ++ (with pkgs; [
         iproute2
@@ -115,25 +121,25 @@ let
       ])
     ) "network-status.sh")
     notificationSend
-    (mkTool "omarchy-powerprofiles-list" (
+    (mkTool "fos-internal-powerprofiles-list" (
       commonInputs ++ [ pkgs.power-profiles-daemon ]
     ) "powerprofiles-list.sh")
-    (mkTool "omarchy-powerprofiles-set" (
+    (mkTool "fos-internal-powerprofiles-set" (
       commonInputs
       ++ (with pkgs; [
         power-profiles-daemon
         systemd
       ])
     ) "powerprofiles-set.sh")
-    (mkTool "omarchy-system-stats" commonInputs "system-stats.sh")
-    (mkTool "omarchy-weather-location" (
+    (mkTool "fos-internal-system-stats" commonInputs "system-stats.sh")
+    (mkTool "fos-internal-weather-location" (
       commonInputs
       ++ (with pkgs; [
         curl
         jq
       ])
     ) "weather-location.sh")
-    (mkTool "omarchy-weather-status" (
+    (mkTool "fos-internal-weather-status" (
       commonInputs
       ++ (with pkgs; [
         curl

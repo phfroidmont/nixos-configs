@@ -1,6 +1,6 @@
 set -euo pipefail
 
-usage() { echo "Usage: monitor-scaling [up|down|SCALE]" >&2; exit 2; }
+usage() { echo "Usage: fos-internal-hyprland-monitor-scaling [up|down|SCALE]" >&2; exit 2; }
 (( $# <= 1 )) || usage
 info=$(hyprctl monitors -j | jq -ec '.[] | select(.focused == true)')
 name=$(jq -r '.name' <<<"$info")

@@ -1,6 +1,6 @@
 set -euo pipefail
 
-(( $# == 0 )) || { echo "Usage: audio-sink-availability" >&2; exit 2; }
+(( $# == 0 )) || { echo "Usage: fos-internal-audio-sink-availability" >&2; exit 2; }
 pactl list sinks | awk '
   function emit() { if (name != "") print name "\t" ((ports == 0 || available) ? 1 : 0) }
   /^Sink #/ { emit(); name = ""; in_ports = 0; ports = 0; available = 0; next }

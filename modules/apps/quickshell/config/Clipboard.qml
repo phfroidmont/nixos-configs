@@ -217,6 +217,7 @@ Scope {
   IpcHandler {
     target: "clipboard"
 
+    function clear(): void { root.confirmClearHistory() }
     function toggle(): void { root.toggle() }
     function show(): void { root.show() }
     function hide(): void { root.hide() }

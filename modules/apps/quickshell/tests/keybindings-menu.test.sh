@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-: "${KEYBINDINGS_MENU_BIN:?set KEYBINDINGS_MENU_BIN to omarchy-menu-keybindings}"
+: "${KEYBINDINGS_MENU_BIN:?set KEYBINDINGS_MENU_BIN to fos-internal-menu-keybindings}"
 
 test_root=$(mktemp -d)
 dispatch_log="$test_root/dispatch.log"
@@ -99,7 +99,7 @@ BINDS
   esac
 }
 
-omarchy-menu-select() {
+fos-internal-menu-select() {
   local row
 
   while IFS= read -r row; do
@@ -112,7 +112,7 @@ omarchy-menu-select() {
   return 1
 }
 
-export -f hyprctl omarchy-menu-select
+export -f hyprctl fos-internal-menu-select
 
 write_config /first-keybindings-command
 

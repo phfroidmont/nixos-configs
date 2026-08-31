@@ -13,5 +13,5 @@ case "${1:-}" in
   off) rfkill block bluetooth ;;
   toggle) if powered; then rfkill block bluetooth; else power_on; fi ;;
   is-on) powered ;;
-  *) echo "Usage: bluetooth-power <on|off|toggle|is-on>" >&2; exit 2 ;;
+  *) echo "Usage: fos-internal-bluetooth-power <on|off|toggle|is-on>" >&2; exit 2 ;;
 esac

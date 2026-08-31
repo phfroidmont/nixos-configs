@@ -1,7 +1,7 @@
 set -euo pipefail
 
 if (( $# != 2 )) || [[ -z $1 || -z $2 ]]; then
-  echo "Usage: audio-output-set-default <node-id> <sink-name>" >&2
+  echo "Usage: fos-internal-audio-output-set-default <node-id> <sink-name>" >&2
   exit 2
 fi
 

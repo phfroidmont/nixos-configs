@@ -136,7 +136,7 @@ index 1d920df..13601bd 100644
    Process {
      id: detailsProc
 -    command: ["omarchy-network-status", "--verbose"]
-+    command: root.opened ? ["omarchy-network-status", "--verbose"] : ["omarchy-network-status", "--link"]
++    command: root.opened ? ["fos-internal-network-status", "--verbose"] : ["fos-internal-network-status", "--link"]
      stdout: StdioCollector {
        waitForEnd: true
        onStreamFinished: root.updateDetails(text)
@@ -234,3 +234,30 @@ index bfcd7f5..b798ce1 100644
 -  readonly property var cardBorderSpec: Border.surfaceSpec("notifications", "border", Color.notifications.border, Math.max(1, Style.space(2)))
 +  readonly property color effectiveBorderColor: urgency === 2 ? Color.urgent : Color.notifications.border
 +  readonly property var cardBorderSpec: Border.localOrSurfaceSpec("notifications", "border", effectiveBorderColor, Color.notifications.border, Math.max(1, Style.space(2)))
+diff --git a/shell/services/AppLibrary.qml b/shell/services/AppLibrary.qml
+--- a/shell/services/AppLibrary.qml
++++ b/shell/services/AppLibrary.qml
+@@ -88,5 +88,4 @@ Item {
+   function remove(desktopId, name) {
+     var id = String(desktopId || "")
+     if (!id) return
+-    Util.execDetached(Util.shellQuote(root.omarchyPath + "/bin/omarchy-remove-launcher-entry") + " " + Util.shellQuote(id) + " " + Util.shellQuote(String(name || id)))
+   }
+diff --git a/shell/plugins/menu/Menu.qml b/shell/plugins/menu/Menu.qml
+--- a/shell/plugins/menu/Menu.qml
++++ b/shell/plugins/menu/Menu.qml
+@@ -269,8 +269,2 @@ Panel {
+   readonly property var providers: ({
+-    "fonts": {
+-      script: "current=$(omarchy-font-current 2>/dev/null); omarchy-font-list 2>/dev/null | while read -r f; do [[ -z $f ]] && continue; printf '%s\\t%s\\t%s\\n' \"$f\" \"$f\" \"$current\"; done",
+-      icon: "",
+-      volatile: true,
+-      actionFor: function(value) { return "omarchy-font-set " + Util.shellQuote(value) }
+-    },
+     "power-profiles": {
+@@ -1129,5 +1123,2 @@ Panel {
+-          if (event.key === Qt.Key_Delete) {
+-            root.requestDeleteSelected()
+-            event.accepted = true
+-          } else if (event.key === Qt.Key_Escape) {
++          if (event.key === Qt.Key_Escape) {

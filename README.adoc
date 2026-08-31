@@ -1,26 +1,104 @@
 == Manage Stellaris with FOS
 
-`fos` is the Froidmont Operating System command center. It uses the configured
-NixOS checkout from `programs.nh.flake` and can be run from any directory.
+`fos` is the Froidmont Operating System command center. FOS v2 uses grouped
+commands such as `fos nixos build`; this is the new command structure, and the
+old flat FOS v1 commands have no compatibility aliases. Run `fos` without
+arguments for the full overview, or use the discoverability commands:
 
 [source,bash]
 ----
-fos hosts
-fos build
-fos build aegis
-fos test
-fos switch
-fos boot
-fos update
-fos update nixpkgs home-manager
-fos generations
-fos rollback
-fos rollback 42
+fos help
+fos help network wifi
+fos help nixos build
+fos commands
+fos commands --json
+fos status
+fos doctor
 ----
 
-Only `fos build` accepts another host. Activation and rollback commands always
-target the local machine. `fos update` updates the selected inputs and builds
-the local configuration without activating it.
+`fos help [COMMAND...]` shows either all usage or the matching command subtree.
+`fos commands` lists the command registry, while `fos commands --json` exposes
+that registry to scripts. `fos status` safely summarizes the host, kernel,
+uptime, load, memory, network, power profile, and FOS recording state.
+`fos doctor` checks important command backends and graphical-session state;
+both status and doctor also accept `--json`.
+
+The same registry drives the installed Zsh autocomplete. In addition to command
+paths and options, completion discovers current NixOS hosts, media players,
+Wi-Fi networks and interfaces, Bluetooth devices, VPN servers, system and user
+services, virtual machines, and disks.
+
+`fos` is the supported unified desktop-management interface. Quickshell and FOS
+share private `fos-internal-*` helpers that are not installed in the interactive
+user `PATH`. Existing application-role launchers remain available for desktop
+integration. Upstream Omarchy source paths, configuration paths, and
+`omarchy.*` plugin IDs remain implementation details of the imported shell.
+
+=== NixOS lifecycle
+
+FOS uses the configured NixOS checkout from `programs.nh.flake` and can be run
+from any directory.
+
+[source,bash]
+----
+fos nixos hosts
+fos nixos build
+fos nixos build aegis
+fos nixos test
+fos nixos switch
+fos nixos boot
+fos nixos update
+fos nixos update nixpkgs home-manager
+fos nixos generations
+fos nixos rollback
+fos nixos rollback 42
+----
+
+Only `fos nixos build` accepts another host. Activation and rollback commands
+always target the local machine. `fos nixos update` updates the selected inputs
+and builds the local configuration without activating it.
+
+`fos nixos` is intentionally the boundary for the Nix lifecycle. FOS does not
+mutate Nix-managed theme, font, package, default, or application configuration.
+Docker management is explicitly out of scope for now.
+
+=== Command domains
+
+The grouped domains cover the common operational tasks without replacing
+declarative Nix configuration:
+
+* `nixos` builds, activates, updates, and rolls back host configurations;
+  `auth` inspects and refreshes GitLab credentials used by Nix.
+* `menu` opens desktop controls and `launch` starts standard applications.
+* `audio` manages volume, mute, devices, and the mixer; `media` controls active
+  players; `display` reports and adjusts brightness, scale, and layout.
+* `network` reports connectivity and controls Wi-Fi; `bluetooth` manages its
+  radio and devices.
+* `power` covers batteries and profiles; `system` covers statistics, locking,
+  session actions, and power actions.
+* `notifications` and `clipboard` expose desktop history and controls.
+* `capture` provides screenshots, OCR, and screen or region recording.
+* `vpn` controls the Aegis VPN gateway, while `tailscale` controls Tailscale.
+* `service` inspects, logs, and restarts system or user units; `vm` manages
+  libvirt virtual machines; `hardware` provides read-only hardware and disk
+  information.
+
+Disruptive operations ask for confirmation. Pass `--yes` to explicitly approve
+them, especially in non-interactive use. Wi-Fi QR sharing reveals credentials
+and therefore requires `--reveal` (for example,
+`fos network wifi share --reveal`).
+
+=== Recording behavior
+
+`fos capture record start region` and `fos capture record start screen` launch
+`wf-recorder`; add `--audio` to include audio. FOS prints the output path and
+writes uniquely named, timestamped MP4 files below `$XDG_VIDEOS_DIR`, or
+`~/Videos` when it is unset. It tracks the recorder identity and output path in
+`$XDG_RUNTIME_DIR/fos/recording.state`, falling back to a private
+`$TMPDIR/fos-$UID` directory when necessary, so `fos capture record status` and
+`stop` can validate the active process.
+`fos capture record stop` only signals the recorder started and owned by FOS;
+it refuses stale or unowned state rather than stopping another recorder.
 
 == Bootstrap or manage without FOS
 

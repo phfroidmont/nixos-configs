@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+root=${QUICKSHELL_MODULE_ROOT:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}
 temporary=$(mktemp -d)
 trap 'rm -rf "$temporary"' EXIT
 
@@ -10,11 +10,11 @@ fake_bin="$temporary/bin"
 args="$temporary/notification-args"
 mkdir -p "$fake_bin"
 
-cat >"$fake_bin/omarchy-notification-send" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$BASH" >"$fake_bin/fos-internal-notification-send"
+cat >>"$fake_bin/fos-internal-notification-send" <<'EOF'
 printf '%s\n' "$@" >"$NOTIFICATION_ARGS"
 EOF
-chmod +x "$fake_bin/omarchy-notification-send"
+chmod +x "$fake_bin/fos-internal-notification-send"
 
 NOTIFICATION_ARGS="$args" PATH="$fake_bin:$PATH" \
   bash "$root/omarchy/scripts/battery-low.sh" 10

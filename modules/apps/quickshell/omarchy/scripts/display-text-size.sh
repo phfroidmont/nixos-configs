@@ -24,7 +24,7 @@ write_config() {
 case "${1:-}" in
   "") value=$(current); printf '%s\n' "${value:-12}" ;;
   reset|default) write_config "" ;;
-  *) (( $# == 1 )) || { echo "Usage: display-text-size [9-20|reset]" >&2; exit 2; }
+  *) (( $# == 1 )) || { echo "Usage: fos-internal-display-text-size [9-20|reset]" >&2; exit 2; }
      if [[ ! $1 =~ ^[0-9]+$ ]] || (( $1 < 9 || $1 > 20 )); then
        echo "Size must be between 9 and 20" >&2
        exit 2

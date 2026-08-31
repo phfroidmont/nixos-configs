@@ -9,19 +9,52 @@
 let
   cfg = config.modules.apps.quickshell;
   quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
-  panelTools = import ./_omarchy-tools.nix { inherit inputs pkgs; };
-  omarchyCommandPresent = pkgs.writeShellApplication {
-    name = "omarchy-cmd-present";
+  panelCommandNames = [
+    "audio-input-set-default"
+    "audio-output-set-default"
+    "audio-output-sink"
+    "audio-sink-availability"
+    "battery-low"
+    "battery-status"
+    "bluetooth-device"
+    "bluetooth-power"
+    "brightness-display"
+    "display-text-size"
+    "hyprland-monitor-scaling"
+    "monitor-state"
+    "network-band"
+    "network-password"
+    "network-qr"
+    "network-speedtest"
+    "network-status"
+    "notification-send"
+    "powerprofiles-list"
+    "powerprofiles-set"
+    "system-stats"
+    "weather-location"
+    "weather-status"
+  ];
+  panelOldCommandNames = map (name: "omarchy-${name}") panelCommandNames;
+  panelNewCommandNames = map (name: "fos-internal-${name}") panelCommandNames;
+  panelTools = import ../../../packages/quickshell-panel-tools/package.nix { inherit inputs pkgs; };
+  fosCommandPresent = pkgs.writeShellApplication {
+    name = "fos-internal-cmd-present";
     bashOptions = [ ];
     text = builtins.readFile "${inputs.omarchy}/bin/omarchy-cmd-present";
   };
-  omarchyShellSource =
+  fosShellSource =
     builtins.replaceStrings
-      [ ''qs ipc -n -p "$OMARCHY_PATH/shell" call'' ]
-      [ "qs ipc -n -c desktop call" ]
+      [
+        ''qs ipc -n -p "$OMARCHY_PATH/shell" call''
+        "omarchy-shell"
+      ]
+      [
+        "qs ipc -n -c desktop call"
+        "fos-internal-shell"
+      ]
       (builtins.readFile "${inputs.omarchy}/bin/omarchy-shell");
-  omarchyShell = pkgs.writeShellApplication {
-    name = "omarchy-shell";
+  fosShell = pkgs.writeShellApplication {
+    name = "fos-internal-shell";
     bashOptions = [ ];
     excludeShellChecks = [ "SC2010" ];
     runtimeInputs = [
@@ -31,38 +64,59 @@ let
     ];
     text = ''
       export OMARCHY_PATH=${lib.escapeShellArg (toString quickshellConfig)}
-      ${omarchyShellSource}
+      ${fosShellSource}
     '';
   };
-  omarchyMenuSelect = pkgs.writeShellApplication {
-    name = "omarchy-menu-select";
+  fosMenuSelect = pkgs.writeShellApplication {
+    name = "fos-internal-menu-select";
     bashOptions = [ ];
     runtimeInputs = [
-      omarchyShell
+      fosShell
       pkgs.coreutils
       pkgs.perl
     ];
-    text = builtins.readFile "${inputs.omarchy}/bin/omarchy-menu-select";
+    text = builtins.replaceStrings [ "omarchy-shell" ] [ "fos-internal-shell" ] (
+      builtins.readFile "${inputs.omarchy}/bin/omarchy-menu-select"
+    );
   };
+  publicEnvironment = pkgs.writeShellScriptBin "fos-internal-public-environment" ''
+    clean_path=""
+    IFS=: read -ra entries <<< "$PATH"
+    for entry in "''${entries[@]}"; do
+      [[ -n $entry ]] || continue
+      case "$entry" in
+        *-fos-internal-*/bin | *-quickshell-desktop-config/bin | *-quickshell-panel-tools/bin) continue ;;
+      esac
+      clean_path+="''${clean_path:+:}$entry"
+    done
+    export PATH="$clean_path"
+    exec ${lib.getExe' pkgs.coreutils "env"} "$@"
+  '';
+  launcherTerminal = pkgs.writeShellScriptBin "fos-internal-launch-terminal" ''
+    exec ${lib.getExe publicEnvironment} ${config.modules.applications.commands.terminal} "$@"
+  '';
   keybindingsMenu =
-    pkgs.runCommandLocal "omarchy-menu-keybindings"
+    pkgs.runCommandLocal "fos-internal-menu-keybindings"
       {
         nativeBuildInputs = [
           pkgs.makeWrapper
           pkgs.patch
         ];
-        meta.mainProgram = "omarchy-menu-keybindings";
+        meta.mainProgram = "fos-internal-menu-keybindings";
       }
       ''
         mkdir -p "$out/bin"
-        cp ${inputs.omarchy}/bin/omarchy-menu-keybindings "$out/bin/omarchy-menu-keybindings"
+        cp ${inputs.omarchy}/bin/omarchy-menu-keybindings "$out/bin/fos-internal-menu-keybindings"
         patch -d "$out" -p1 < ${./omarchy/keybindings-menu.patch}
         patchShebangs "$out/bin"
-        wrapProgram "$out/bin/omarchy-menu-keybindings" \
+        substituteInPlace "$out/bin/fos-internal-menu-keybindings" \
+          --replace-fail omarchy-cmd-present fos-internal-cmd-present \
+          --replace-fail omarchy-menu-select fos-internal-menu-select
+        wrapProgram "$out/bin/fos-internal-menu-keybindings" \
           --prefix PATH : ${
             lib.makeBinPath [
-              omarchyCommandPresent
-              omarchyMenuSelect
+              fosCommandPresent
+              fosMenuSelect
               pkgs.coreutils
               pkgs.findutils
               pkgs.gawk
@@ -74,12 +128,17 @@ let
             ]
           }
 
-        KEYBINDINGS_MENU_BIN="$out/bin/omarchy-menu-keybindings" \
+        KEYBINDINGS_MENU_BIN="$out/bin/fos-internal-menu-keybindings" \
           ${pkgs.bash}/bin/bash ${./tests/keybindings-menu.test.sh}
       '';
   shellRuntimePath = lib.makeBinPath ([
     quickshellConfig
     panelTools
+    fosCommandPresent
+    fosShell
+    fosMenuSelect
+    publicEnvironment
+    keybindingsMenu
     pkgs.bash
     pkgs.codex
     pkgs.coreutils
@@ -116,6 +175,7 @@ let
       {
         nativeBuildInputs = [
           pkgs.bash
+          pkgs.jq
           pkgs.patch
           pkgs.python3
         ];
@@ -133,6 +193,67 @@ let
         mkdir -p "$out/shell/plugins/panels/nextcloud"
         cp -R ${./omarchy/plugins/nextcloud}/. "$out/shell/plugins/panels/nextcloud/"
 
+        python3 - "$out/shell" <<'PYTHON'
+        import os
+        import pathlib
+        import sys
+
+        root = pathlib.Path(sys.argv[1])
+        replacements = {
+            'root.omarchyPath + "/bin/omarchy-notification-send"': '"fos-internal-notification-send"',
+            "omarchy-cmd-present": "fos-internal-cmd-present",
+            "omarchy-shell": "fos-internal-shell",
+            "omarchy-menu-select": "fos-internal-menu-select",
+            "omarchy-menu-keybindings": "fos-internal-menu-keybindings",
+            "omarchy-agent-usage-update": "fos-internal-agent-usage-update",
+            "omarchy-agent-usage-claude": "fos-internal-agent-usage-claude",
+            "omarchy-agent-usage-codex": "fos-internal-agent-usage-codex",
+            "omarchy-agent-usage-fireworks": "fos-internal-agent-usage-fireworks",
+            "omarchy-hyprland-focus-app": "fos-internal-hyprland-focus-app",
+            "uwsm-app -- gtk-launch": "fos-internal-public-environment uwsm-app -- gtk-launch",
+        }
+        replacements.update({
+            old: new
+            for old, new in zip(
+                ${builtins.toJSON panelOldCommandNames},
+                ${builtins.toJSON panelNewCommandNames},
+            )
+        })
+
+        for directory, directory_names, file_names in os.walk(root):
+            directory_names.sort()
+            for file_name in sorted(file_names):
+                path = pathlib.Path(directory, file_name)
+                if path.suffix not in {".js", ".qml"}:
+                    continue
+                try:
+                    text = path.read_text()
+                except UnicodeDecodeError:
+                    continue
+                rewritten = text
+                for old, new in replacements.items():
+                    rewritten = rewritten.replace(old, new)
+                if rewritten != text:
+                    path.write_text(rewritten)
+
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or path.suffix not in {".js", ".qml"}:
+                continue
+            text = path.read_text()
+            for old in replacements:
+                if old == "uwsm-app -- gtk-launch":
+                    continue
+                if old in text:
+                    raise SystemExit(f"unreplaced private command {old!r} in {path}")
+
+        app_library = (root / "services" / "AppLibrary.qml").read_text()
+        if "fos-internal-public-environment uwsm-app -- gtk-launch" not in app_library:
+            raise SystemExit("application launcher does not sanitize its environment")
+
+        for path in root.rglob("*.orig"):
+            path.unlink()
+        PYTHON
+
         mkdir -p "$out/config/omarchy" "$out/theme" "$out/share/licenses/omarchy"
         cp ${./omarchy/shell.json} "$out/config/omarchy/shell.json"
         cp ${./omarchy/colors.toml} "$out/theme/colors.toml"
@@ -143,12 +264,25 @@ let
         for command in update claude codex fireworks; do
           install -Dm755 \
             ${inputs.omarchy}/bin/omarchy-agent-usage-$command \
-            "$out/bin/omarchy-agent-usage-$command"
+            "$out/bin/fos-internal-agent-usage-$command"
         done
         install -Dm755 \
           ${inputs.omarchy}/bin/omarchy-hyprland-focus-app \
-          "$out/bin/omarchy-hyprland-focus-app"
+          "$out/bin/fos-internal-hyprland-focus-app"
+        python3 - "$out/bin" <<'PYTHON'
+        import pathlib
+        import sys
+
+        for path in sorted(pathlib.Path(sys.argv[1]).iterdir()):
+            text = path.read_text()
+            text = text.replace("omarchy-agent-usage-", "fos-internal-agent-usage-")
+            text = text.replace("omarchy-hyprland-focus-app", "fos-internal-hyprland-focus-app")
+            path.write_text(text)
+        PYTHON
         patchShebangs "$out/bin"
+
+        QUICKSHELL_MODULE_ROOT=${./.} \
+          ${pkgs.bash}/bin/bash ${./tests/notification-tools.test.sh}
       '';
   launcherIconIndex = pkgs.writeShellApplication {
     name = "launcher-icon-index";
@@ -247,6 +381,8 @@ in
     ];
 
     home-manager.users.${config.user.name} = {
+      home.file.".local/share/fos/bin/menu-keybindings".source = lib.getExe keybindingsMenu;
+
       programs.quickshell = {
         enable = true;
         package = wrappedQuickshell;
@@ -267,10 +403,10 @@ in
         "CLIPBOARD_PKILL=${lib.getExe' pkgs.procps "pkill"}"
         "CLIPBOARD_SETPRIV=${lib.getExe' pkgs.util-linux "setpriv"}"
         "CLIPBOARD_WL_PASTE=${lib.getExe' pkgs.wl-clipboard "wl-paste"}"
-        "LAUNCHER_ENV=${lib.getExe' pkgs.coreutils "env"}"
+        "LAUNCHER_ENV=${lib.getExe publicEnvironment}"
         "LAUNCHER_ICON_INDEX=${lib.getExe launcherIconIndex}"
         "LAUNCHER_ICON_THEME=Gruvbox-Plus-Dark"
-        "LAUNCHER_TERMINAL=${config.modules.applications.commands.terminal}"
+        "LAUNCHER_TERMINAL=${lib.getExe launcherTerminal}"
         "NEXTCLOUD_OPEN=${lib.getExe pkgs.nextcloud-client}"
         "NEXTCLOUD_OPEN_FOLDER=${lib.getExe' pkgs.xdg-utils "xdg-open"}"
         "NEXTCLOUD_STATUS=${lib.getExe' panelTools "nextcloud-status"}"

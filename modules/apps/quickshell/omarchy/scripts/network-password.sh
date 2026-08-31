@@ -1,6 +1,6 @@
 set -euo pipefail
 
-(( $# == 1 )) || { echo "Usage: network-password <interface>" >&2; exit 2; }
+(( $# == 1 )) || { echo "Usage: fos-internal-network-password <interface>" >&2; exit 2; }
 uuid=$(nmcli -g GENERAL.CON-UUID device show "$1" | awk 'NR == 1')
 [[ -n $uuid && $uuid != -- ]] || { echo "No active Wi-Fi connection" >&2; exit 1; }
 mapfile -t fields < <(nmcli --show-secrets --escape no -g 802-11-wireless-security.key-mgmt,802-11-wireless-security.psk,802-11-wireless-security.wep-key0 connection show uuid "$uuid")

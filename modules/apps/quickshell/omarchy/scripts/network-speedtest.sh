@@ -1,7 +1,7 @@
 set -euo pipefail
 
 if (( $# != 1 )) || [[ $1 != down && $1 != up ]]; then
-  echo "Usage: network-speedtest <down|up>" >&2
+  echo "Usage: fos-internal-network-speedtest <down|up>" >&2
   exit 2
 fi
 iface=$(ip route get 1.1.1.1 2>/dev/null | awk '{ for(i=1;i<=NF;i++) if($i=="dev"){print $(i+1);exit} }')

@@ -4,7 +4,7 @@ set -euo pipefail
 
 : "${QUICKSHELL_BIN:?set QUICKSHELL_BIN to the quickshell executable}"
 : "${BUSCTL_BIN:?set BUSCTL_BIN to the busctl executable}"
-: "${NOTIFICATION_SEND_BIN:?set NOTIFICATION_SEND_BIN to omarchy-notification-send}"
+: "${NOTIFICATION_SEND_BIN:?set NOTIFICATION_SEND_BIN to fos-internal-notification-send}"
 : "${PYTHON_BIN:?set PYTHON_BIN to the Python executable}"
 : "${QS_BIN:?set QS_BIN to the qs executable}"
 : "${SHELL_PATH:?set SHELL_PATH to the derived shell directory}"
@@ -17,7 +17,10 @@ pid=""
 
 mkdir -p \
   "$test_root/home/.config/omarchy" \
+  "$test_root/home/.local/state/quickshell" \
   "$test_root/home/.local/share/opencode"
+printf '%s\n' '[{"type":"text","text":"clear me","id":"runtime-test"}]' \
+  >"$test_root/home/.local/state/quickshell/clipboard-history.json"
 jq '
   .disabledPlugins += ["omarchy.indicators", "omarchy.notifications"]
   | .bar.layout.center |= map(select(.id != "omarchy.indicators"))
@@ -66,7 +69,13 @@ grep -Fq 'root.bar.run(Quickshell.env("AGENTS_LAUNCH"))' \
   "$SHELL_PATH/plugins/agents/Panel.qml"
 grep -Fq 'Border.localOrSurfaceSpec("notifications", "border", effectiveBorderColor' \
   "$SHELL_PATH/plugins/notifications/components/NotificationCard.qml"
-test -x "$shell_root/bin/omarchy-hyprland-focus-app"
+grep -Fq 'var command = ["fos-internal-agent-usage-update"]' \
+  "$SHELL_PATH/plugins/agents/Main.qml"
+grep -Fq '["fos-internal-notification-send", "Invalid reminder"' \
+  "$SHELL_PATH/plugins/reminders/ReminderFlow.qml"
+grep -Fq '["fos-internal-network-status", "--verbose"]' \
+  "$SHELL_PATH/plugins/panels/network/Panel.qml"
+test -x "$shell_root/bin/fos-internal-hyprland-focus-app"
 
 cleanup() {
   if [[ -n $pid ]] && kill -0 "$pid" 2>/dev/null; then
@@ -113,6 +122,14 @@ done
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications dndState) == off ]]
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications toggleDnd) == on ]]
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications toggleDnd) == off ]]
+"$QS_BIN" -p "$SHELL_PATH" ipc call -- clipboard clear
+for _ in {1..100}; do
+  if jq -e 'length == 0' "$test_root/home/.local/state/quickshell/clipboard-history.json" >/dev/null; then
+    break
+  fi
+  sleep 0.1
+done
+jq -e 'length == 0' "$test_root/home/.local/state/quickshell/clipboard-history.json" >/dev/null
 "$BUSCTL_BIN" --user status org.freedesktop.Notifications >/dev/null
 
 HOME="$test_root/home" "$NOTIFICATION_SEND_BIN" \

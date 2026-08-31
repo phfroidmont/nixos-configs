@@ -6,7 +6,7 @@ case "${1:-}" in
   "") ;;
   --verbose) verbose=true ;;
   --link) link_only=true ;;
-  *) echo "Usage: network-status [--link|--verbose]" >&2; exit 2 ;;
+  *) echo "Usage: fos-internal-network-status [--link|--verbose]" >&2; exit 2 ;;
 esac
 
 route=$(ip route get 1.1.1.1 2>/dev/null || true)

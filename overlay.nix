@@ -1,5 +1,19 @@
-final: prev: {
-  fos = prev.callPackage ./packages/fos/package.nix { };
+{ inputs }:
+final: prev:
+
+let
+  quickshellPanelTools = import ./packages/quickshell-panel-tools/package.nix {
+    pkgs = final;
+    inherit inputs;
+  };
+  quickshellPackage = inputs.quickshell.packages.${final.stdenv.hostPlatform.system}.quickshell;
+in
+{
+  fos = prev.callPackage ./packages/fos/package.nix {
+    panelTools = quickshellPanelTools;
+    inherit quickshellPackage;
+  };
+  quickshell-panel-tools = quickshellPanelTools;
   get-token = prev.callPackage ./packages/get-token/package.nix { };
   metals = prev.metals.overrideAttrs (oldAttrs: {
     extraJavaOpts = prev.lib.concatStringsSep " " [

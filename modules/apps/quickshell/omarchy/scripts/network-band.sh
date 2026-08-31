@@ -1,6 +1,6 @@
 set -euo pipefail
 
-usage() { echo "Usage: network-band [auto|2.4|5|6]" >&2; exit 2; }
+usage() { echo "Usage: fos-internal-network-band [auto|2.4|5|6]" >&2; exit 2; }
 (( $# <= 1 )) || usage
 nm_get() { LC_ALL=C nmcli -e no -g "$@" 2>/dev/null; }
 device=$(nm_get DEVICE,TYPE,STATE device status | awk -F: '$2 == "wifi" && $3 ~ /^connected/ { print $1; exit }')

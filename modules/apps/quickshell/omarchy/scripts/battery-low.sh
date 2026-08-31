@@ -3,10 +3,10 @@
 set -euo pipefail
 
 if (( $# != 1 )) || [[ ! $1 =~ ^[0-9]+$ ]] || (( $1 > 100 )); then
-  echo "Usage: battery-low <percentage>" >&2
+  echo "Usage: fos-internal-battery-low <percentage>" >&2
   exit 2
 fi
-omarchy-notification-send \
+fos-internal-notification-send \
   --urgency critical \
   --icon battery-caution \
   --expire-time 30000 \

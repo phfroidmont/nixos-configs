@@ -1,7 +1,7 @@
 set -euo pipefail
 
 interface=""; meta=false
-while (( $# )); do case "$1" in --meta) meta=true;; --*) echo "Usage: network-qr [--meta] [interface]" >&2; exit 2;; *) [[ -z $interface ]] || exit 2; interface=$1;; esac; shift; done
+while (( $# )); do case "$1" in --meta) meta=true;; --*) echo "Usage: fos-internal-network-qr [--meta] [interface]" >&2; exit 2;; *) [[ -z $interface ]] || exit 2; interface=$1;; esac; shift; done
 if [[ -z $interface ]]; then
   interface=$(LC_ALL=C nmcli -t -f DEVICE,TYPE,STATE device status | awk -F: '$2 == "wifi" && $3 ~ /^connected/ { print $1; exit }')
 fi
