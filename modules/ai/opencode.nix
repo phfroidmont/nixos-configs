@@ -606,15 +606,54 @@ in
           oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode --auto";
         };
         programs.zsh.initContent = lib.mkAfter ''
+          wait_for_metals_mcp() {
+            local config http_status url
+            local -i deadline
+
+            [[ -f opencode.json || -f opencode.jsonc ]] || return 0
+            config="$(${pkgs.coreutils}/bin/timeout --kill-after=1s 10s opencode debug config 2>/dev/null)" || return 0
+            url="$(${lib.getExe pkgs.jq} -r '
+              .mcp["metals-lsp"]
+              | select(.type == "remote" and .enabled != false)
+              | .url // empty
+            ' <<<"$config" 2>/dev/null)" || return 0
+            [[ "$url" == http://localhost:* || "$url" == http://127.0.0.1:* ]] || return 0
+
+            deadline=$(( SECONDS + 60 ))
+            while (( SECONDS < deadline )); do
+              http_status="$(${lib.getExe pkgs.curl} \
+                --silent \
+                --output /dev/null \
+                --write-out '%{http_code}' \
+                --connect-timeout 1 \
+                --max-time 1 \
+                "$url")" || http_status=
+              if [[ "$http_status" == [234][0-9][0-9] ]]; then
+                return 0
+              fi
+              sleep 0.25
+            done
+
+            print -u2 -- "Timed out waiting for Metals MCP at $url; starting OpenCode anyway"
+          }
+
           opencode() {
-            local arg restore_session=false has_auto=false
+            local arg restore_session=false has_auto=false herdr_agent=false
 
             for arg in "$@"; do
               case "$arg" in
-                --session|--session=*) restore_session=true ;;
+                --session|--session=*)
+                  restore_session=true
+                  herdr_agent=true
+                  ;;
+                --port|--port=*) herdr_agent=true ;;
                 --auto) has_auto=true ;;
               esac
             done
+
+            if [[ "''${HERDR_ENV:-}" == 1 && "$herdr_agent" == true ]]; then
+              wait_for_metals_mcp
+            fi
 
             if [[ "$restore_session" == true && "$has_auto" == false ]]; then
               command opencode --auto "$@"
