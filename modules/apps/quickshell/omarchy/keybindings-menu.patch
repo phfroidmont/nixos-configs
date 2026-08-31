@@ -1,0 +1,43 @@
+diff --git a/bin/omarchy-menu-keybindings b/bin/omarchy-menu-keybindings
+index 76133ce..f884d20 100755
+--- a/bin/omarchy-menu-keybindings
++++ b/bin/omarchy-menu-keybindings
+@@ -16 +16,17 @@ parse_keycodes() {
+-  awk '
++  local rules model layout variant options
++
++  rules=$(hyprctl -j getoption input:kb_rules 2>/dev/null | jq -r 'if .set then .str else "" end')
++  model=$(hyprctl -j getoption input:kb_model 2>/dev/null | jq -r 'if .set then .str else "" end')
++  layout=$(hyprctl -j getoption input:kb_layout 2>/dev/null | jq -r 'if .set then .str else "" end')
++  variant=$(hyprctl -j getoption input:kb_variant 2>/dev/null | jq -r 'if .set then .str else "" end')
++  options=$(hyprctl -j getoption input:kb_options 2>/dev/null | jq -r 'if .set then .str else "" end')
++  rules=${rules:-evdev}
++  model=${model:-pc105}
++  layout=${layout:-us}
++
++  XKB_DEFAULT_RULES="$rules" \
++    XKB_DEFAULT_MODEL="$model" \
++    XKB_DEFAULT_LAYOUT="$layout" \
++    XKB_DEFAULT_VARIANT="$variant" \
++    XKB_DEFAULT_OPTIONS="$options" \
++    awk '
+@@ -25 +41 @@ parse_keycodes() {
+-      keymap_cmd = "xkbcli compile-keymap </dev/null"
++      keymap_cmd = "xkbcli compile-keymap --enable-environment-names </dev/null"
+@@ -229 +245,2 @@ hl = setmetatable({
+-local config = os.getenv("HOME") .. "/.config/hypr/hyprland.lua"
++local config_home = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
++local config = config_home .. "/hypr/hyprland.lua"
+@@ -519 +535,0 @@ output_binding_records_uncached() {
+-    static_bindings
+@@ -533,3 +549,7 @@ keybindings_cache_key() {
+-    printf 'v13\n'
+-    hyprctl devices 2>/dev/null | grep -F 'active keymap:'
+-    hyprctl binds 2>/dev/null
++    printf 'nixos-v2\n'
++    for option in kb_rules kb_model kb_layout kb_variant kb_options; do
++      hyprctl -j getoption "input:$option" 2>/dev/null
++    done
++    hyprctl devices 2>/dev/null | grep -F 'active keymap:'
++    hyprctl binds 2>/dev/null
++    cat "${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.lua" 2>/dev/null

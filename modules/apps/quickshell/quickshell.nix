@@ -10,6 +10,73 @@ let
   cfg = config.modules.apps.quickshell;
   quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
   panelTools = import ./_omarchy-tools.nix { inherit inputs pkgs; };
+  omarchyCommandPresent = pkgs.writeShellApplication {
+    name = "omarchy-cmd-present";
+    bashOptions = [ ];
+    text = builtins.readFile "${inputs.omarchy}/bin/omarchy-cmd-present";
+  };
+  omarchyShellSource =
+    builtins.replaceStrings
+      [ ''qs ipc -n -p "$OMARCHY_PATH/shell" call'' ]
+      [ "qs ipc -n -c desktop call" ]
+      (builtins.readFile "${inputs.omarchy}/bin/omarchy-shell");
+  omarchyShell = pkgs.writeShellApplication {
+    name = "omarchy-shell";
+    bashOptions = [ ];
+    excludeShellChecks = [ "SC2010" ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.gnugrep
+      quickshellPackage
+    ];
+    text = ''
+      export OMARCHY_PATH=${lib.escapeShellArg (toString quickshellConfig)}
+      ${omarchyShellSource}
+    '';
+  };
+  omarchyMenuSelect = pkgs.writeShellApplication {
+    name = "omarchy-menu-select";
+    bashOptions = [ ];
+    runtimeInputs = [
+      omarchyShell
+      pkgs.coreutils
+      pkgs.perl
+    ];
+    text = builtins.readFile "${inputs.omarchy}/bin/omarchy-menu-select";
+  };
+  keybindingsMenu =
+    pkgs.runCommandLocal "omarchy-menu-keybindings"
+      {
+        nativeBuildInputs = [
+          pkgs.makeWrapper
+          pkgs.patch
+        ];
+        meta.mainProgram = "omarchy-menu-keybindings";
+      }
+      ''
+        mkdir -p "$out/bin"
+        cp ${inputs.omarchy}/bin/omarchy-menu-keybindings "$out/bin/omarchy-menu-keybindings"
+        patch -d "$out" -p1 < ${./omarchy/keybindings-menu.patch}
+        patchShebangs "$out/bin"
+        wrapProgram "$out/bin/omarchy-menu-keybindings" \
+          --prefix PATH : ${
+            lib.makeBinPath [
+              omarchyCommandPresent
+              omarchyMenuSelect
+              pkgs.coreutils
+              pkgs.findutils
+              pkgs.gawk
+              pkgs.gnugrep
+              pkgs.hyprland
+              pkgs.jq
+              pkgs.lua5_1
+              pkgs.libxkbcommon
+            ]
+          }
+
+        KEYBINDINGS_MENU_BIN="$out/bin/omarchy-menu-keybindings" \
+          ${pkgs.bash}/bin/bash ${./tests/keybindings-menu.test.sh}
+      '';
   shellRuntimePath = lib.makeBinPath ([
     quickshellConfig
     panelTools
@@ -164,6 +231,12 @@ in
 {
   options.modules.apps.quickshell = {
     enable = lib.my.mkBoolOpt false;
+    commands.keybindings = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      default = lib.getExe keybindingsMenu;
+      description = "Open the searchable Hyprland keybinding catalog.";
+    };
   };
 
   config = lib.mkIf cfg.enable {

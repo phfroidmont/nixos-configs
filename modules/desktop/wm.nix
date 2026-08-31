@@ -10,6 +10,7 @@ let
   cfg = config.modules.desktop.wm;
   applications = config.modules.applications.commands;
   herdr = config.modules.desktop.herdr.commands;
+  quickshellCommands = config.modules.apps.quickshell.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
   quickshell =
     lib.getExe' inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell
@@ -19,17 +20,21 @@ let
   lua = lib.generators.mkLuaInline;
   toLua = lib.generators.toLua { };
   modKey = key: lua "mod .. ${toLua " + ${key}"}";
-  mkBind = key: dispatcher: {
+  mkBind = key: description: dispatcher: {
     _args = [
       key
       dispatcher
+      { inherit description; }
     ];
   };
-  mkMouseBind = key: dispatcher: {
+  mkMouseBind = key: description: dispatcher: {
     _args = [
       key
       dispatcher
-      { mouse = true; }
+      {
+        inherit description;
+        mouse = true;
+      }
     ];
   };
   exec = command: lua "hl.dsp.exec_cmd(${toLua command})";
@@ -50,12 +55,14 @@ let
       moveWindow = lua "hl.dsp.window.move(${toLua { inherit workspace; }})";
     in
     [
-      (mkBind (modKey "code:${code}") moveWorkspace)
-      (mkBind (modKey "code:${code}") focusWorkspace)
-      (mkBind (modKey key) moveWorkspace)
-      (mkBind (modKey key) focusWorkspace)
-      (mkBind (modKey "SHIFT + code:${code}") moveWindow)
-      (mkBind (modKey "SHIFT + ${key}") moveWindow)
+      (mkBind (modKey "code:${code}") "Move workspace ${toString workspace} to current monitor"
+        moveWorkspace
+      )
+      (mkBind (modKey "code:${code}") "Focus workspace ${toString workspace}" focusWorkspace)
+      (mkBind (modKey key) "Move workspace ${toString workspace} to current monitor" moveWorkspace)
+      (mkBind (modKey key) "Focus workspace ${toString workspace}" focusWorkspace)
+      (mkBind (modKey "SHIFT + code:${code}") "Move window to workspace ${toString workspace}" moveWindow)
+      (mkBind (modKey "SHIFT + ${key}") "Move window to workspace ${toString workspace}" moveWindow)
     ]
   ) (lib.range 1 10);
 in
@@ -203,85 +210,102 @@ in
             ];
 
             bind = [
-              (mkBind (modKey "Return") (exec applications.terminal))
-              (mkBind (modKey "SHIFT + Return") (exec herdr.launch))
-              (mkBind (modKey "C") (lua "hl.dsp.window.close()"))
-              (mkBind (modKey "SHIFT + A") (exec "${applications.terminal} -e pulsemixer"))
-              (mkBind (modKey "W") (exec applications.browser))
-              (mkBind (modKey "SHIFT + F") (exec applications.fileManager))
-              (mkBind (modKey "E") (exec applications.editor))
-              (mkBind (modKey "SHIFT + R") (exec "${applications.terminal} -e newsboat"))
-              (mkBind (modKey "SHIFT + T") (exec "${applications.terminal} -e ${btop}"))
-              (mkBind (modKey "M") (exec "${applications.terminal} -e ncmpcpp"))
-              (mkBind (modKey "V") (exec "${quickshell} -c desktop ipc call -- clipboard toggle"))
-              (mkBind (modKey "N") (notification "dismissOne"))
-              (mkBind (modKey "SHIFT + N") (notification "dismissAll"))
-              (mkBind (modKey "CTRL + N") (notification "toggleDnd"))
-              (mkBind (modKey "ALT + N") (notification "invokeLast"))
-              (mkBind (modKey "SHIFT + ALT + N") (notification "showHistory"))
-              (mkBind (modKey "T") (lua ''hl.dsp.window.float({ action = "toggle" })''))
-              (mkBind (modKey "SPACE") (exec "${quickshell} -c desktop ipc call -- launcher toggle"))
-              (mkBind (modKey "CTRL + A") (togglePanel "omarchy.audio"))
-              (mkBind (modKey "CTRL + W") (togglePanel "omarchy.network"))
-              (mkBind (modKey "CTRL + B") (togglePanel "omarchy.bluetooth"))
-              (mkBind (modKey "CTRL + D") (togglePanel "omarchy.monitor"))
-              (mkBind (modKey "CTRL + P") (togglePanel "omarchy.power"))
-              (mkBind (modKey "CTRL + ALT + D") (togglePanel "omarchy.clock"))
+              (mkBind (modKey "Return") "Terminal" (exec applications.terminal))
+              (mkBind (modKey "SHIFT + Return") "Herdr" (exec herdr.launch))
+              (mkBind (modKey "C") "Close window" (lua "hl.dsp.window.close()"))
+              (mkBind (modKey "SHIFT + A") "Audio mixer" (exec "${applications.terminal} -e pulsemixer"))
+              (mkBind (modKey "W") "Browser" (exec applications.browser))
+              (mkBind (modKey "SHIFT + F") "File manager" (exec applications.fileManager))
+              (mkBind (modKey "E") "Editor" (exec applications.editor))
+              (mkBind (modKey "SHIFT + R") "Newsboat" (exec "${applications.terminal} -e newsboat"))
+              (mkBind (modKey "SHIFT + T") "System monitor" (exec "${applications.terminal} -e ${btop}"))
+              (mkBind (modKey "M") "Music player" (exec "${applications.terminal} -e ncmpcpp"))
+              (mkBind (modKey "V") "Clipboard" (exec "${quickshell} -c desktop ipc call -- clipboard toggle"))
+              (mkBind (modKey "N") "Dismiss notification" (notification "dismissOne"))
+              (mkBind (modKey "SHIFT + N") "Dismiss all notifications" (notification "dismissAll"))
+              (mkBind (modKey "CTRL + N") "Toggle do not disturb" (notification "toggleDnd"))
+              (mkBind (modKey "ALT + N") "Invoke last notification" (notification "invokeLast"))
+              (mkBind (modKey "SHIFT + ALT + N") "Notification history" (notification "showHistory"))
+              (mkBind (modKey "T") "Toggle window floating" (lua ''hl.dsp.window.float({ action = "toggle" })''))
+              (mkBind (modKey "SPACE") "Launch apps" (
+                exec "${quickshell} -c desktop ipc call -- launcher toggle"
+              ))
+              (mkBind (modKey "B") "Keybindings" (exec quickshellCommands.keybindings))
+              (mkBind (modKey "CTRL + A") "Audio controls" (togglePanel "omarchy.audio"))
+              (mkBind (modKey "CTRL + W") "Wifi controls" (togglePanel "omarchy.network"))
+              (mkBind (modKey "CTRL + B") "Bluetooth controls" (togglePanel "omarchy.bluetooth"))
+              (mkBind (modKey "CTRL + D") "Display controls" (togglePanel "omarchy.monitor"))
+              (mkBind (modKey "CTRL + P") "Power controls" (togglePanel "omarchy.power"))
+              (mkBind (modKey "CTRL + ALT + D") "Clock" (togglePanel "omarchy.clock"))
 
               # Layout manipulation
-              (mkBind (modKey "SHIFT + O") (lua ''hl.dsp.layout("togglesplit")''))
-              (mkBind (modKey "comma") (lua ''hl.dsp.layout("splitratio -0.1")''))
-              (mkBind (modKey "semicolon") (lua ''hl.dsp.layout("splitratio +0.1")''))
+              (mkBind (modKey "SHIFT + O") "Toggle split direction" (lua ''hl.dsp.layout("togglesplit")''))
+              (mkBind (modKey "comma") "Shrink split" (lua ''hl.dsp.layout("splitratio -0.1")''))
+              (mkBind (modKey "semicolon") "Grow split" (lua ''hl.dsp.layout("splitratio +0.1")''))
 
-              (mkBind (modKey "F") (lua ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })''))
-              (mkBind (modKey "X") (exec "hyprlock"))
+              (mkBind (modKey "F") "Full screen" (
+                lua ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })''
+              ))
+              (mkBind (modKey "X") "Lock system" (exec "hyprlock"))
 
               # Move focus
-              (mkBind (modKey "H") (lua ''hl.dsp.focus({ direction = "left" })''))
-              (mkBind (modKey "L") (lua ''hl.dsp.focus({ direction = "right" })''))
-              (mkBind (modKey "K") (lua ''hl.dsp.focus({ direction = "up" })''))
-              (mkBind (modKey "J") (lua ''hl.dsp.focus({ direction = "down" })''))
-              (mkBind (modKey "left") (lua ''hl.dsp.focus({ direction = "left" })''))
-              (mkBind (modKey "right") (lua ''hl.dsp.focus({ direction = "right" })''))
-              (mkBind (modKey "up") (lua ''hl.dsp.focus({ direction = "up" })''))
-              (mkBind (modKey "down") (lua ''hl.dsp.focus({ direction = "down" })''))
+              (mkBind (modKey "H") "Focus left" (lua ''hl.dsp.focus({ direction = "left" })''))
+              (mkBind (modKey "L") "Focus right" (lua ''hl.dsp.focus({ direction = "right" })''))
+              (mkBind (modKey "K") "Focus up" (lua ''hl.dsp.focus({ direction = "up" })''))
+              (mkBind (modKey "J") "Focus down" (lua ''hl.dsp.focus({ direction = "down" })''))
+              (mkBind (modKey "left") "Focus left" (lua ''hl.dsp.focus({ direction = "left" })''))
+              (mkBind (modKey "right") "Focus right" (lua ''hl.dsp.focus({ direction = "right" })''))
+              (mkBind (modKey "up") "Focus up" (lua ''hl.dsp.focus({ direction = "up" })''))
+              (mkBind (modKey "down") "Focus down" (lua ''hl.dsp.focus({ direction = "down" })''))
 
               # Move window
-              (mkBind (modKey "SHIFT + H") (lua ''hl.dsp.window.move({ direction = "left" })''))
-              (mkBind (modKey "SHIFT + L") (lua ''hl.dsp.window.move({ direction = "right" })''))
-              (mkBind (modKey "SHIFT + K") (lua ''hl.dsp.window.move({ direction = "up" })''))
-              (mkBind (modKey "SHIFT + J") (lua ''hl.dsp.window.move({ direction = "down" })''))
-              (mkBind (modKey "SHIFT + left") (lua ''hl.dsp.window.move({ direction = "left" })''))
-              (mkBind (modKey "SHIFT + right") (lua ''hl.dsp.window.move({ direction = "right" })''))
-              (mkBind (modKey "SHIFT + up") (lua ''hl.dsp.window.move({ direction = "up" })''))
-              (mkBind (modKey "SHIFT + down") (lua ''hl.dsp.window.move({ direction = "down" })''))
+              (mkBind (modKey "SHIFT + H") "Move window left" (
+                lua ''hl.dsp.window.move({ direction = "left" })''
+              ))
+              (mkBind (modKey "SHIFT + L") "Move window right" (
+                lua ''hl.dsp.window.move({ direction = "right" })''
+              ))
+              (mkBind (modKey "SHIFT + K") "Move window up" (lua ''hl.dsp.window.move({ direction = "up" })''))
+              (mkBind (modKey "SHIFT + J") "Move window down" (
+                lua ''hl.dsp.window.move({ direction = "down" })''
+              ))
+              (mkBind (modKey "SHIFT + left") "Move window left" (
+                lua ''hl.dsp.window.move({ direction = "left" })''
+              ))
+              (mkBind (modKey "SHIFT + right") "Move window right" (
+                lua ''hl.dsp.window.move({ direction = "right" })''
+              ))
+              (mkBind (modKey "SHIFT + up") "Move window up" (lua ''hl.dsp.window.move({ direction = "up" })''))
+              (mkBind (modKey "SHIFT + down") "Move window down" (
+                lua ''hl.dsp.window.move({ direction = "down" })''
+              ))
             ]
             ++ workspaceBinds
             ++ [
 
               # Scroll through existing workspaces with mainMod + scroll
-              (mkBind (modKey "mouse_down") (lua ''hl.dsp.focus({ workspace = "e-1" })''))
-              (mkBind (modKey "mouse_up") (lua ''hl.dsp.focus({ workspace = "e+1" })''))
+              (mkBind (modKey "mouse_down") "Previous workspace" (lua ''hl.dsp.focus({ workspace = "e-1" })''))
+              (mkBind (modKey "mouse_up") "Next workspace" (lua ''hl.dsp.focus({ workspace = "e+1" })''))
 
               # Media controls
-              (mkBind "XF86AudioRaiseVolume" (exec "pulsemixer --change-volume +1"))
-              (mkBind "XF86AudioLowerVolume" (exec "pulsemixer --change-volume -1"))
-              (mkBind "XF86AudioMute" (exec "pulsemixer --toggle-mute"))
-              (mkBind "XF86AudioPlay" (exec "mpc toggle"))
-              (mkBind "XF86AudioPause" (exec "mpc toggle"))
-              (mkBind "XF86AudioNext" (exec "mpc next"))
-              (mkBind "XF86AudioPrev" (exec "mpc prev"))
-              (mkBind (modKey "P") (exec "mpc toggle"))
+              (mkBind "XF86AudioRaiseVolume" "Volume up" (exec "pulsemixer --change-volume +1"))
+              (mkBind "XF86AudioLowerVolume" "Volume down" (exec "pulsemixer --change-volume -1"))
+              (mkBind "XF86AudioMute" "Toggle mute" (exec "pulsemixer --toggle-mute"))
+              (mkBind "XF86AudioPlay" "Play or pause music" (exec "mpc toggle"))
+              (mkBind "XF86AudioPause" "Play or pause music" (exec "mpc toggle"))
+              (mkBind "XF86AudioNext" "Next track" (exec "mpc next"))
+              (mkBind "XF86AudioPrev" "Previous track" (exec "mpc prev"))
+              (mkBind (modKey "P") "Play or pause music" (exec "mpc toggle"))
 
-              (mkBind "XF86MonBrightnessDown" (exec "xbacklight -ctrl amdgpu_bl1 -dec 5"))
-              (mkBind "XF86MonBrightnessUp" (exec "xbacklight -ctrl amdgpu_bl1 -inc 5"))
+              (mkBind "XF86MonBrightnessDown" "Brightness down" (exec "xbacklight -ctrl amdgpu_bl1 -dec 5"))
+              (mkBind "XF86MonBrightnessUp" "Brightness up" (exec "xbacklight -ctrl amdgpu_bl1 -inc 5"))
 
-              (mkBind "Print" (exec ''grim -g "$(slurp)" - | satty -f -''))
-              (mkBind "SHIFT + Print" (exec "grim - | satty -f -"))
+              (mkBind "Print" "Screenshot region" (exec ''grim -g "$(slurp)" - | satty -f -''))
+              (mkBind "SHIFT + Print" "Screenshot screen" (exec "grim - | satty -f -"))
 
               # Move/resize windows with mainMod + LMB/RMB and dragging
-              (mkMouseBind (modKey "mouse:272") (lua "hl.dsp.window.drag()"))
-              (mkMouseBind (modKey "mouse:273") (lua "hl.dsp.window.resize()"))
+              (mkMouseBind (modKey "mouse:272") "Move window" (lua "hl.dsp.window.drag()"))
+              (mkMouseBind (modKey "mouse:273") "Resize window" (lua "hl.dsp.window.resize()"))
             ];
 
             on = {
