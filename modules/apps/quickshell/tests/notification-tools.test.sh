@@ -44,6 +44,8 @@ jq -e '
   and (.disabledPlugins | index("omarchy.indicators") | not)
   and any(.bar.layout.center[];
     .id == "omarchy.indicators" and .items == ["Dnd"])
+  and ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+    | map(.id) | index("omarchy.menu") | not)
 ' "$root/omarchy/shell.json" >/dev/null
 
 sync_home="$temporary/sync-home"
@@ -83,6 +85,8 @@ HOME="$sync_home" bash "$root/scripts/sync-shell-config.sh"
 jq -e '
   .disabledPlugins == ["omarchy.idle"]
   and .nixosConfigMigrations.notifications == 1
+  and .nixosConfigMigrations.menuWidget == 1
+  and .bar.layout.left == []
 ' "$sync_config" >/dev/null
 jq -e '
   .bar.layout.center[0] == {
@@ -91,6 +95,8 @@ jq -e '
   }
   and (.bar.layout.center[0] | has("alwaysShow") | not)
   and .bar.layout.center[1].birthYear == 1984
+  and ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+    | map(.id) | index("omarchy.menu") | not)
   and .bar.layout.right[0] == {
     "id": "omarchy.indicators",
     "items": ["NightLight"]
@@ -134,7 +140,36 @@ jq -e '
   and (.bar.layout.center[0] | has("alwaysShow") | not)
   and .bar.layout.center[1].id == "omarchy.clock"
   and .nixosConfigMigrations.notifications == 1
+  and .nixosConfigMigrations.menuWidget == 1
+  and .bar.layout.left == []
 ' "$legacy_config" >/dev/null
+
+menu_home="$temporary/menu-home"
+menu_config="$menu_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$menu_config")"
+cat >"$menu_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {
+    "layout": {
+      "left": [{"id": "omarchy.menu"}, {"id": "omarchy.workspaces"}],
+      "center": ["omarchy.menu", {"id": "omarchy.clock"}],
+      "right": ["omarchy.menu"]
+    }
+  },
+  "disabledPlugins": ["omarchy.notifications", "omarchy.indicators"],
+  "nixosConfigMigrations": {"notifications": 1}
+}
+EOF
+HOME="$menu_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .disabledPlugins == ["omarchy.notifications", "omarchy.indicators"]
+  and .bar.layout.left == [{"id": "omarchy.workspaces"}]
+  and .bar.layout.center == [{"id": "omarchy.clock"}]
+  and .bar.layout.right == []
+  and .nixosConfigMigrations.notifications == 1
+  and .nixosConfigMigrations.menuWidget == 1
+' "$menu_config" >/dev/null
 
 missing_home="$temporary/missing-home"
 HOME="$missing_home" bash "$root/scripts/sync-shell-config.sh"

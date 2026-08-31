@@ -28,6 +28,26 @@ paths and options, completion discovers current NixOS hosts, media players,
 Wi-Fi networks and interfaces, Bluetooth devices, VPN servers, system and user
 services, virtual machines, and disks.
 
+=== Desktop command menu
+
+The Quickshell command menu provides a searchable, hierarchical desktop view
+of curated FOS actions. `Super+Space` toggles the root menu,
+`Super+Alt+Space` opens installed applications, and `Super+Escape` opens the
+System submenu.
+
+The menu covers desktop controls, capture, network and VPN actions, NixOS
+workflows, hardware information, common tools, and session or power actions.
+Commands that need arbitrary arguments remain in the CLI. Mutating and
+disruptive menu actions show a confirmation dialog that defaults to Cancel;
+actions normally guarded by FOS receive `--yes` only after confirmation.
+
+[source,bash]
+----
+fos menu
+fos menu apps
+fos menu system
+----
+
 `fos` is the supported unified desktop-management interface. Quickshell and FOS
 share private `fos-internal-*` helpers that are not installed in the interactive
 user `PATH`. Existing application-role launchers remain available for desktop

@@ -92,9 +92,17 @@ let
     export PATH="$clean_path"
     exec ${lib.getExe' pkgs.coreutils "env"} "$@"
   '';
-  launcherTerminal = pkgs.writeShellScriptBin "fos-internal-launch-terminal" ''
-    exec ${lib.getExe publicEnvironment} ${config.modules.applications.commands.terminal} "$@"
-  '';
+  menuTerminal = pkgs.writeShellApplication {
+    name = "fos-internal-menu-terminal";
+    text = ''
+      (($# > 0)) || {
+        echo "usage: fos-internal-menu-terminal COMMAND [ARGUMENT...]" >&2
+        exit 2
+      }
+      exec ${lib.getExe publicEnvironment} ${config.modules.applications.commands.terminal} \
+        --hold -e ${lib.getExe pkgs.fos} "$@"
+    '';
+  };
   keybindingsMenu =
     pkgs.runCommandLocal "fos-internal-menu-keybindings"
       {
@@ -138,12 +146,14 @@ let
     fosShell
     fosMenuSelect
     publicEnvironment
+    menuTerminal
     keybindingsMenu
     pkgs.bash
     pkgs.codex
     pkgs.coreutils
     pkgs.curl
     pkgs.findutils
+    pkgs.fos
     pkgs.fontconfig
     pkgs.gawk
     pkgs.hyprland
@@ -185,8 +195,8 @@ let
         cp -R ${inputs.omarchy}/shell "$out/shell"
         chmod -R u+w "$out/shell"
         patch -d "$out" -p1 < ${./omarchy/omarchy-nixos.patch}
+        patch -d "$out" -p1 < ${./omarchy/fos-command-menu.patch}
 
-        cp ${./config/Launcher.qml} "$out/shell/Launcher.qml"
         cp ${./config/Clipboard.qml} "$out/shell/Clipboard.qml"
         cp ${./config/ClipboardHistory.js} "$out/shell/ClipboardHistory.js"
 
@@ -254,8 +264,9 @@ let
             path.unlink()
         PYTHON
 
-        mkdir -p "$out/config/omarchy" "$out/theme" "$out/share/licenses/omarchy"
+        mkdir -p "$out/config/omarchy" "$out/default/omarchy" "$out/theme" "$out/share/licenses/omarchy"
         cp ${./omarchy/shell.json} "$out/config/omarchy/shell.json"
+        cp ${./config/FosMenu.jsonc} "$out/default/omarchy/omarchy-menu.jsonc"
         cp ${./omarchy/colors.toml} "$out/theme/colors.toml"
         cp ${./omarchy/shell.toml} "$out/theme/shell.toml"
         cp ${inputs.omarchy}/LICENSE "$out/share/licenses/omarchy/LICENSE"
@@ -283,46 +294,10 @@ let
 
         QUICKSHELL_MODULE_ROOT=${./.} \
           ${pkgs.bash}/bin/bash ${./tests/notification-tools.test.sh}
+        ${lib.getExe pkgs.fos} commands --json > fos-commands.json
+        ${lib.getExe pkgs.python3} ${./tests/command-menu.test.py} \
+          "$out/default/omarchy/omarchy-menu.jsonc" fos-commands.json "$out/shell"
       '';
-  launcherIconIndex = pkgs.writeShellApplication {
-    name = "launcher-icon-index";
-    runtimeInputs = [ pkgs.findutils ];
-    text = ''
-      icon_directories=()
-      IFS=: read -ra xdg_data_directories <<< "''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-
-      for directory in "$HOME/.icons" "$HOME/.local/share/icons"; do
-        if [[ -n "''${LAUNCHER_ICON_THEME:-}" ]]; then
-          icon_directories+=("$directory/$LAUNCHER_ICON_THEME")
-        fi
-        icon_directories+=("$directory/hicolor")
-      done
-
-      for data_directory in "''${xdg_data_directories[@]}"; do
-        if [[ -n "''${LAUNCHER_ICON_THEME:-}" ]]; then
-          icon_directories+=("$data_directory/icons/$LAUNCHER_ICON_THEME")
-        fi
-        icon_directories+=("$data_directory/icons/hicolor")
-      done
-
-      for extension in svg png; do
-        for directory in "''${icon_directories[@]}"; do
-          if [[ -d "$directory" ]]; then
-            find -H "$directory" \
-              \( -path '*/apps/*' -o -path '*/devices/*' \) \
-              -name "*.$extension" -print 2>/dev/null || true
-          fi
-        done
-
-        for data_directory in "''${xdg_data_directories[@]}"; do
-          if [[ -d "$data_directory/pixmaps" ]]; then
-            find -H "$data_directory/pixmaps" -maxdepth 1 \
-              -name "*.$extension" -print 2>/dev/null || true
-          fi
-        done
-      done
-    '';
-  };
   clipboardCapture = pkgs.writeShellApplication {
     name = "clipboard-capture";
     runtimeInputs = with pkgs; [
@@ -403,10 +378,6 @@ in
         "CLIPBOARD_PKILL=${lib.getExe' pkgs.procps "pkill"}"
         "CLIPBOARD_SETPRIV=${lib.getExe' pkgs.util-linux "setpriv"}"
         "CLIPBOARD_WL_PASTE=${lib.getExe' pkgs.wl-clipboard "wl-paste"}"
-        "LAUNCHER_ENV=${lib.getExe publicEnvironment}"
-        "LAUNCHER_ICON_INDEX=${lib.getExe launcherIconIndex}"
-        "LAUNCHER_ICON_THEME=Gruvbox-Plus-Dark"
-        "LAUNCHER_TERMINAL=${lib.getExe launcherTerminal}"
         "NEXTCLOUD_OPEN=${lib.getExe pkgs.nextcloud-client}"
         "NEXTCLOUD_OPEN_FOLDER=${lib.getExe' pkgs.xdg-utils "xdg-open"}"
         "NEXTCLOUD_STATUS=${lib.getExe' panelTools "nextcloud-status"}"

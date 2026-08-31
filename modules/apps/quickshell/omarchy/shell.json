@@ -6,7 +6,6 @@
     "centerAnchor": "omarchy.clock",
     "layout": {
       "left": [
-        { "id": "omarchy.menu" },
         { "id": "omarchy.workspaces" }
       ],
       "center": [

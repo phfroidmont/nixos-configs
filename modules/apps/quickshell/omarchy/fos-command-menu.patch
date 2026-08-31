@@ -1,0 +1,132 @@
+diff --git a/shell/plugins/menu/manifest.json b/shell/plugins/menu/manifest.json
+--- a/shell/plugins/menu/manifest.json
++++ b/shell/plugins/menu/manifest.json
+@@ -4 +4 @@
+-  "name": "Omarchy menu",
++  "name": "FOS menu",
+@@ -6,2 +6,2 @@
+-  "author": "Omarchy",
+-  "description": "Quickshell-powered Omarchy command menu",
++  "author": "FOS",
++  "description": "Quickshell-powered FOS command menu",
+@@ -17,2 +17,2 @@
+-    "displayName": "Omarchy menu",
+-    "description": "Launches the Omarchy menu",
++    "displayName": "FOS menu",
++    "description": "Launches the FOS command menu",
+diff --git a/shell/plugins/menu/MenuModel.js b/shell/plugins/menu/MenuModel.js
+--- a/shell/plugins/menu/MenuModel.js
++++ b/shell/plugins/menu/MenuModel.js
+@@ -38 +38,3 @@
+-    disabled: value.disabled || ""
++    disabled: value.disabled || "",
++    confirm: value.confirm || "",
++    confirmLabel: value.confirmLabel || ""
+diff --git a/shell/plugins/menu/Menu.qml b/shell/plugins/menu/Menu.qml
+--- a/shell/plugins/menu/Menu.qml
++++ b/shell/plugins/menu/Menu.qml
+@@ -81,3 +81,3 @@
+-  property bool deleteConfirmOpen: false
+-  property var deleteTarget: null
+-  onOpenedChanged: if (!opened) { deleteConfirmOpen = false; deleteTarget = null }
++  property bool actionConfirmOpen: false
++  property var actionTarget: null
++  onOpenedChanged: if (!opened) { actionConfirmOpen = false; actionTarget = null }
+@@ -754 +754 @@
+-    if (root.deleteConfirmOpen) return
++    if (root.actionConfirmOpen) return
+@@ -779 +779 @@
+-      root.applySelected(row.itemId, row.action)
++      root.requestAction(row.itemId, row.action)
+@@ -783,25 +783,32 @@
+-  function requestDeleteSelected() {
+-    if (!root.cursorActive || root.selectedIndex < 0 || root.selectedIndex >= displayModel.count) return
+-    var row = displayModel.get(root.selectedIndex)
+-    if (!row || row.kind !== "app") return
+-    root.deleteTarget = { appId: row.appId, label: row.label }
+-    deleteConfirm.selectedIndex = 1
+-    root.deleteConfirmOpen = true
+-  }
+-
+-  function cancelDelete() {
+-    root.deleteConfirmOpen = false
+-    root.deleteTarget = null
+-    deleteConfirm.selectedIndex = 1
+-    root.disarmPointer()
+-    Qt.callLater(function() { keyCatcher.forceActiveFocus() })
+-  }
+-
+-  function confirmDelete() {
+-    var target = root.deleteTarget
+-    root.deleteConfirmOpen = false
+-    root.deleteTarget = null
+-    if (!target) return
+-    root.cancel()
+-    if (root.appLibrary) root.appLibrary.remove(target.appId, target.label)
+-  }
++  function requestAction(id, action) {
++    var entry = root.item(id)
++    if (!entry || !entry.confirm) {
++      root.applySelected(id, action)
++      return
++    }
++
++    root.actionTarget = {
++      id: id,
++      action: action,
++      message: String(entry.confirm),
++      confirmLabel: String(entry.confirmLabel || "Confirm")
++    }
++    actionConfirm.selectedIndex = 0
++    root.actionConfirmOpen = true
++  }
++
++  function cancelAction() {
++    root.actionConfirmOpen = false
++    root.actionTarget = null
++    actionConfirm.selectedIndex = 0
++    root.disarmPointer()
++    Qt.callLater(function() { keyCatcher.forceActiveFocus() })
++  }
++
++  function confirmAction() {
++    var target = root.actionTarget
++    root.actionConfirmOpen = false
++    root.actionTarget = null
++    if (!target) return
++    root.applySelected(target.id, target.action)
++  }
+@@ -896,2 +903,7 @@
+-      root.cancel()
+-      root.runAction(entry.action)
++      if (entry.confirm) {
++        root.openExistingMenu(entry.parent || "root")
++        root.requestAction(entry.id, entry.action)
++      } else {
++        root.cancel()
++        root.runAction(entry.action)
++      }
+@@ -1113 +1125 @@
+-        z: root.deleteConfirmOpen ? 20 : 0
++        z: root.actionConfirmOpen ? 20 : 0
+@@ -1118,2 +1130,2 @@
+-          if (root.deleteConfirmOpen) {
+-            if (deleteConfirm.handleKey(event)) event.accepted = true
++          if (root.actionConfirmOpen) {
++            if (actionConfirm.handleKey(event)) event.accepted = true
+@@ -1159 +1171 @@
+-          id: deleteConfirm
++          id: actionConfirm
+@@ -1162 +1174 @@
+-          opened: root.deleteConfirmOpen
++          opened: root.actionConfirmOpen
+@@ -1164,2 +1176,2 @@
+-          message: "Do you want to uninstall " + ((root.deleteTarget && root.deleteTarget.label) || "") + "?"
+-          confirmText: "Uninstall"
++          message: (root.actionTarget && root.actionTarget.message) || ""
++          confirmText: (root.actionTarget && root.actionTarget.confirmLabel) || "Confirm"
+@@ -1173,2 +1185,2 @@
+-          onCanceled: root.cancelDelete()
+-          onConfirmed: root.confirmDelete()
++          onCanceled: root.cancelAction()
++          onConfirmed: root.confirmAction()

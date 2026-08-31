@@ -19,7 +19,9 @@ nixos generations|nixos generations|List NixOS generations
 nixos rollback|nixos rollback [GENERATION]|Roll back a NixOS generation
 auth status|auth status|Show GitLab authentication status
 auth refresh|auth refresh [GITLAB_HOST]|Refresh Nix GitLab credentials
-menu apps|menu apps|Open the application launcher
+menu|menu|Toggle the command menu
+menu apps|menu apps|Toggle the applications menu
+menu system|menu system|Toggle the system menu
 menu clipboard|menu clipboard|Open clipboard history
 menu keybindings|menu keybindings|Open the keybindings helper
 menu notifications|menu notifications|Open notification history
@@ -311,7 +313,9 @@ nixos_command() {
 auth_command() { local action=${1:-}; shift || true; case $action in status) no_args "$@"; exec_command "$GLAB" auth status;; refresh) (($# <= 1)) || fail 'auth refresh accepts at most one host'; (($# == 0)) || safe_value "$1"; exec_command "$AUTH" "$@";; *) fail 'auth requires status or refresh';; esac; }
 require_session() { [[ -n ${XDG_RUNTIME_DIR:-} ]] || fail 'a graphical session is required'; }
 qs() { require_session; exec_command "$QS" -c desktop ipc call -- "$@"; }
-menu_command() { local item=${1:-}; shift || true; no_args "$@"; case $item in apps) qs launcher toggle;; clipboard) qs clipboard toggle;; keybindings) exec_command "$KEYBINDINGS";; notifications) qs notifications showHistory;; agents) qs shell toggle omarchy.agents '{}';; audio) qs shell toggle omarchy.audio '{}';; bluetooth) qs shell toggle omarchy.bluetooth '{}';; clock) qs shell toggle omarchy.clock '{}';; display) qs shell toggle omarchy.monitor '{}';; network) qs shell toggle omarchy.network '{}';; power) qs shell toggle omarchy.power '{}';; *) fail 'invalid menu';; esac; }
+# shellcheck disable=SC2016
+menu_route() { local payload; require_session; need "$JQ"; payload=$("$JQ" -cn --arg menu "$1" '{menu:$menu}'); qs shell toggle omarchy.menu "$payload"; }
+menu_command() { local item=${1:-}; shift || true; no_args "$@"; case $item in '') menu_route root;; apps|system) menu_route "$item";; clipboard) qs clipboard toggle;; keybindings) exec_command "$KEYBINDINGS";; notifications) qs notifications showHistory;; agents) qs shell toggle omarchy.agents '{}';; audio) qs shell toggle omarchy.audio '{}';; bluetooth) qs shell toggle omarchy.bluetooth '{}';; clock) qs shell toggle omarchy.clock '{}';; display) qs shell toggle omarchy.monitor '{}';; network) qs shell toggle omarchy.network '{}';; power) qs shell toggle omarchy.power '{}';; *) fail 'invalid menu';; esac; }
 
 public_path() {
   local entry result=''

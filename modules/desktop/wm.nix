@@ -227,9 +227,9 @@ in
               (mkBind (modKey "ALT + N") "Invoke last notification" (notification "invokeLast"))
               (mkBind (modKey "SHIFT + ALT + N") "Notification history" (notification "showHistory"))
               (mkBind (modKey "T") "Toggle window floating" (lua ''hl.dsp.window.float({ action = "toggle" })''))
-              (mkBind (modKey "SPACE") "Launch apps" (
-                exec "${quickshell} -c desktop ipc call -- launcher toggle"
-              ))
+              (mkBind (modKey "SPACE") "Command menu" (exec "${lib.getExe pkgs.fos} menu"))
+              (mkBind (modKey "ALT + SPACE") "Applications" (exec "${lib.getExe pkgs.fos} menu apps"))
+              (mkBind (modKey "ESCAPE") "System menu" (exec "${lib.getExe pkgs.fos} menu system"))
               (mkBind (modKey "B") "Keybindings" (exec quickshellCommands.keybindings))
               (mkBind (modKey "CTRL + A") "Audio controls" (togglePanel "omarchy.audio"))
               (mkBind (modKey "CTRL + W") "Wifi controls" (togglePanel "omarchy.network"))

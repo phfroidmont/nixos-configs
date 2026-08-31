@@ -122,7 +122,10 @@ if $FOS_BIN auth status 2>/dev/null | grep -Fq "$GITLAB_TOKEN"; then exit 1; fi
 reset_log; $FOS_BIN auth refresh gitlab.example >/dev/null 2>&1; assert_log 'auth|gitlab.example'
 
 # Every command domain has dispatch or validation coverage.
-reset_log; $FOS_BIN menu apps >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- launcher toggle'
+reset_log; $FOS_BIN menu >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"root"}'
+reset_log; $FOS_BIN menu apps >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"apps"}'
+reset_log; $FOS_BIN menu system >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"system"}'
+reset_log; $FOS_BIN menu audio >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.audio {}'
 mkdir -p "$root/private-data/fos/bin"; cp "$bin/backend" "$root/private-data/fos/bin/menu-keybindings"
 reset_log; env -u FOS_KEYBINDINGS XDG_DATA_HOME="$root/private-data" "$FOS_BIN" menu keybindings >/dev/null 2>&1; assert_log 'menu-keybindings|'
 reset_log; $FOS_BIN launch files >/dev/null 2>&1; assert_log 'launch-file-manager|'

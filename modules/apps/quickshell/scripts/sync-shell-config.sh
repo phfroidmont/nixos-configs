@@ -29,6 +29,8 @@ migrate() {
     and (.[0] | type) == "object"
     and (.[0].nixosConfigMigrations.notifications | type) == "number"
     and (.[0].nixosConfigMigrations.notifications // 0) >= 1
+    and (.[0].nixosConfigMigrations.menuWidget | type) == "number"
+    and (.[0].nixosConfigMigrations.menuWidget // 0) >= 1
   ' "$config" >/dev/null 2>&1; then
     return 0
   fi
@@ -80,26 +82,36 @@ migrate() {
     else
       .[0]
     end
-    | .disabledPlugins = [
-        (.disabledPlugins // [])[]
-        | select(. != "omarchy.notifications" and . != "omarchy.indicators")
-      ]
-    | .bar.layout.left = [(.bar.layout.left // [])[] | normalize_indicator]
-    | .bar.layout.center = [(.bar.layout.center // [])[] | normalize_indicator]
-    | .bar.layout.right = [(.bar.layout.right // [])[] | normalize_indicator]
-    | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
-        | any(indicator_shows_dnd)) as $has_dnd
-    | if $has_dnd then . else
-        (.bar.layout.center | map(widget_id) | index("omarchy.clock")) as $clock
-        | .bar.layout.center = if $clock == null then
-            [dnd_indicator] + .bar.layout.center
-          else
-            .bar.layout.center[0:$clock]
-            + [dnd_indicator]
-            + .bar.layout.center[$clock:]
+    | if ((.nixosConfigMigrations.notifications | type) == "number"
+        and (.nixosConfigMigrations.notifications // 0) >= 1) then . else
+        .disabledPlugins = [
+          (.disabledPlugins // [])[]
+          | select(. != "omarchy.notifications" and . != "omarchy.indicators")
+        ]
+        | .bar.layout.left = [(.bar.layout.left // [])[] | normalize_indicator]
+        | .bar.layout.center = [(.bar.layout.center // [])[] | normalize_indicator]
+        | .bar.layout.right = [(.bar.layout.right // [])[] | normalize_indicator]
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(indicator_shows_dnd)) as $has_dnd
+        | if $has_dnd then . else
+            (.bar.layout.center | map(widget_id) | index("omarchy.clock")) as $clock
+            | .bar.layout.center = if $clock == null then
+                [dnd_indicator] + .bar.layout.center
+              else
+                .bar.layout.center[0:$clock]
+                + [dnd_indicator]
+                + .bar.layout.center[$clock:]
+              end
           end
+        | .nixosConfigMigrations.notifications = 1
       end
-    | .nixosConfigMigrations.notifications = 1
+    | if ((.nixosConfigMigrations.menuWidget | type) == "number"
+        and (.nixosConfigMigrations.menuWidget // 0) >= 1) then . else
+        .bar.layout.left = [(.bar.layout.left // [])[] | select(widget_id != "omarchy.menu")]
+        | .bar.layout.center = [(.bar.layout.center // [])[] | select(widget_id != "omarchy.menu")]
+        | .bar.layout.right = [(.bar.layout.right // [])[] | select(widget_id != "omarchy.menu")]
+        | .nixosConfigMigrations.menuWidget = 1
+      end
   ' "$config" >"$temporary"; then
     warn "leaving invalid config unchanged: $config"
     return 0

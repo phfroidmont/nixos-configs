@@ -75,6 +75,8 @@ grep -Fq '["fos-internal-notification-send", "Invalid reminder"' \
   "$SHELL_PATH/plugins/reminders/ReminderFlow.qml"
 grep -Fq '["fos-internal-network-status", "--verbose"]' \
   "$SHELL_PATH/plugins/panels/network/Panel.qml"
+grep -Fq '"name": "FOS menu"' "$SHELL_PATH/plugins/menu/manifest.json"
+test -f "$shell_root/default/omarchy/omarchy-menu.jsonc"
 test -x "$shell_root/bin/fos-internal-hyprland-focus-app"
 
 cleanup() {
@@ -97,9 +99,6 @@ CLIPBOARD_CAPTURE=true \
 CLIPBOARD_PKILL=true \
 CLIPBOARD_SETPRIV=true \
 CLIPBOARD_WL_PASTE=true \
-LAUNCHER_ENV=env \
-LAUNCHER_ICON_INDEX=true \
-LAUNCHER_TERMINAL=true \
 NEXTCLOUD_OPEN=true \
 NEXTCLOUD_OPEN_FOLDER=true \
 NEXTCLOUD_STATUS=nextcloud-status \
@@ -118,6 +117,7 @@ for _ in {1..100}; do
 done
 
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell ping) == ok ]]
+[[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell call omarchy.menu ping '{}') == ok ]]
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications ping) == ok ]]
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications dndState) == off ]]
 [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- notifications toggleDnd) == on ]]
@@ -178,8 +178,7 @@ jq -e 'any(.[]; .id == "omarchy.agents" and .visible and .itemVisible)' <<<"$geo
 
 jq -e '
   map(.id) as $ids
-  | all([
-      "omarchy.menu",
+  | (all([
       "omarchy.workspaces",
       "omarchy.indicators",
       "omarchy.clock",
@@ -192,12 +191,18 @@ jq -e '
       "omarchy.audio",
       "omarchy.monitor",
       "omarchy.power"
-    ][]; $ids | index(.))
+    ][]; $ids | index(.)))
+    and ($ids | index("omarchy.menu") | not)
 ' <<<"$geometry" >/dev/null
 
 for panel in omarchy.agents omarchy.audio omarchy.bluetooth omarchy.clock omarchy.monitor omarchy.network omarchy.power; do
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell summon "$panel" '{}' >/dev/null
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell hide "$panel" >/dev/null
+done
+
+for route in root apps system; do
+  "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell summon omarchy.menu "{\"menu\":\"$route\"}" >/dev/null
+  "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell hide omarchy.menu >/dev/null
 done
 
 if grep -Eq 'failed to load|ReferenceError|TypeError' "$log"; then
