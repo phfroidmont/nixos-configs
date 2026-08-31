@@ -42,8 +42,15 @@ fi
 jq -e '
   (.disabledPlugins | index("omarchy.notifications") | not)
   and (.disabledPlugins | index("omarchy.indicators") | not)
+  and (.disabledPlugins | index("omarchy.microphone") | not)
+  and (.disabledPlugins | index("omarchy.reminders") | not)
+  and (.disabledPlugins | index("omarchy.tailscale") | not)
   and any(.bar.layout.center[];
-    .id == "omarchy.indicators" and .items == ["Dnd"])
+    .id == "omarchy.indicators"
+    and .items == ["ScreenRecording", "Reminder", "Dnd", "StayAwake"])
+  and any(.bar.layout.center[]; .id == "omarchy.media")
+  and any(.bar.layout.right[]; .id == "omarchy.tailscale")
+  and any(.bar.layout.right[]; .id == "omarchy.microphone")
   and ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
     | map(.id) | index("omarchy.menu") | not)
 ' "$root/omarchy/shell.json" >/dev/null
@@ -61,7 +68,7 @@ cat >"$sync_config" <<'EOF'
         {"id": "omarchy.menu"}
       ],
       "center": [
-        {"id": "omarchy.indicators", "items": "Dnd"},
+        {"id": "omarchy.indicators", "items": "Dnd", "alwaysShow": true},
         {"id": "omarchy.clock", "birthYear": 1984},
         {"id": "omarchy.weather"}
       ],
@@ -86,15 +93,18 @@ jq -e '
   .disabledPlugins == ["omarchy.idle"]
   and .nixosConfigMigrations.notifications == 1
   and .nixosConfigMigrations.menuWidget == 1
+  and .nixosConfigMigrations.statusFeatures == 1
   and .bar.layout.left == []
 ' "$sync_config" >/dev/null
 jq -e '
-  .bar.layout.center[0] == {
+  .bar.layout.center[0] == {"id": "omarchy.media"}
+  and .bar.layout.center[1] == {
     "id": "omarchy.indicators",
-    "items": ["Dnd"]
+    "items": ["ScreenRecording", "Reminder", "Dnd", "StayAwake"],
+    "alwaysShow": true
   }
-  and (.bar.layout.center[0] | has("alwaysShow") | not)
-  and .bar.layout.center[1].birthYear == 1984
+  and .bar.layout.center[1].alwaysShow
+  and .bar.layout.center[2].birthYear == 1984
   and ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
     | map(.id) | index("omarchy.menu") | not)
   and .bar.layout.right[0] == {
@@ -102,6 +112,8 @@ jq -e '
     "items": ["NightLight"]
   }
   and .bar.layout.right[1].providers.codex.enabled
+  and .bar.layout.right[2] == {"id": "omarchy.tailscale"}
+  and .bar.layout.right[3] == {"id": "omarchy.microphone"}
 ' "$sync_config" >/dev/null
 
 jq '
@@ -133,14 +145,21 @@ EOF
 HOME="$legacy_home" bash "$root/scripts/sync-shell-config.sh"
 jq -e '
   .disabledPlugins == []
-  and .bar.layout.center[0] == {
+  and .bar.layout.center[0] == {"id": "omarchy.media"}
+  and .bar.layout.center[1] == {
     "id": "omarchy.indicators",
-    "items": ["Dnd"]
+    "items": ["ScreenRecording", "Reminder", "Dnd", "StayAwake"]
   }
-  and (.bar.layout.center[0] | has("alwaysShow") | not)
-  and .bar.layout.center[1].id == "omarchy.clock"
+  and (.bar.layout.center[1] | has("alwaysShow") | not)
+  and .bar.layout.center[2].id == "omarchy.clock"
+  and .bar.layout.right == [
+    {"id": "omarchy.power"},
+    {"id": "omarchy.tailscale"},
+    {"id": "omarchy.microphone"}
+  ]
   and .nixosConfigMigrations.notifications == 1
   and .nixosConfigMigrations.menuWidget == 1
+  and .nixosConfigMigrations.statusFeatures == 1
   and .bar.layout.left == []
 ' "$legacy_config" >/dev/null
 
@@ -158,7 +177,7 @@ cat >"$menu_config" <<'EOF'
     }
   },
   "disabledPlugins": ["omarchy.notifications", "omarchy.indicators"],
-  "nixosConfigMigrations": {"notifications": 1}
+  "nixosConfigMigrations": {"notifications": 1, "statusFeatures": 1}
 }
 EOF
 HOME="$menu_home" bash "$root/scripts/sync-shell-config.sh"
@@ -169,6 +188,7 @@ jq -e '
   and .bar.layout.right == []
   and .nixosConfigMigrations.notifications == 1
   and .nixosConfigMigrations.menuWidget == 1
+  and .nixosConfigMigrations.statusFeatures == 1
 ' "$menu_config" >/dev/null
 
 missing_home="$temporary/missing-home"

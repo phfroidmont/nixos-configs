@@ -33,6 +33,13 @@ in
             }
           '';
         };
+
+        services.mpdris2 = {
+          enable = true;
+          notifications = false;
+          multimediaKeys = false;
+          mpd.host = "127.0.0.1";
+        };
       };
   };
 }

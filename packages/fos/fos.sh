@@ -25,6 +25,9 @@ menu system|menu system|Toggle the system menu
 menu clipboard|menu clipboard|Open clipboard history
 menu keybindings|menu keybindings|Open the keybindings helper
 menu notifications|menu notifications|Open notification history
+menu recording|menu recording|Open recording controls
+menu reminders|menu reminders|Open reminders
+menu tailscale|menu tailscale|Open Tailscale controls
 menu agents|menu agents|Open the agents menu
 menu audio|menu audio|Open audio controls
 menu bluetooth|menu bluetooth|Open Bluetooth controls
@@ -315,7 +318,7 @@ require_session() { [[ -n ${XDG_RUNTIME_DIR:-} ]] || fail 'a graphical session i
 qs() { require_session; exec_command "$QS" -c desktop ipc call -- "$@"; }
 # shellcheck disable=SC2016
 menu_route() { local payload; require_session; need "$JQ"; payload=$("$JQ" -cn --arg menu "$1" '{menu:$menu}'); qs shell toggle omarchy.menu "$payload"; }
-menu_command() { local item=${1:-}; shift || true; no_args "$@"; case $item in '') menu_route root;; apps|system) menu_route "$item";; clipboard) qs clipboard toggle;; keybindings) exec_command "$KEYBINDINGS";; notifications) qs notifications showHistory;; agents) qs shell toggle omarchy.agents '{}';; audio) qs shell toggle omarchy.audio '{}';; bluetooth) qs shell toggle omarchy.bluetooth '{}';; clock) qs shell toggle omarchy.clock '{}';; display) qs shell toggle omarchy.monitor '{}';; network) qs shell toggle omarchy.network '{}';; power) qs shell toggle omarchy.power '{}';; *) fail 'invalid menu';; esac; }
+menu_command() { local item=${1:-}; shift || true; no_args "$@"; case $item in '') menu_route root;; apps|system) menu_route "$item";; recording) menu_route capture.record;; tailscale) menu_route network.tailscale;; clipboard) qs clipboard toggle;; keybindings) exec_command "$KEYBINDINGS";; notifications) qs notifications showHistory;; reminders) qs shell toggle omarchy.reminders '{}';; agents) qs shell toggle omarchy.agents '{}';; audio) qs shell toggle omarchy.audio '{}';; bluetooth) qs shell toggle omarchy.bluetooth '{}';; clock) qs shell toggle omarchy.clock '{}';; display) qs shell toggle omarchy.monitor '{}';; network) qs shell toggle omarchy.network '{}';; power) qs shell toggle omarchy.power '{}';; *) fail 'invalid menu';; esac; }
 
 public_path() {
   local entry result=''

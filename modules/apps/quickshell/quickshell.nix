@@ -162,7 +162,10 @@ let
     pkgs.networkmanager
     pkgs.python3
     pkgs.ripgrep
+    pkgs.systemd
+    pkgs.tailscale
     pkgs.util-linux
+    pkgs.which
     pkgs.wl-clipboard
   ]);
   wrappedQuickshell = pkgs.symlinkJoin {
@@ -210,9 +213,13 @@ let
 
         root = pathlib.Path(sys.argv[1])
         replacements = {
+            'root.omarchyPath + "/bin/omarchy-reminder"': '"fos-internal-reminder"',
+            'Quickshell.execDetached(["omarchy-launch-browser", url])': 'Quickshell.execDetached([Quickshell.env("TAILSCALE_BROWSER"), url])',
             'root.omarchyPath + "/bin/omarchy-notification-send"': '"fos-internal-notification-send"',
             "omarchy-cmd-present": "fos-internal-cmd-present",
             "omarchy-shell": "fos-internal-shell",
+            "omarchy-reminder": "fos-internal-reminder",
+            "omarchy-launch-browser": "launch-browser",
             "omarchy-menu-select": "fos-internal-menu-select",
             "omarchy-menu-keybindings": "fos-internal-menu-keybindings",
             "omarchy-agent-usage-update": "fos-internal-agent-usage-update",
@@ -383,6 +390,7 @@ in
         "NEXTCLOUD_STATUS=${lib.getExe' panelTools "nextcloud-status"}"
         "OMARCHY_PATH=${quickshellConfig}"
         "QUICKSHELL_THEME_PATH=${quickshellConfig}/theme"
+        "TAILSCALE_BROWSER=${config.modules.applications.commands.browser}"
       ];
       systemd.user.services.quickshell.Service.ExecStartPre = "-${lib.getExe shellConfigSync}";
       systemd.user.services.quickshell.Service.UMask = "0077";

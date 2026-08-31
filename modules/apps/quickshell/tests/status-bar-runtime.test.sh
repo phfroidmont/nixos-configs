@@ -30,7 +30,8 @@ HOME="$test_root/home" bash "$module_root/scripts/sync-shell-config.sh"
 jq -e '
   (.disabledPlugins | index("omarchy.notifications") | not)
   and any(.bar.layout.center[];
-    .id == "omarchy.indicators" and .items == ["Dnd"])
+    .id == "omarchy.indicators"
+    and .items == ["ScreenRecording", "Reminder", "Dnd", "StayAwake"])
 ' "$test_root/home/.config/omarchy/shell.json" >/dev/null
 
 "$PYTHON_BIN" - "$test_root/home/.local/share/opencode/opencode.db" <<'PYTHON'
@@ -73,6 +74,18 @@ grep -Fq 'var command = ["fos-internal-agent-usage-update"]' \
   "$SHELL_PATH/plugins/agents/Main.qml"
 grep -Fq '["fos-internal-notification-send", "Invalid reminder"' \
   "$SHELL_PATH/plugins/reminders/ReminderFlow.qml"
+grep -Fq '["fos-internal-reminder", "show", "--json"]' \
+  "$SHELL_PATH/plugins/bar/indicators/Reminder.qml"
+grep -Fq '"fos capture record status >/dev/null 2>&1"' \
+  "$SHELL_PATH/plugins/bar/indicators/ScreenRecording.qml"
+grep -Fq '"fos-stay-awake.service"' \
+  "$SHELL_PATH/plugins/bar/indicators/StayAwake.qml"
+grep -Fq 'fileSharing = false' \
+  "$SHELL_PATH/plugins/panels/tailscale/Service.qml"
+grep -Fq 'Quickshell.execDetached(["fos", "menu", "tailscale"])' \
+  "$SHELL_PATH/plugins/panels/tailscale/Service.qml"
+grep -Fq 'Quickshell.env("TAILSCALE_BROWSER")' \
+  "$SHELL_PATH/plugins/panels/tailscale/Service.qml"
 grep -Fq '["fos-internal-network-status", "--verbose"]' \
   "$SHELL_PATH/plugins/panels/network/Panel.qml"
 grep -Fq '"name": "FOS menu"' "$SHELL_PATH/plugins/menu/manifest.json"
@@ -102,6 +115,7 @@ CLIPBOARD_WL_PASTE=true \
 NEXTCLOUD_OPEN=true \
 NEXTCLOUD_OPEN_FOLDER=true \
 NEXTCLOUD_STATUS=nextcloud-status \
+TAILSCALE_BROWSER=true \
   "$QUICKSHELL_BIN" -p "$SHELL_PATH" --no-color >"$log" 2>&1 &
 pid=$!
 
@@ -180,6 +194,7 @@ jq -e '
   map(.id) as $ids
   | (all([
       "omarchy.workspaces",
+      "omarchy.media",
       "omarchy.indicators",
       "omarchy.clock",
       "omarchy.weather",
@@ -188,6 +203,8 @@ jq -e '
       "phfroidmont.nextcloud",
       "omarchy.bluetooth",
       "omarchy.network",
+      "omarchy.tailscale",
+      "omarchy.microphone",
       "omarchy.audio",
       "omarchy.monitor",
       "omarchy.power"
@@ -195,10 +212,13 @@ jq -e '
     and ($ids | index("omarchy.menu") | not)
 ' <<<"$geometry" >/dev/null
 
-for panel in omarchy.agents omarchy.audio omarchy.bluetooth omarchy.clock omarchy.monitor omarchy.network omarchy.power; do
+for panel in omarchy.agents omarchy.audio omarchy.bluetooth omarchy.clock omarchy.monitor omarchy.network omarchy.power omarchy.tailscale; do
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell summon "$panel" '{}' >/dev/null
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell hide "$panel" >/dev/null
 done
+
+"$QS_BIN" -p "$SHELL_PATH" ipc call -- shell summon omarchy.reminders '{}' >/dev/null
+"$QS_BIN" -p "$SHELL_PATH" ipc call -- shell hide omarchy.reminders >/dev/null
 
 for route in root apps system; do
   "$QS_BIN" -p "$SHELL_PATH" ipc call -- shell summon omarchy.menu "{\"menu\":\"$route\"}" >/dev/null

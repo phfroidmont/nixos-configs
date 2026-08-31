@@ -2,6 +2,8 @@
 
 let
   scripts = ../../modules/apps/quickshell/omarchy/scripts;
+  quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
+  qs = pkgs.lib.getExe' quickshellPackage "qs";
   commonInputs = with pkgs; [
     coreutils
     gawk
@@ -24,6 +26,40 @@ let
     text =
       builtins.replaceStrings [ "omarchy-notification-send" ] [ "fos-internal-notification-send" ]
         (builtins.readFile "${inputs.omarchy}/bin/omarchy-notification-send");
+  };
+  reminder = pkgs.writeShellApplication {
+    name = "fos-internal-reminder";
+    excludeShellChecks = [
+      "SC2016"
+      "SC2155"
+    ];
+    runtimeInputs = with pkgs; [
+      bash
+      coreutils
+      findutils
+      gawk
+      jq
+      systemd
+    ];
+    text =
+      builtins.replaceStrings
+        [
+          "omarchy-notification-send"
+          "omarchy-shell -q omarchy.indicators refresh"
+          ''omarchy-shell shell summon omarchy.reminders "{}"''
+          "set_at=$(date +%s)"
+          "bash -c"
+          ''rm -f "$2"''
+        ]
+        [
+          (pkgs.lib.getExe notificationSend)
+          "${qs} -c desktop ipc call -- omarchy.indicators refresh"
+          ''${qs} -c desktop ipc call -- shell summon omarchy.reminders "{}"''
+          "set_at=$(date +%s%N)"
+          "${pkgs.lib.getExe pkgs.bash} -c"
+          ''${pkgs.lib.getExe' pkgs.coreutils "rm"} -f "$2"''
+        ]
+        (builtins.readFile "${inputs.omarchy}/bin/omarchy-reminder");
   };
   tools = [
     (mkTool "fos-internal-audio-input-set-default" (
@@ -121,6 +157,7 @@ let
       ])
     ) "network-status.sh")
     notificationSend
+    reminder
     (mkTool "fos-internal-powerprofiles-list" (
       commonInputs ++ [ pkgs.power-profiles-daemon ]
     ) "powerprofiles-list.sh")

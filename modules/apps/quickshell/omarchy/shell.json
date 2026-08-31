@@ -9,9 +9,10 @@
         { "id": "omarchy.workspaces" }
       ],
       "center": [
+        { "id": "omarchy.media" },
         {
           "id": "omarchy.indicators",
-          "items": ["Dnd"]
+          "items": ["ScreenRecording", "Reminder", "Dnd", "StayAwake"]
         },
         {
           "id": "omarchy.clock",
@@ -33,6 +34,8 @@
         { "id": "phfroidmont.nextcloud" },
         { "id": "omarchy.bluetooth" },
         { "id": "omarchy.network" },
+        { "id": "omarchy.tailscale" },
+        { "id": "omarchy.microphone" },
         { "id": "omarchy.audio" },
         { "id": "omarchy.monitor" },
         { "id": "omarchy.power" }
@@ -52,11 +55,8 @@
     "omarchy.image-picker",
     "omarchy.keyboard-layout",
     "omarchy.lock",
-    "omarchy.microphone",
     "omarchy.nightlight",
     "omarchy.polkit",
-    "omarchy.reminders",
-    "omarchy.system-update",
-    "omarchy.tailscale"
+    "omarchy.system-update"
   ]
 }

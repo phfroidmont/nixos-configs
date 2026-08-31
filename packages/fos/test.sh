@@ -87,7 +87,7 @@ grep -Fq 'capture record start region' <<<"$help"
 commands=$($FOS_BIN commands)
 grep -Fq 'network wifi connect SSID' <<<"$commands"
 commands_json=$($FOS_BIN commands --json)
-jq -e 'length > 80 and any(.[]; .command == "hardware disk")' <<<"$commands_json" >/dev/null
+jq -e 'length > 80 and any(.[]; .command == "hardware disk") and any(.[]; .command == "menu recording") and any(.[]; .command == "menu reminders") and any(.[]; .command == "menu tailscale")' <<<"$commands_json" >/dev/null
 if grep -Eiq 'docker' <<<"$help" || jq -e 'any(.[]; .command | test("docker"; "i"))' <<<"$commands_json" >/dev/null; then exit 1; fi
 legacy_backend_prefix='omar''chy-'
 if grep -Fq "$legacy_backend_prefix" <<<"$commands_json"; then exit 1; fi
@@ -125,6 +125,9 @@ reset_log; $FOS_BIN auth refresh gitlab.example >/dev/null 2>&1; assert_log 'aut
 reset_log; $FOS_BIN menu >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"root"}'
 reset_log; $FOS_BIN menu apps >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"apps"}'
 reset_log; $FOS_BIN menu system >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"system"}'
+reset_log; $FOS_BIN menu recording >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"capture.record"}'
+reset_log; $FOS_BIN menu reminders >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.reminders {}'
+reset_log; $FOS_BIN menu tailscale >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"network.tailscale"}'
 reset_log; $FOS_BIN menu audio >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.audio {}'
 mkdir -p "$root/private-data/fos/bin"; cp "$bin/backend" "$root/private-data/fos/bin/menu-keybindings"
 reset_log; env -u FOS_KEYBINDINGS XDG_DATA_HOME="$root/private-data" "$FOS_BIN" menu keybindings >/dev/null 2>&1; assert_log 'menu-keybindings|'

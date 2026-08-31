@@ -231,3 +231,122 @@ diff --git a/shell/plugins/menu/Menu.qml b/shell/plugins/menu/Menu.qml
 -            event.accepted = true
 -          } else if (event.key === Qt.Key_Escape) {
 +          if (event.key === Qt.Key_Escape) {
+diff --git a/shell/plugins/bar/indicators/ScreenRecording.qml b/shell/plugins/bar/indicators/ScreenRecording.qml
+--- a/shell/plugins/bar/indicators/ScreenRecording.qml
++++ b/shell/plugins/bar/indicators/ScreenRecording.qml
+@@ -16,5 +16,5 @@ BarIndicator {
+   function refresh() {
+     if (!root.bar || statusProc.running) return
+-    statusProc.command = ["pgrep", "--quiet", "-f", "^gpu-screen-recorder"]
++    statusProc.command = ["bash", "-c", "fos capture record status >/dev/null 2>&1"]
+     statusProc.running = true
+   }
+@@ -31,13 +31,21 @@ BarIndicator {
+   Process {
+     id: statusProc
+     onExited: function(exitCode) {
+       root.recording = exitCode === 0
+     }
+   }
+-
++
++  Timer {
++    interval: 2000
++    repeat: true
++    running: true
++    triggeredOnStart: true
++    onTriggered: root.refresh()
++  }
++
+   onPressed: function() {
+     if (root.bar) {
+-      root.bar.run(root.recording ? "omarchy-capture-screenrecording --stop-recording" : "omarchy-menu toggle trigger.capture.screenrecord")
++      root.bar.run(root.recording ? "fos capture record stop" : "fos menu recording")
+     }
+   }
+ }
+diff --git a/shell/plugins/bar/indicators/StayAwake.qml b/shell/plugins/bar/indicators/StayAwake.qml
+--- a/shell/plugins/bar/indicators/StayAwake.qml
++++ b/shell/plugins/bar/indicators/StayAwake.qml
+@@ -1,20 +1,54 @@
+ import QtQuick
++import Quickshell.Io
+ import qs.Ui
+-
++
+ BarIndicator {
+   id: root
+-
++
+-  readonly property var idleService: bar?.shell?.firstPartyServiceFor("omarchy.idle")
++  property bool stayAwake: false
+-
++
+-  active: idleService ? idleService.stayAwake : false
++  active: stayAwake
+   activeText: "󰅶"
+   inactiveText: "󰅶"
+   activeTooltipText: "Allow Idle Lock & Screensaver"
+   inactiveTooltipText: "Stay Awake"
+-
++
++  function refresh() {
++    if (!statusProc.running) statusProc.running = true
++  }
++
+   function toggle() {
+-    if (root.idleService) root.idleService.setIdleEnabled(root.active)
++    if (actionProc.running) return
++    actionProc.command = ["systemctl", "--user", root.active ? "stop" : "start", "fos-stay-awake.service"]
++    actionProc.running = true
+   }
+-
++
++  Connections {
++    target: root.indicatorHost
++    ignoreUnknownSignals: true
++    function onRefreshRequested() { root.refresh() }
++  }
++
++  Process {
++    id: statusProc
++    command: ["systemctl", "--user", "is-active", "--quiet", "fos-stay-awake.service"]
++    onExited: function(exitCode) {
++      root.stayAwake = exitCode === 0
++    }
++  }
++
++  Process {
++    id: actionProc
++    onExited: root.refresh()
++  }
++
++  Timer {
++    interval: 5000
++    repeat: true
++    running: true
++    triggeredOnStart: true
++    onTriggered: root.refresh()
++  }
++
+   onPressed: function() { root.toggle() }
+ }
+diff --git a/shell/plugins/panels/tailscale/Service.qml b/shell/plugins/panels/tailscale/Service.qml
+--- a/shell/plugins/panels/tailscale/Service.qml
++++ b/shell/plugins/panels/tailscale/Service.qml
+@@ -234,7 +234,7 @@ Item {
+     selfDnsName = parsed.selfDnsName
+     selfIp = parsed.selfIp
+     selfUserId = parsed.selfUserId
+-    fileSharing = parsed.fileSharing
++    fileSharing = false
+     peers = parsed.running ? parsed.peers : []
+     tailnetExitNodes = parsed.running ? parsed.exitNodes : []
+     exitNodes = parsed.running ? tailnetExitNodes.concat(mullvadRegions) : []
+@@ -259,5 +259,3 @@ Item {
+   function toggleTailscale() {
+-    if (!installed) return
+-    if (active) down()
+-    else loginOrUp()
++    Quickshell.execDetached(["fos", "menu", "tailscale"])
+   }

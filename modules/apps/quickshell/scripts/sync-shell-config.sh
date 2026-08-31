@@ -31,6 +31,8 @@ migrate() {
     and (.[0].nixosConfigMigrations.notifications // 0) >= 1
     and (.[0].nixosConfigMigrations.menuWidget | type) == "number"
     and (.[0].nixosConfigMigrations.menuWidget // 0) >= 1
+    and (.[0].nixosConfigMigrations.statusFeatures | type) == "number"
+    and (.[0].nixosConfigMigrations.statusFeatures // 0) >= 1
   ' "$config" >/dev/null 2>&1; then
     return 0
   fi
@@ -72,6 +74,30 @@ migrate() {
       end;
     def dnd_indicator:
       {id: "omarchy.indicators", items: ["Dnd"]};
+    def indicator_shows($wanted):
+      if widget_id != "omarchy.indicators" then false
+      elif type != "object" then true
+      elif (.items | selection_is_nonempty) then
+        (.items | if type == "array" then any(.[]; selected_id == $wanted) else . == $wanted end)
+      elif (.indicators | selection_is_nonempty) then
+        (.indicators | if type == "array" then any(.[]; selected_id == $wanted) else . == $wanted end)
+      else true
+      end;
+    def dnd_only_indicator:
+      widget_id == "omarchy.indicators"
+      and type == "object"
+      and (
+        .items == "Dnd" or .items == ["Dnd"]
+        or .indicators == "Dnd" or .indicators == ["Dnd"]
+      );
+    def status_indicator:
+      .items = ["ScreenRecording", "Reminder", "Dnd", "StayAwake"]
+      | del(.indicators);
+    def insert_before($before; $entry):
+      (map(widget_id) | index($before)) as $index
+      | if $index == null then . + [$entry]
+        else .[0:$index] + [$entry] + .[$index:]
+        end;
 
     if length != 1 then
       error("shell config must contain one JSON document")
@@ -111,6 +137,60 @@ migrate() {
         | .bar.layout.center = [(.bar.layout.center // [])[] | select(widget_id != "omarchy.menu")]
         | .bar.layout.right = [(.bar.layout.right // [])[] | select(widget_id != "omarchy.menu")]
         | .nixosConfigMigrations.menuWidget = 1
+      end
+    | if ((.nixosConfigMigrations.statusFeatures | type) == "number"
+        and (.nixosConfigMigrations.statusFeatures // 0) >= 1) then . else
+        .disabledPlugins = [
+          (.disabledPlugins // [])[]
+          | select(
+              . != "omarchy.microphone"
+              and . != "omarchy.reminders"
+              and . != "omarchy.tailscale"
+            )
+        ]
+        | .bar.layout.left = [(.bar.layout.left // [])[]]
+        | .bar.layout.center = [
+            (.bar.layout.center // [])[]
+            | if dnd_only_indicator then status_indicator else . end
+          ]
+        | .bar.layout.right = [(.bar.layout.right // [])[]]
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(indicator_shows("ScreenRecording"))) as $has_recording
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(indicator_shows("Reminder"))) as $has_reminder
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(indicator_shows("StayAwake"))) as $has_stay_awake
+        | ([
+            (if $has_recording then empty else "ScreenRecording" end),
+            (if $has_reminder then empty else "Reminder" end),
+            (if $has_stay_awake then empty else "StayAwake" end)
+          ]) as $missing_indicators
+        | if ($missing_indicators | length) == 0 then . else
+            (.bar.layout.center | map(widget_id) | index("omarchy.clock")) as $clock
+            | .bar.layout.center = if $clock == null then
+                .bar.layout.center + [{id: "omarchy.indicators", items: $missing_indicators}]
+              else
+                .bar.layout.center[0:$clock]
+                + [{id: "omarchy.indicators", items: $missing_indicators}]
+                + .bar.layout.center[$clock:]
+              end
+          end
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(widget_id == "omarchy.media")) as $has_media
+        | if $has_media then . else
+            .bar.layout.center = [{id: "omarchy.media"}] + .bar.layout.center
+          end
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(widget_id == "omarchy.tailscale")) as $has_tailscale
+        | if $has_tailscale then . else
+            .bar.layout.right |= insert_before("omarchy.audio"; {id: "omarchy.tailscale"})
+          end
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(widget_id == "omarchy.microphone")) as $has_microphone
+        | if $has_microphone then . else
+            .bar.layout.right |= insert_before("omarchy.audio"; {id: "omarchy.microphone"})
+          end
+        | .nixosConfigMigrations.statusFeatures = 1
       end
   ' "$config" >"$temporary"; then
     warn "leaving invalid config unchanged: $config"

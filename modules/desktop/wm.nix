@@ -419,6 +419,8 @@ in
               lock_cmd = "pidof hyprlock || hyprlock";
               before_sleep_cmd = "loginctl lock-session";
               after_sleep_cmd = "hyprctl dispatch dpms on";
+              ignore_systemd_inhibit = false;
+              inhibit_sleep = 3;
             };
 
             listener = [
@@ -429,6 +431,11 @@ in
               }
             ];
           };
+        };
+
+        systemd.user.services.fos-stay-awake = {
+          Unit.Description = "Manually inhibit idle handling";
+          Service.ExecStart = "${pkgs.systemd}/bin/systemd-inhibit --what=idle --who=fos-stay-awake --why='Stay awake requested' ${pkgs.coreutils}/bin/sleep infinity";
         };
       };
 

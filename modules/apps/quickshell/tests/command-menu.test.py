@@ -27,8 +27,8 @@ ALLOWED_ARGUMENTS = {
 }
 REQUIRED_IDS = {
     "controls.audio", "controls.network", "controls.bluetooth", "controls.display",
-    "controls.power", "controls.notifications", "controls.clipboard", "controls.agents",
-    "controls.clock", "controls.keybindings",
+    "controls.power", "controls.notifications", "controls.reminders", "controls.clipboard",
+    "controls.agents", "controls.clock", "controls.keybindings",
     "capture.screenshot.region", "capture.screenshot.window", "capture.screenshot.screen",
     "capture.ocr", "capture.record.region", "capture.record.region-audio",
     "capture.record.screen", "capture.record.screen-audio", "capture.record.status",
@@ -107,6 +107,8 @@ def validate(catalog, paths):
     missing = REQUIRED_IDS - catalog.keys()
     if missing:
         fail(f"missing curated IDs: {', '.join(sorted(missing))}")
+    if catalog["controls.reminders"].get("action") != "fos menu reminders":
+        fail("Controls > Reminders must use the public reminders menu route")
 
     for item_id, item in catalog.items():
         if not isinstance(item, dict):

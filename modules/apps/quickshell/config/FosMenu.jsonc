@@ -14,6 +14,7 @@
   "controls.display": {"icon":"󰍹","label":"Display","description":"Open display controls","action":"fos menu display"},
   "controls.power": {"icon":"󰐥","label":"Power","description":"Open power and battery controls","action":"fos menu power"},
   "controls.notifications": {"icon":"󰂚","label":"Notifications","description":"Open notification history","action":"fos menu notifications"},
+  "controls.reminders": {"icon":"󰃭","label":"Reminders","description":"Open reminders","action":"fos menu reminders"},
   "controls.clipboard": {"icon":"󰅍","label":"Clipboard","description":"Open clipboard history","action":"fos menu clipboard"},
   "controls.agents": {"icon":"󰚩","label":"Agents","description":"Open the agents menu","action":"fos menu agents"},
   "controls.clock": {"icon":"󰥔","label":"Clock","description":"Open clock controls","action":"fos menu clock"},
