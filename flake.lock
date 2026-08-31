@@ -371,6 +371,23 @@
         "type": "github"
       }
     },
+    "omarchy": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788123489,
+        "narHash": "sha256-h7Qv194wcSbISPCuKqE3aeffUUNwWK7wXFzenROuQcs=",
+        "owner": "basecamp",
+        "repo": "omarchy",
+        "rev": "981274b20af8e85c09845071ac33c6230909f119",
+        "type": "github"
+      },
+      "original": {
+        "owner": "basecamp",
+        "repo": "omarchy",
+        "rev": "981274b20af8e85c09845071ac33c6230909f119",
+        "type": "github"
+      }
+    },
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
@@ -421,6 +438,27 @@
         "type": "github"
       }
     },
+    "quickshell": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787279335,
+        "narHash": "sha256-CLX2Zp5i5BuLbOxNOkwRd9YY84IOrACNxBV79o9/F9Y=",
+        "owner": "quickshell-mirror",
+        "repo": "quickshell",
+        "rev": "1a4716cde794a59928d9d9fc15f2afc7a95de360",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quickshell-mirror",
+        "ref": "v0.3.1",
+        "repo": "quickshell",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "emacs-overlay": "emacs-overlay",
@@ -432,6 +470,8 @@
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_5",
         "nixpkgsStable": "nixpkgsStable",
+        "omarchy": "omarchy",
+        "quickshell": "quickshell",
         "vim-org-roam": "vim-org-roam"
       }
     },

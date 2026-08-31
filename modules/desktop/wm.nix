@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -10,7 +11,9 @@ let
   applications = config.modules.applications.commands;
   herdr = config.modules.desktop.herdr.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
-  quickshell = lib.getExe' pkgs.quickshell "qs";
+  quickshell =
+    lib.getExe' inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell
+      "qs";
   wallpaper = config.modules.desktop.wallpaper;
   c = (import ./themes/_palette.nix).semantic;
   lua = lib.generators.mkLuaInline;
@@ -30,6 +33,7 @@ let
     ];
   };
   exec = command: lua "hl.dsp.exec_cmd(${toLua command})";
+  togglePanel = id: exec "${quickshell} -c desktop ipc call -- shell toggle ${id} '{}'";
   workspaceBinds = lib.concatMap (
     workspace:
     let
@@ -212,6 +216,12 @@ in
               (mkBind (modKey "V") (exec "${quickshell} -c desktop ipc call -- clipboard toggle"))
               (mkBind (modKey "T") (lua ''hl.dsp.window.float({ action = "toggle" })''))
               (mkBind (modKey "SPACE") (exec "${quickshell} -c desktop ipc call -- launcher toggle"))
+              (mkBind (modKey "CTRL + A") (togglePanel "omarchy.audio"))
+              (mkBind (modKey "CTRL + W") (togglePanel "omarchy.network"))
+              (mkBind (modKey "CTRL + B") (togglePanel "omarchy.bluetooth"))
+              (mkBind (modKey "CTRL + D") (togglePanel "omarchy.monitor"))
+              (mkBind (modKey "CTRL + P") (togglePanel "omarchy.power"))
+              (mkBind (modKey "CTRL + ALT + D") (togglePanel "omarchy.clock"))
 
               # Layout manipulation
               (mkBind (modKey "SHIFT + O") (lua ''hl.dsp.layout("togglesplit")''))
@@ -281,180 +291,6 @@ in
               ];
             };
           };
-        };
-
-        programs.waybar = {
-          enable = true;
-          systemd.enable = true;
-          settings = {
-            mainBar = {
-              layer = "top";
-              position = "bottom";
-              height = 25;
-              spacing = 2;
-              reload-style-on-change = true;
-              modules-left = [
-                "cpu"
-                "memory"
-                "disk"
-                "hyprland/window"
-              ];
-              modules-center = [ "hyprland/workspaces" ];
-              modules-right = [
-                "mpd"
-                "battery"
-                "clock"
-                "tray"
-              ];
-
-              tray = {
-                icon-size = 14;
-                spacing = 5;
-                show-passive-items = true;
-              };
-
-              cpu = {
-                interval = 1;
-                states = {
-                  warning = 60;
-                  critical = 85;
-                };
-                format = "<span size=\"120%\" rise=\"0\">󰍛</span> {usage}%";
-                tooltip = false;
-              };
-
-              memory = {
-                interval = 1;
-                states = {
-                  warning = 70;
-                  critical = 90;
-                };
-                format = "<span size=\"120%\" rise=\"-80\">󰘚</span> {percentage}%";
-                tooltip = false;
-              };
-
-              disk = {
-                interval = 60;
-                states = {
-                  warning = 75;
-                  critical = 90;
-                };
-                format = "<span size=\"120%\" rise=\"0\">󰋊</span> {free}";
-                tooltip = false;
-              };
-
-              clock = {
-                format = "󰥔 {:%A, %d %h %H:%M}";
-                format-alt = "󰥔 {:%d/%m/%Y %H:%M}";
-                tooltip = false;
-              };
-
-              battery = {
-                states = {
-                  warning = 30;
-                  critical = 15;
-                };
-                format = "<span size=\"120%\" rise=\"0\">{icon}</span> {capacity}%";
-                format-charging = "<span size=\"120%\" rise=\"0\">󱐋</span> {capacity}%";
-                format-plugged = "<span size=\"120%\" rise=\"0\"></span> {capacity}%";
-                format-full = "<span size=\"120%\" rise=\"0\"></span>";
-                format-icons = [
-                  ""
-                  ""
-                  ""
-                  ""
-                  ""
-                ];
-                tooltip-format = "{timeTo}";
-              };
-
-            };
-          };
-          style = ''
-            * {
-              border: none;
-              font-family: MesloLGS Nerd Font;
-              font-size: 12px;
-              min-height: 0;
-            }
-
-            tooltip {
-              background: ${c.bg};
-              border: 0px solid;
-              border-radius: 0px;
-            }
-
-            window#waybar {
-              background: ${c.bg};
-              color: ${c.fg};
-            }
-
-            #workspaces button {
-              padding: 0 0.6em;
-              color: ${c.fgMuted};
-              border-radius: 0px;
-            }
-
-            #workspaces button.active {
-              color: ${c.fg};
-              background: ${c.bgHover};
-            }
-
-            #workspaces button.urgent {
-              color: ${c.bgStrong};
-              background: ${c.critical};
-            }
-
-            #workspaces button:hover {
-              background: ${c.bgHover};
-            }
-
-            #network,
-            #workspaces,
-            #bluetooth,
-            #tray {
-              color: ${c.fg};
-              padding: 0 5px;
-              margin: 0 5px;
-            }
-
-            #cpu,
-            #memory,
-            #disk,
-            #battery,
-            #clock {
-              padding: 0 5px;
-              margin: 0 5px;
-              color: ${c.info};
-            }
-
-            #battery.charging,
-            #battery.plugged,
-            #battery.full {
-              color: ${c.success};
-            }
-
-            #battery.warning:not(.charging) {
-              color: ${c.warning};
-            }
-
-            #cpu.warning,
-            #memory.warning,
-            #disk.warning {
-              color: ${c.warning};
-            }
-
-            #battery.critical:not(.charging) {
-              color: ${c.critical};
-            }
-
-            #cpu.critical,
-            #memory.critical,
-            #disk.critical {
-              color: ${c.critical};
-            }
-          '';
-          package = pkgs.waybar.override { wireplumberSupport = false; };
         };
 
         programs.satty = {

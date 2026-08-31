@@ -1,0 +1,56 @@
+[bar]
+background = "#282828"
+background-alpha = 1.0
+text = "#ebdbb2"
+active = "#fb4934"
+scale-with-font = true
+size-horizontal = 26
+size-vertical = 28
+
+[hyprland]
+active-border = "#fe8019"
+active-border-foreground = "#ebdbb2"
+
+[controls]
+normal-color = "foreground"
+normal-fill-alpha = 0.04
+normal-border = "foreground"
+normal-border-width = 1
+normal-border-alpha = 0.4
+hover-cursor-color = "foreground"
+hover-cursor-fill-alpha = 0.08
+hover-cursor-border = "foreground"
+hover-cursor-border-width = 1
+hover-cursor-border-alpha = 0.25
+focus-color = "foreground"
+focus-fill-alpha = 0.08
+focus-border = "foreground"
+focus-border-width = 1
+focus-border-alpha = 0.25
+selected-color = "foreground"
+selected-fill-alpha = 0.18
+selected-border-width = 0
+pressed-fill-alpha = 0.22
+selection-fill-alpha = 0.35
+
+[spacing]
+scale = 1.0
+scale-with-font = true
+
+[font]
+base-size = 12
+
+[popups]
+background = "#282828"
+background-alpha = 1.0
+text = "#ebdbb2"
+border = "#fe8019"
+border-alpha = 1.0
+border-width = 2
+
+[tooltip]
+background = "#282828"
+background-alpha = 0.97
+text = "#ebdbb2"
+border = "#ebdbb2"
+border-alpha = 1.0

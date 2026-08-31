@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -7,7 +8,60 @@
 
 let
   cfg = config.modules.apps.quickshell;
-  quickshellConfig = ./config;
+  quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
+  panelTools = import ./_omarchy-tools.nix { inherit pkgs; };
+  shellRuntimePath = lib.makeBinPath ([
+    panelTools
+    pkgs.bash
+    pkgs.coreutils
+    pkgs.curl
+    pkgs.findutils
+    pkgs.fontconfig
+    pkgs.hyprland
+    pkgs.inotify-tools
+    pkgs.networkmanager
+    pkgs.util-linux
+    pkgs.wl-clipboard
+  ]);
+  wrappedQuickshell = pkgs.symlinkJoin {
+    name = "quickshell-${quickshellPackage.version}-desktop";
+    paths = [ quickshellPackage ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    meta.mainProgram = "quickshell";
+    postBuild = ''
+      rm "$out/bin/quickshell"
+      makeWrapper ${quickshellPackage}/bin/quickshell "$out/bin/quickshell" \
+        --prefix PATH : ${shellRuntimePath}
+    '';
+  };
+  omarchyFont = pkgs.runCommandLocal "omarchy-icon-font" { } ''
+    install -Dm644 ${inputs.omarchy}/default/fonts/omarchy/omarchy.ttf \
+      "$out/share/fonts/truetype/omarchy.ttf"
+  '';
+  quickshellConfig =
+    pkgs.runCommandLocal "quickshell-desktop-config"
+      {
+        nativeBuildInputs = [ pkgs.patch ];
+      }
+      ''
+        mkdir -p "$out"
+        cp -R ${inputs.omarchy}/shell "$out/shell"
+        chmod -R u+w "$out/shell"
+        patch -d "$out" -p1 < ${./omarchy/omarchy-nixos.patch}
+
+        cp ${./config/Launcher.qml} "$out/shell/Launcher.qml"
+        cp ${./config/Clipboard.qml} "$out/shell/Clipboard.qml"
+        cp ${./config/ClipboardHistory.js} "$out/shell/ClipboardHistory.js"
+
+        mkdir -p "$out/shell/plugins/panels/nextcloud"
+        cp -R ${./omarchy/plugins/nextcloud}/. "$out/shell/plugins/panels/nextcloud/"
+
+        mkdir -p "$out/config/omarchy" "$out/theme" "$out/share/licenses/omarchy"
+        cp ${./omarchy/shell.json} "$out/config/omarchy/shell.json"
+        cp ${./omarchy/colors.toml} "$out/theme/colors.toml"
+        cp ${./omarchy/shell.toml} "$out/theme/shell.toml"
+        cp ${inputs.omarchy}/LICENSE "$out/share/licenses/omarchy/LICENSE"
+      '';
   launcherIconIndex = pkgs.writeShellApplication {
     name = "launcher-icon-index";
     runtimeInputs = [ pkgs.findutils ];
@@ -80,11 +134,16 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    fonts.packages = [
+      omarchyFont
+      pkgs.nerd-fonts.jetbrains-mono
+    ];
+
     home-manager.users.${config.user.name} = {
       programs.quickshell = {
         enable = true;
-        package = pkgs.quickshell;
-        configs.desktop = quickshellConfig;
+        package = wrappedQuickshell;
+        configs.desktop = "${quickshellConfig}/shell";
         activeConfig = "desktop";
         systemd = {
           enable = true;
@@ -104,9 +163,14 @@ in
         "LAUNCHER_ICON_INDEX=${lib.getExe launcherIconIndex}"
         "LAUNCHER_ICON_THEME=Gruvbox-Plus-Dark"
         "LAUNCHER_TERMINAL=${config.modules.applications.commands.terminal}"
+        "NEXTCLOUD_OPEN=${lib.getExe pkgs.nextcloud-client}"
+        "NEXTCLOUD_OPEN_FOLDER=${lib.getExe' pkgs.xdg-utils "xdg-open"}"
+        "NEXTCLOUD_STATUS=${lib.getExe' panelTools "nextcloud-status"}"
+        "OMARCHY_PATH=${quickshellConfig}"
+        "QUICKSHELL_THEME_PATH=${quickshellConfig}/theme"
       ];
       systemd.user.services.quickshell.Service.UMask = "0077";
-      systemd.user.services.quickshell.Unit.X-Restart-Triggers = [ "${quickshellConfig}" ];
+      systemd.user.services.quickshell.Unit.X-Restart-Triggers = [ quickshellConfig ];
     };
   };
 }

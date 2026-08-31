@@ -21,6 +21,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     hermes-agent.url = "github:NousResearch/hermes-agent";
+    omarchy = {
+      url = "github:basecamp/omarchy/981274b20af8e85c09845071ac33c6230909f119";
+      flake = false;
+    };
+    quickshell = {
+      url = "github:quickshell-mirror/quickshell/v0.3.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
   };
 

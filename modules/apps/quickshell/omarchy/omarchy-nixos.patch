@@ -1,0 +1,216 @@
+diff --git a/shell/Commons/Color.qml b/shell/Commons/Color.qml
+index 9c78ae6..22b6b43 100644
+--- a/shell/Commons/Color.qml
++++ b/shell/Commons/Color.qml
+@@ -14,7 +14,7 @@ QtObject {
+ 
+   readonly property string home: Quickshell.env("HOME")
+   readonly property string stateHome: home + "/.local/state"
+-  readonly property string currentThemePath: stateHome + "/omarchy/current/theme"
++  readonly property string currentThemePath: Quickshell.env("QUICKSHELL_THEME_PATH") || stateHome + "/omarchy/current/theme"
+ 
+   property color foreground: "#cacccc"
+   property color background: "#101315"
+diff --git a/shell/Ui/BarIconButton.qml b/shell/Ui/BarIconButton.qml
+index 622db3d..54d1e4a 100644
+--- a/shell/Ui/BarIconButton.qml
++++ b/shell/Ui/BarIconButton.qml
+@@ -8,4 +8,5 @@ WidgetButton {
+   property Component iconComponent: null
++  fontFamily: "JetBrainsMono Nerd Font"
+   property real slotSize: Style.bar.iconSlot
+   property real opticalSize: Style.bar.iconCanvas
+   property bool debugOpticalBounds: Quickshell.env("OMARCHY_DEBUG_BAR_ICONS") === "1"
+diff --git a/shell/plugins/bar/Bar.qml b/shell/plugins/bar/Bar.qml
+index 2cc819b..2f75983 100644
+--- a/shell/plugins/bar/Bar.qml
++++ b/shell/plugins/bar/Bar.qml
+@@ -1413,6 +1413,7 @@ Item {
+     property real pressedY: 0
+     readonly property real dragThreshold: Style.space(4)
+ 
++    enabled: false
+     acceptedButtons: Qt.LeftButton
+     cursorShape: dragging ? Qt.ClosedHandCursor : Qt.ArrowCursor
+     pressAndHoldInterval: 200
+@@ -1673,7 +1674,7 @@ Item {
+       property bool suppressClick: false
+       property real pressedX: 0
+       property real pressedY: 0
+-      readonly property bool canReorder: root.shell && typeof root.shell.mutateShellConfig === "function"
++      readonly property bool canReorder: false
+       readonly property real dragThreshold: Style.space(4)
+ 
+       anchors.fill: parent
+diff --git a/shell/plugins/menu/BarWidget.qml b/shell/plugins/menu/BarWidget.qml
+index ac16e73..b583544 100644
+--- a/shell/plugins/menu/BarWidget.qml
++++ b/shell/plugins/menu/BarWidget.qml
+@@ -1,4 +1,5 @@
+ import QtQuick
++import Quickshell
+ import qs.Ui
+ 
+ BarWidget {
+@@ -17,8 +18,9 @@ BarWidget {
+     horizontalMargin: 7.5
+     onPressed: function(button) {
+       if (!root.bar) return
+-      if (button === Qt.RightButton) root.bar.run("xdg-terminal-exec")
+-      else root.bar.run("omarchy-shell shell toggle omarchy.menu '{\"menu\":\"root\"}'")
++      if (button === Qt.RightButton)
++        Quickshell.execDetached([Quickshell.env("LAUNCHER_TERMINAL")])
++      else if (root.bar.shell) root.bar.shell.toggleLauncher()
+     }
+   }
+ }
+diff --git a/shell/plugins/panels/clock/BarWidget.qml b/shell/plugins/panels/clock/BarWidget.qml
+index ea1ceec..087cd8e 100644
+--- a/shell/plugins/panels/clock/BarWidget.qml
++++ b/shell/plugins/panels/clock/BarWidget.qml
+@@ -157,8 +157,7 @@ BarWidget {
+ 
+     onPressed: function(b) {
+       if (b === Qt.RightButton) root.cycleFormat()
+-      else if (b === Qt.MiddleButton) { if (root.bar) root.bar.run("omarchy-menu-timezone") }
+-      else root.togglePanel()
++      else root.togglePanel()
+     }
+ 
+     Column {
+diff --git a/shell/plugins/panels/network/Panel.qml b/shell/plugins/panels/network/Panel.qml
+index 1d920df..13601bd 100644
+--- a/shell/plugins/panels/network/Panel.qml
++++ b/shell/plugins/panels/network/Panel.qml
+@@ -66,6 +66,7 @@ Panel {
+   ]
+   readonly property string connectionPhrase: connectionPhrases[connectionPhraseIndex % connectionPhrases.length]
+   readonly property bool networkManagerAvailable: Networking.backend === NetworkBackendType.NetworkManager
++  readonly property bool dnsControlsAvailable: false
+   readonly property var networkDevices: Networking.devices ? Networking.devices.values : []
+   readonly property var wifiDevice: findDevice(DeviceType.Wifi)
+   readonly property var wifiNetworkObjects: wifiDevice && wifiDevice.networks ? wifiDevice.networks.values : []
+@@ -323,7 +324,9 @@ Panel {
+       refresh(true)
+       selectedIndex = wifiNetworks.length > 0 ? 0 : -1
+       wifiActionFocused = false
+-      focusSection = wifiNetworks.length > 0 ? "wifi" : "dns"
++      focusSection = wifiNetworks.length > 0
++        ? "wifi"
++        : (root.dnsControlsAvailable ? "dns" : "header")
+       var idx = dnsProviders.indexOf(dnsProvider)
+       dnsIndex = idx >= 0 ? idx : 0
+       syncBandIndex()
+@@ -438,6 +441,8 @@ Panel {
+   readonly property string kind: {
+     if (wiredDevice && wiredDevice.connected) return "ethernet"
+     if (connectedWifiNetwork) return "wifi"
++    if (info.type === "ethernet") return "ethernet"
++    if (info.type === "wifi") return "wifi"
+     return "disconnected"
+   }
+   readonly property int signalStrength: connectedWifiNetwork
+@@ -471,7 +476,7 @@ Panel {
+   function refresh(scanWifi) {
+     if (scanWifi === undefined) scanWifi = false
+     if (!detailsProc.running) detailsProc.running = true
+-    if (!dnsProc.running) {
++    if (root.dnsControlsAvailable && !dnsProc.running) {
+       dnsProc.command = ["bash", "-c", root.dnsCommand("")]
+       dnsProc.running = true
+     }
+@@ -809,7 +814,7 @@ Panel {
+   // Pulls everything we want about the active route's interface in one shot.
+   Process {
+     id: detailsProc
+-    command: ["omarchy-network-status", "--verbose"]
++    command: root.opened ? ["omarchy-network-status", "--verbose"] : ["omarchy-network-status", "--link"]
+     stdout: StdioCollector {
+       waitForEnd: true
+       onStreamFinished: root.updateDetails(text)
+@@ -891,10 +896,10 @@ Panel {
+-  // Poll details while the panel is open so the IP/route header catches up
+-  // as soon as NetworkManager finishes activating a connection.
++  // Keep polling while open for details, and at a lower rate while closed
++  // when there is no native NetworkManager backend to update the bar icon.
+   Timer {
+     id: detailsPoll
+-    interval: 1500
++    interval: root.opened ? 1500 : 5000
+     repeat: true
+-    running: root.opened
++    running: root.opened || !root.networkManagerAvailable
+     onTriggered: if (!detailsProc.running) detailsProc.running = true
+   }
+ 
+@@ -1008,8 +1013,11 @@ Panel {
+               if (root.canSelectBand) {
+                 root.focusSection = "band"
+                 root.bandAutoFocused = true
+-              } else {
++              } else if (root.dnsControlsAvailable) {
+                 root.focusSection = "dns"
++              } else if (root.wifiNetworks.length > 0) {
++                root.focusSection = "wifi"
++                if (root.selectedIndex < 0) root.selectedIndex = 0
+               }
+             }
+           } else if (root.focusSection === "band") {
+@@ -1025,6 +1034,8 @@ Panel {
+             } else if (root.bandAutoFocused && root.bandPillsVisible) {
+               root.bandAutoFocused = false
+-            } else {
++            } else if (root.dnsControlsAvailable) {
+               root.focusSection = "dns"
++            } else if (root.wifiNetworks.length > 0) {
++              root.focusSection = "wifi"
+             }
+           } else if (root.focusSection === "dns") {
+@@ -1047,7 +1059,12 @@ Panel {
+             // k from the top row escapes back up to the DNS row rather than
+             // wrapping around to the bottom of the list.
+             if (dy < 0 && root.selectedIndex <= 0) {
+-              root.focusSection = "dns"
++              if (root.dnsControlsAvailable) root.focusSection = "dns"
++              else if (root.canSelectBand) root.focusSection = "band"
++              else if (root.headerActionCount > 0) {
++                root.focusSection = "header"
++                root.headerIndex = 0
++              }
+               root.wifiActionFocused = false
+             }
+             else root.selectByDelta(dy)
+@@ -1400,10 +1418,12 @@ Panel {
+ 
+       // DNS provider selection.
+       PanelSeparator {
++        visible: root.dnsControlsAvailable
+         foreground: root.bar.foreground
+       }
+ 
+       Column {
++        visible: root.dnsControlsAvailable
+         width: parent.width
+         spacing: Style.space(10)
+ 
+diff --git a/shell/shell.qml b/shell/shell.qml
+index fdb2a5c..26cd173 100644
+--- a/shell/shell.qml
++++ b/shell/shell.qml
+@@ -19,6 +19,16 @@ ShellRoot {
+   property BarWidgetRegistry barWidgetRegistry: BarWidgetRegistry { }
+   property AppLibrary appLibrary: AppLibrary { }
+ 
++  Launcher {
++    id: launcherOverlay
++  }
++
++  Clipboard { }
++
++  function toggleLauncher() {
++    launcherOverlay.toggle()
++  }
++
+   property string home: Quickshell.env("HOME")
+ 
+   // The omarchy-shell host is the long-running entry point. Plugins live in

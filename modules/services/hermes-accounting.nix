@@ -170,6 +170,8 @@ let
   soulFile = pkgs.writeText "hermes-accounting-SOUL.md" soulText;
 in
 {
+  imports = [ inputs."hermes-agent".nixosModules.default ];
+
   options.modules.services.hermesAccounting = {
     enable = lib.my.mkBoolOpt false;
     repoPath = lib.my.mkOpt lib.types.str "/var/lib/hermes-accounting/workspace/pta";

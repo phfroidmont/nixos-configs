@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "phfroidmont.nextcloud",
+  "name": "Nextcloud",
+  "version": "1.0.0",
+  "author": "phfroidmont",
+  "description": "Nextcloud sync status and shortcuts",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Nextcloud",
+    "description": "Show Nextcloud sync status",
+    "category": "Files",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "hideWhenUnavailable": false
+    },
+    "schema": [
+      {
+        "key": "hideWhenUnavailable",
+        "type": "boolean",
+        "label": "Hide when unavailable",
+        "defaultValue": false
+      }
+    ]
+  }
+}
