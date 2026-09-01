@@ -12,6 +12,10 @@ let
   herdr = config.modules.desktop.herdr.commands;
   quickshellCommands = config.modules.apps.quickshell.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
+  kitty = lib.getExe config.home-manager.users.${config.user.name}.programs.kitty.package;
+  jellyfinTui = lib.getExe pkgs.jellyfin-tui;
+  fos = lib.getExe pkgs.fos;
+  systemctl = lib.getExe' pkgs.systemd "systemctl";
   quickshell =
     lib.getExe' inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell
       "qs";
@@ -40,6 +44,12 @@ let
   exec = command: lua "hl.dsp.exec_cmd(${toLua command})";
   notification = method: exec "${quickshell} -c desktop ipc call -- notifications ${method}";
   togglePanel = id: exec "${quickshell} -c desktop ipc call -- shell toggle ${id} '{}'";
+  toggleMusic = lua ''
+    function()
+      hl.exec_cmd(${toLua "${systemctl} --user start jellyfin-tui.service"})
+      return hl.dispatch(hl.dsp.workspace.toggle_special("music"))
+    end
+  '';
   workspaceBinds = lib.concatMap (
     workspace:
     let
@@ -209,6 +219,14 @@ in
               }
             ];
 
+            window_rule = [
+              {
+                name = "jellyfin-tui-workspace";
+                match.class = "jellyfin-tui";
+                workspace = "special:music silent";
+              }
+            ];
+
             bind = [
               (mkBind (modKey "Return") "Terminal" (exec applications.terminal))
               (mkBind (modKey "SHIFT + Return") "Herdr" (exec herdr.launch))
@@ -219,7 +237,7 @@ in
               (mkBind (modKey "E") "Editor" (exec applications.editor))
               (mkBind (modKey "SHIFT + R") "Newsboat" (exec "${applications.terminal} -e newsboat"))
               (mkBind (modKey "SHIFT + T") "System monitor" (exec "${applications.terminal} -e ${btop}"))
-              (mkBind (modKey "M") "Music player" (exec "${applications.terminal} -e ncmpcpp"))
+              (mkBind (modKey "M") "Music player" toggleMusic)
               (mkBind (modKey "V") "Clipboard" (exec "${quickshell} -c desktop ipc call -- clipboard toggle"))
               (mkBind (modKey "N") "Dismiss notification" (notification "dismissOne"))
               (mkBind (modKey "SHIFT + N") "Dismiss all notifications" (notification "dismissAll"))
@@ -227,9 +245,9 @@ in
               (mkBind (modKey "ALT + N") "Invoke last notification" (notification "invokeLast"))
               (mkBind (modKey "SHIFT + ALT + N") "Notification history" (notification "showHistory"))
               (mkBind (modKey "T") "Toggle window floating" (lua ''hl.dsp.window.float({ action = "toggle" })''))
-              (mkBind (modKey "SPACE") "Command menu" (exec "${lib.getExe pkgs.fos} menu"))
-              (mkBind (modKey "ALT + SPACE") "Applications" (exec "${lib.getExe pkgs.fos} menu apps"))
-              (mkBind (modKey "ESCAPE") "System menu" (exec "${lib.getExe pkgs.fos} menu system"))
+              (mkBind (modKey "SPACE") "Command menu" (exec "${fos} menu"))
+              (mkBind (modKey "ALT + SPACE") "Applications" (exec "${fos} menu apps"))
+              (mkBind (modKey "ESCAPE") "System menu" (exec "${fos} menu system"))
               (mkBind (modKey "B") "Keybindings" (exec quickshellCommands.keybindings))
               (mkBind (modKey "CTRL + A") "Audio controls" (togglePanel "omarchy.audio"))
               (mkBind (modKey "CTRL + W") "Wifi controls" (togglePanel "omarchy.network"))
@@ -291,11 +309,11 @@ in
               (mkBind "XF86AudioRaiseVolume" "Volume up" (exec "pulsemixer --change-volume +1"))
               (mkBind "XF86AudioLowerVolume" "Volume down" (exec "pulsemixer --change-volume -1"))
               (mkBind "XF86AudioMute" "Toggle mute" (exec "pulsemixer --toggle-mute"))
-              (mkBind "XF86AudioPlay" "Play or pause music" (exec "mpc toggle"))
-              (mkBind "XF86AudioPause" "Play or pause music" (exec "mpc toggle"))
-              (mkBind "XF86AudioNext" "Next track" (exec "mpc next"))
-              (mkBind "XF86AudioPrev" "Previous track" (exec "mpc prev"))
-              (mkBind (modKey "P") "Play or pause music" (exec "mpc toggle"))
+              (mkBind "XF86AudioPlay" "Play or pause music" (exec "${fos} media play-pause jellyfin-tui"))
+              (mkBind "XF86AudioPause" "Play or pause music" (exec "${fos} media play-pause jellyfin-tui"))
+              (mkBind "XF86AudioNext" "Next track" (exec "${fos} media next jellyfin-tui"))
+              (mkBind "XF86AudioPrev" "Previous track" (exec "${fos} media previous jellyfin-tui"))
+              (mkBind (modKey "P") "Play or pause music" (exec "${fos} media play-pause jellyfin-tui"))
 
               (mkBind "XF86MonBrightnessDown" "Brightness down" (exec "xbacklight -ctrl amdgpu_bl1 -dec 5"))
               (mkBind "XF86MonBrightnessUp" "Brightness up" (exec "xbacklight -ctrl amdgpu_bl1 -inc 5"))
@@ -436,6 +454,20 @@ in
         systemd.user.services.fos-stay-awake = {
           Unit.Description = "Manually inhibit idle handling";
           Service.ExecStart = "${pkgs.systemd}/bin/systemd-inhibit --what=idle --who=fos-stay-awake --why='Stay awake requested' ${pkgs.coreutils}/bin/sleep infinity";
+        };
+
+        systemd.user.services.jellyfin-tui = {
+          Unit = {
+            Description = "Jellyfin terminal music player";
+            After = [ "hyprland-session.target" ];
+            PartOf = [ "hyprland-session.target" ];
+          };
+          Service = {
+            ExecStart = "${kitty} --class jellyfin-tui -e ${jellyfinTui} --no-splash";
+            Restart = "on-failure";
+            RestartSec = 2;
+          };
+          Install.WantedBy = [ "hyprland-session.target" ];
         };
       };
 

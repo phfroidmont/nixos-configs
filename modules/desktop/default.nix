@@ -172,6 +172,7 @@ in
             krita
             swayimg
             mpv
+            jellyfin-tui
             mumble
             libreoffice-fresh
             signal-desktop

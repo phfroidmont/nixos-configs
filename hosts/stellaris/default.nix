@@ -36,8 +36,6 @@
       };
     };
     media = {
-      mpd.enable = true;
-      ncmpcpp.enable = true;
       emulators.gc.enable = true;
       steam.enable = true;
       lutris.enable = false;

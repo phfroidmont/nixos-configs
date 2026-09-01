@@ -23,7 +23,6 @@
   libvirt,
   lm_sensors,
   lshw,
-  mpc,
   networkmanager,
   nh,
   nix,
@@ -87,7 +86,6 @@ let
       libvirt
       lm_sensors
       lshw
-      mpc
       networkmanager
       nh
       nix

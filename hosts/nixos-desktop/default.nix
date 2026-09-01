@@ -18,8 +18,6 @@
       work-proxy.enable = true;
     };
     media = {
-      mpd.enable = true;
-      ncmpcpp.enable = true;
       emulators.gc.enable = true;
       steam.enable = true;
       lutris.enable = true;
@@ -72,9 +70,6 @@
       ../../ssh_keys/phfroidmont-stellaris.pub
     ];
   };
-
-  # Allow to externally control MPD
-  networking.firewall.allowedTCPPorts = [ 6600 ];
 
   home-manager.users.${config.user.name} =
     { ... }:
