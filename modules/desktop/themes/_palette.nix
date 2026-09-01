@@ -1,6 +1,7 @@
 let
   mkHex = value: "#${value}";
   mkRgb = value: "rgb(${value})";
+  mkArgb = alpha: value: "#${alpha}${value}";
 
   base = {
     bg0Hard = "1d2021";
@@ -12,9 +13,12 @@ let
 
     fg0 = "fbf1c7";
     fg1 = "ebdbb2";
+    fg2 = "d5c4a1";
     fg4 = "a89984";
 
+    redDark = "cc241d";
     red = "fb4934";
+    orangeDark = "d65d0e";
     orange = "fe8019";
     yellow = "fabd2f";
     green = "b8bb26";
@@ -27,7 +31,12 @@ let
   rgb = builtins.mapAttrs (_: mkRgb) base;
 in
 {
-  inherit base hex rgb;
+  inherit
+    base
+    hex
+    rgb
+    mkArgb
+    ;
 
   semantic = {
     bg = hex.bg0;

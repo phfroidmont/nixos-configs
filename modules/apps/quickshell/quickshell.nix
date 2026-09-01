@@ -8,6 +8,118 @@
 
 let
   cfg = config.modules.apps.quickshell;
+  palette = import ../../desktop/themes/_palette.nix;
+  toml = pkgs.formats.toml { };
+  quickshellColors = {
+    mode = "dark";
+    accent = palette.hex.orange;
+    selection = palette.hex.bg2;
+    muted = palette.hex.fg4;
+    background = palette.hex.bg0;
+    dark_background = palette.hex.bg0Hard;
+    darker_background = palette.hex.bg0Hard;
+    lighter_background = palette.hex.bg1;
+    foreground = palette.hex.fg1;
+    dark_foreground = palette.hex.fg4;
+    light_foreground = palette.hex.fg0;
+    bright_foreground = palette.hex.fg0;
+    red = palette.hex.red;
+    yellow = palette.hex.yellow;
+    orange = palette.hex.orange;
+    green = palette.hex.green;
+    cyan = palette.hex.aqua;
+    blue = palette.hex.blue;
+    magenta = palette.hex.purple;
+  };
+  quickshellShell = {
+    bar = {
+      background = palette.hex.bg0;
+      "background-alpha" = 1.0;
+      text = palette.hex.fg1;
+      active = palette.hex.red;
+      "scale-with-font" = true;
+      "size-horizontal" = 26;
+      "size-vertical" = 28;
+    };
+    hyprland = {
+      "active-border" = palette.hex.orange;
+      "active-border-foreground" = palette.hex.fg1;
+    };
+    controls = {
+      "normal-color" = "foreground";
+      "normal-fill-alpha" = 0.04;
+      "normal-border" = "foreground";
+      "normal-border-width" = 1;
+      "normal-border-alpha" = 0.4;
+      "hover-cursor-color" = "foreground";
+      "hover-cursor-fill-alpha" = 0.08;
+      "hover-cursor-border" = "foreground";
+      "hover-cursor-border-width" = 1;
+      "hover-cursor-border-alpha" = 0.25;
+      "focus-color" = "foreground";
+      "focus-fill-alpha" = 0.08;
+      "focus-border" = "foreground";
+      "focus-border-width" = 1;
+      "focus-border-alpha" = 0.25;
+      "selected-color" = "foreground";
+      "selected-fill-alpha" = 0.18;
+      "selected-border-width" = 0;
+      "pressed-fill-alpha" = 0.22;
+      "selection-fill-alpha" = 0.35;
+    };
+    spacing = {
+      scale = 1.0;
+      "scale-with-font" = true;
+    };
+    font."base-size" = 12;
+    popups = {
+      background = palette.hex.bg0;
+      "background-alpha" = 1.0;
+      text = palette.hex.fg1;
+      border = palette.hex.orange;
+      "border-alpha" = 1.0;
+      "border-width" = 2;
+    };
+    tooltip = {
+      background = palette.hex.bg0;
+      "background-alpha" = 0.97;
+      text = palette.hex.fg1;
+      border = palette.hex.fg1;
+      "border-alpha" = 1.0;
+    };
+    notifications = {
+      background = palette.hex.bg0;
+      "background-alpha" = 1.0;
+      text = palette.hex.fg1;
+      border = palette.hex.orange;
+      "border-alpha" = 1.0;
+      "border-width" = 2;
+      countdown = palette.hex.orange;
+    };
+  };
+  quickshellColorsToml = toml.generate "fos-quickshell-colors.toml" quickshellColors;
+  quickshellShellToml = toml.generate "fos-quickshell-shell.toml" quickshellShell;
+  quickshellThemeExpected = pkgs.writeText "fos-quickshell-theme-expected.json" (
+    builtins.toJSON {
+      colors = quickshellColors;
+      shell = quickshellShell;
+    }
+  );
+  clipboardQml = pkgs.replaceVars ./config/Clipboard.qml {
+    clipboardScrim = palette.mkArgb "80" palette.base.bg0Hard;
+    clipboardSelection = palette.mkArgb "14" palette.base.fg0;
+    clipboardSelectionBorder = palette.mkArgb "40" palette.base.fg0;
+    gruvboxBg1 = palette.hex.bg1;
+    gruvboxBgHard = palette.hex.bg0Hard;
+    gruvboxBlue = palette.hex.blue;
+    gruvboxFg = palette.hex.fg0;
+    gruvboxFgMuted = palette.hex.fg4;
+    gruvboxFgSoft = palette.hex.fg1;
+    gruvboxGreen = palette.hex.green;
+    gruvboxOrange = palette.hex.orange;
+    gruvboxPurple = palette.hex.purple;
+    gruvboxRedDark = palette.hex.redDark;
+  };
   quickshellPackage = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
   panelCommandNames = [
     "audio-input-set-default"
@@ -212,7 +324,7 @@ let
         patch -d "$out" -p1 < ${./omarchy/omarchy-nixos.patch}
         patch -d "$out" -p1 < ${./omarchy/fos-command-menu.patch}
 
-        cp ${./config/Clipboard.qml} "$out/shell/Clipboard.qml"
+        cp ${clipboardQml} "$out/shell/Clipboard.qml"
         cp ${./config/ClipboardHistory.js} "$out/shell/ClipboardHistory.js"
 
         mkdir -p "$out/shell/plugins/panels/nextcloud"
@@ -288,8 +400,8 @@ let
         mkdir -p "$out/config/omarchy" "$out/default/omarchy" "$out/theme" "$out/share/licenses/omarchy"
         cp ${./omarchy/shell.json} "$out/config/omarchy/shell.json"
         cp ${./config/FosMenu.jsonc} "$out/default/omarchy/omarchy-menu.jsonc"
-        cp ${./omarchy/colors.toml} "$out/theme/colors.toml"
-        cp ${./omarchy/shell.toml} "$out/theme/shell.toml"
+        cp ${quickshellColorsToml} "$out/theme/colors.toml"
+        cp ${quickshellShellToml} "$out/theme/shell.toml"
         cp ${inputs.omarchy}/LICENSE "$out/share/licenses/omarchy/LICENSE"
 
         mkdir -p "$out/bin"
@@ -318,6 +430,49 @@ let
         ${lib.getExe pkgs.fos} commands --json > fos-commands.json
         ${lib.getExe pkgs.python3} ${./tests/command-menu.test.py} \
           "$out/default/omarchy/omarchy-menu.jsonc" fos-commands.json "$out/shell"
+        ${lib.getExe pkgs.python3} - \
+          "$out/theme/colors.toml" "$out/theme/shell.toml" ${quickshellThemeExpected} \
+          "$out/shell/Clipboard.qml" <<'PYTHON'
+        import json
+        import pathlib
+        import re
+        import sys
+        import tomllib
+
+        colors_path, shell_path, expected_path, clipboard_path = map(pathlib.Path, sys.argv[1:])
+
+        with colors_path.open("rb") as file:
+            colors = tomllib.load(file)
+        with shell_path.open("rb") as file:
+            shell = tomllib.load(file)
+        expected = json.loads(expected_path.read_text())
+
+        assert colors == expected["colors"], "generated colors.toml differs from its Nix schema"
+        assert shell == expected["shell"], "generated shell.toml differs from its Nix schema"
+
+        def assert_same_types(actual, wanted, path="root"):
+            assert type(actual) is type(wanted), "wrong value type at %s" % path
+            if isinstance(wanted, dict):
+                assert actual.keys() == wanted.keys(), "wrong keys at %s" % path
+                for key in wanted:
+                    assert_same_types(actual[key], wanted[key], "%s.%s" % (path, key))
+
+        assert_same_types(colors, expected["colors"], "colors")
+        assert_same_types(shell, expected["shell"], "shell")
+
+        clipboard = clipboard_path.read_text()
+        assert not re.search(r"@[A-Za-z][A-Za-z0-9]*@", clipboard), "unresolved Clipboard theme placeholder"
+        assert "BorderSurface {" in clipboard, "Clipboard outer card does not use BorderSurface"
+        assert "Color.menu.border" in clipboard, "Clipboard outer card does not use the shared menu border"
+        assert "Style.cornerRadius" in clipboard, "Clipboard outer card does not use the shared corner radius"
+
+        def argb(alpha, color):
+            return "#%s%s" % (alpha, color.removeprefix("#"))
+
+        assert 'color: "%s"' % argb("80", colors["dark_background"]) in clipboard
+        assert '? "%s" : "transparent"' % argb("14", colors["light_foreground"]) in clipboard
+        assert 'border.color: "%s"' % argb("40", colors["light_foreground"]) in clipboard
+        PYTHON
       '';
   clipboardCapture = pkgs.writeShellApplication {
     name = "clipboard-capture";

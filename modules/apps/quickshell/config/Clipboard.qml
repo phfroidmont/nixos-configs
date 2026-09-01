@@ -3,6 +3,8 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.Commons
+import qs.Ui
 import "ClipboardHistory.js" as ClipboardHistory
 
 Scope {
@@ -17,6 +19,10 @@ Scope {
   property var history: []
 
   readonly property int historyLimit: 500
+  readonly property color cardBackground: Color.menu.background
+  readonly property color cardBorder: Color.menu.border
+  readonly property var cardBorderSpec: Border.surfaceSpec("menu", "border", cardBorder, Math.max(1, Style.space(2)))
+  readonly property int cardCornerRadius: Style.cornerRadius
   readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || `${Quickshell.env("HOME")}/.local/state`
   readonly property string historyPath: `${stateHome}/quickshell/clipboard-history.json`
   readonly property var filteredEntries: ClipboardHistory.displayRows(history, query, 50)
@@ -396,7 +402,7 @@ Scope {
 
     Rectangle {
       anchors.fill: parent
-      color: "#801d2021"
+      color: "@clipboardScrim@"
     }
 
     MouseArea {
@@ -404,7 +410,7 @@ Scope {
       onClicked: root.hide()
     }
 
-    Rectangle {
+    BorderSurface {
       id: card
 
       readonly property int contentMargin: 18
@@ -412,9 +418,9 @@ Scope {
       width: Math.max(300, Math.min(880, panel.width - 28))
       height: Math.max(260, Math.min(600, panel.height - 28))
       anchors.centerIn: parent
-      color: "#282828"
-      border.width: 2
-      border.color: "#fe8019"
+      color: root.cardBackground
+      borderSpec: root.cardBorderSpec
+      radius: root.cardCornerRadius
 
       MouseArea {
         anchors.fill: parent
@@ -439,7 +445,7 @@ Scope {
             anchors.verticalCenter: parent.verticalCenter
             visible: searchInput.text.length === 0
             text: "Clipboard..."
-            color: "#fbf1c7"
+            color: "@gruvboxFg@"
             opacity: 0.58
             font.family: "monospace"
             font.pixelSize: 16
@@ -454,9 +460,9 @@ Scope {
             anchors.rightMargin: 12
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            color: "#fbf1c7"
-            selectionColor: "#3c3836"
-            selectedTextColor: "#fbf1c7"
+            color: "@gruvboxFg@"
+            selectionColor: "@gruvboxBg1@"
+            selectedTextColor: "@gruvboxFg@"
             verticalAlignment: TextInput.AlignVCenter
             clip: true
             font.family: "monospace"
@@ -519,7 +525,7 @@ Scope {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: `${root.filteredEntries.length}/${root.history.length}`
-            color: "#a89984"
+            color: "@gruvboxFgMuted@"
             font.family: "monospace"
             font.pixelSize: 12
           }
@@ -550,9 +556,9 @@ Scope {
 
               width: ListView.view.width
               height: 58
-              color: index === root.selectedIndex ? "#14fbf1c7" : "transparent"
+              color: index === root.selectedIndex ? "@clipboardSelection@" : "transparent"
               border.width: index === root.selectedIndex ? 1 : 0
-              border.color: "#40fbf1c7"
+              border.color: "@clipboardSelectionBorder@"
 
               Rectangle {
                 width: 7
@@ -560,8 +566,8 @@ Scope {
                 anchors.left: parent.left
                 anchors.leftMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
-                color: row.modelData.entryType === "image" ? "#d3869b" :
-                  row.modelData.entryType === "file" ? "#b8bb26" : "#83a598"
+                color: row.modelData.entryType === "image" ? "@gruvboxPurple@" :
+                  row.modelData.entryType === "file" ? "@gruvboxGreen@" : "@gruvboxBlue@"
               }
 
               Column {
@@ -575,7 +581,7 @@ Scope {
                 Text {
                   width: parent.width
                   text: row.modelData.previewText
-                  color: row.index === root.selectedIndex ? "#83a598" : "#fbf1c7"
+                  color: row.index === root.selectedIndex ? "@gruvboxBlue@" : "@gruvboxFg@"
                   font.family: "monospace"
                   font.pixelSize: 13
                   elide: Text.ElideRight
@@ -584,7 +590,7 @@ Scope {
                 Text {
                   width: parent.width
                   text: row.modelData.entryType.toUpperCase()
-                  color: "#a89984"
+                  color: "@gruvboxFgMuted@"
                   font.family: "monospace"
                   font.pixelSize: 10
                   elide: Text.ElideRight
@@ -606,7 +612,7 @@ Scope {
               anchors.centerIn: parent
               visible: root.filteredEntries.length === 0
               text: "No clipboard entries"
-              color: "#a89984"
+              color: "@gruvboxFgMuted@"
               font.family: "monospace"
               font.pixelSize: 12
             }
@@ -615,9 +621,9 @@ Scope {
           Rectangle {
             width: parent.width - resultList.width - parent.spacing
             height: parent.height
-            color: "#1d2021"
+            color: "@gruvboxBgHard@"
             border.width: 1
-            border.color: "#3c3836"
+            border.color: "@gruvboxBg1@"
 
             Image {
               anchors.fill: parent
@@ -642,7 +648,7 @@ Scope {
 
                 width: parent.width
                 text: root.selectedEntry ? root.selectedEntry.fullText : ""
-                color: "#ebdbb2"
+                color: "@gruvboxFgSoft@"
                 font.family: "monospace"
                 font.pixelSize: 13
                 wrapMode: Text.WrapAnywhere
@@ -653,7 +659,7 @@ Scope {
               anchors.centerIn: parent
               visible: !root.selectedEntry
               text: "Clipboard history is empty"
-              color: "#a89984"
+              color: "@gruvboxFgMuted@"
               font.family: "monospace"
               font.pixelSize: 12
             }
@@ -666,7 +672,7 @@ Scope {
           width: parent.width
           height: 16
           text: "Enter paste  Shift+Enter copy  Alt+Enter open  Delete remove  Shift+Delete clear"
-          color: "#a89984"
+          color: "@gruvboxFgMuted@"
           font.family: "monospace"
           font.pixelSize: 10
           elide: Text.ElideRight
@@ -679,9 +685,9 @@ Scope {
         anchors.centerIn: parent
         visible: root.clearConfirmOpen
         z: 10
-        color: "#1d2021"
+        color: "@gruvboxBgHard@"
         border.width: 2
-        border.color: "#fe8019"
+        border.color: "@gruvboxOrange@"
 
         MouseArea {
           anchors.fill: parent
@@ -696,7 +702,7 @@ Scope {
           Text {
             width: parent.width
             text: "Clear all clipboard history?"
-            color: "#fbf1c7"
+            color: "@gruvboxFg@"
             horizontalAlignment: Text.AlignHCenter
             font.family: "monospace"
             font.pixelSize: 15
@@ -709,12 +715,12 @@ Scope {
             Rectangle {
               width: 120
               height: 38
-              color: "#3c3836"
+              color: "@gruvboxBg1@"
 
               Text {
                 anchors.centerIn: parent
                 text: "Cancel"
-                color: "#fbf1c7"
+                color: "@gruvboxFg@"
                 font.family: "monospace"
                 font.pixelSize: 12
               }
@@ -731,12 +737,12 @@ Scope {
             Rectangle {
               width: 120
               height: 38
-              color: "#cc241d"
+              color: "@gruvboxRedDark@"
 
               Text {
                 anchors.centerIn: parent
                 text: "Clear"
-                color: "#fbf1c7"
+                color: "@gruvboxFg@"
                 font.family: "monospace"
                 font.pixelSize: 12
               }

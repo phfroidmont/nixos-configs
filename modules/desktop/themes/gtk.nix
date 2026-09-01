@@ -7,6 +7,21 @@
 
 let
   cfg = config.modules.desktop.themes.gtk;
+  palette = import ./_palette.nix;
+
+  gtkCss = pkgs.replaceVars ./gtk.css {
+    gruvboxBg = palette.hex.bg0;
+    gruvboxBg1 = palette.hex.bg1;
+    gruvboxBg3 = palette.hex.bg3;
+    gruvboxBlue = palette.hex.blue;
+    gruvboxFg2 = palette.hex.fg2;
+    gruvboxGreen = palette.hex.green;
+    gruvboxOrange = palette.hex.orange;
+    gruvboxOrangeDark = palette.hex.orangeDark;
+    gruvboxPurple = palette.hex.purple;
+    gruvboxRed = palette.hex.red;
+    gruvboxYellow = palette.hex.yellow;
+  };
 
   gruvboxPlus = pkgs.stdenv.mkDerivation rec {
     name = "gruvbox-plus";
@@ -55,10 +70,10 @@ in
 
       xdg.configFile = {
         "gtk-3.0/gtk.css" = {
-          source = ./gtk.css;
+          source = gtkCss;
         };
         "gtk-4.0/gtk.css" = {
-          source = ./gtk.css;
+          source = gtkCss;
         };
       };
 

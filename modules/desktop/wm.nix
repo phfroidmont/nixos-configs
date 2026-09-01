@@ -101,7 +101,6 @@ in
       };
       apps = {
         quickshell.enable = true;
-        rofi.enable = true;
         newsboat.enable = true;
       };
     };
