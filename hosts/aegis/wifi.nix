@@ -5,6 +5,7 @@
 }:
 let
   lanBridge = "br-lan";
+  wifiInterface = "wlan-ap";
   wifiPassphraseScript = pkgs.writeShellScript "hostapd-wpa-passphrase" ''
     set -euo pipefail
 
@@ -26,9 +27,14 @@ let
   '';
 in
 {
+  systemd.network.links."10-aegis-ap" = {
+    matchConfig.MACAddress = "00:0a:52:0f:3d:7b";
+    linkConfig.Name = wifiInterface;
+  };
+
   services.hostapd = {
     enable = true;
-    radios.wlan1 = {
+    radios.${wifiInterface} = {
       countryCode = "BE";
       band = "5g";
       channel = 36;
@@ -38,7 +44,7 @@ in
         "SHORT-GI-40"
       ];
       wifi5.operatingChannelWidth = "80";
-      networks.wlan1 = {
+      networks.${wifiInterface} = {
         ssid = "NSA honeypot";
         authentication.mode = "none";
         settings = {
