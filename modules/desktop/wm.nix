@@ -221,6 +221,13 @@ in
 
             window_rule = [
               {
+                name = "floating-tui";
+                match.class = "TUI.float";
+                float = true;
+                center = true;
+                size = "875 600";
+              }
+              {
                 name = "jellyfin-tui-workspace";
                 match.class = "jellyfin-tui";
                 workspace = "special:music silent";

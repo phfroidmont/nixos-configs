@@ -119,6 +119,13 @@ in
       };
 
       xdg.desktopEntries = {
+        disk-usage = {
+          name = "Disk Usage";
+          comment = "Explore and reclaim disk space";
+          exec = "${config.modules.applications.commands.terminal} --class TUI.float --title \"Disk Usage\" -e ${lib.getExe pkgs.dua} i /";
+          icon = "disks";
+          terminal = false;
+        };
         ocr = {
           name = "OCR image";
           exec = "${pkgs.writeScript "ocr" ''

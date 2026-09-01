@@ -75,7 +75,7 @@
     man
 
     btop
-    ncdu
+    dua
     nload
     pciutils
     lsof
