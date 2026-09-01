@@ -144,6 +144,7 @@ let
         curl
         iproute2
         jq
+        procps
       ])
     ) "network-speedtest.sh")
     (mkTool "fos-internal-network-status" (
