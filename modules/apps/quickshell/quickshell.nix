@@ -92,6 +92,18 @@ let
     export PATH="$clean_path"
     exec ${lib.getExe' pkgs.coreutils "env"} "$@"
   '';
+  appLauncherArgv = [
+    (lib.getExe publicEnvironment)
+    (lib.getExe' pkgs.systemd "systemd-run")
+    "--user"
+    "--scope"
+    "--collect"
+    "--quiet"
+    "--slice=app.slice"
+    "--"
+    (lib.getExe' pkgs.gtk3 "gtk-launch")
+  ];
+  appLauncherExpression = ''Util.execArgv(${builtins.toJSON appLauncherArgv}.concat([id + ".desktop"]))'';
   menuTerminal = pkgs.writeShellApplication {
     name = "fos-internal-menu-terminal";
     text = ''
@@ -227,7 +239,9 @@ let
             "omarchy-agent-usage-codex": "fos-internal-agent-usage-codex",
             "omarchy-agent-usage-fireworks": "fos-internal-agent-usage-fireworks",
             "omarchy-hyprland-focus-app": "fos-internal-hyprland-focus-app",
-            "uwsm-app -- gtk-launch": "fos-internal-public-environment uwsm-app -- gtk-launch",
+            "// Start gtk-launch inside a scope under app-graphical.slice so apps do not": "// Start gtk-launch inside the standard application slice so apps do not",
+            "// inherit wayland-wm@.service. Keeping gtk-launch as the desktop-entry": "// become children of the shell service. Keeping gtk-launch as the desktop-entry",
+            'Util.execDetached("uwsm-app -- gtk-launch " + Util.shellQuote(id + ".desktop"))': ${builtins.toJSON appLauncherExpression},
         }
         replacements.update({
             old: new
@@ -258,14 +272,14 @@ let
                 continue
             text = path.read_text()
             for old in replacements:
-                if old == "uwsm-app -- gtk-launch":
-                    continue
                 if old in text:
                     raise SystemExit(f"unreplaced private command {old!r} in {path}")
 
         app_library = (root / "services" / "AppLibrary.qml").read_text()
-        if "fos-internal-public-environment uwsm-app -- gtk-launch" not in app_library:
-            raise SystemExit("application launcher does not sanitize its environment")
+        if "uwsm-app" in app_library:
+            raise SystemExit("application launcher still depends on UWSM")
+        if ${builtins.toJSON appLauncherExpression} not in app_library:
+            raise SystemExit("application launcher does not use the systemd application scope")
 
         for path in root.rglob("*.orig"):
             path.unlink()
