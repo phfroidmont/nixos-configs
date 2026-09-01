@@ -15,6 +15,7 @@ in
   };
   quickshell-panel-tools = quickshellPanelTools;
   get-token = prev.callPackage ./packages/get-token/package.nix { };
+  jellyfin-cli = prev.callPackage ./packages/jellyfin-cli/package.nix { };
   metals = prev.metals.overrideAttrs (oldAttrs: {
     extraJavaOpts = prev.lib.concatStringsSep " " [
       oldAttrs.extraJavaOpts
