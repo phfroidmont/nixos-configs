@@ -51,6 +51,44 @@ let
       return hl.dispatch(hl.dsp.workspace.toggle_special("music"))
     end
   '';
+  workspaceLayoutToggle = pkgs.writeShellApplication {
+    name = "fos-hyprland-workspace-layout-toggle";
+    runtimeInputs = with pkgs; [
+      coreutils
+      hyprland
+      jq
+      quickshell-panel-tools
+    ];
+    text = ''
+      workspace_json=$(hyprctl activeworkspace -j)
+      workspace=$(jq -r '.id' <<< "$workspace_json")
+      current_layout=$(jq -r '.tiledLayout' <<< "$workspace_json")
+
+      if [[ ! $workspace =~ ^-?[0-9]+$ ]]; then
+        exit 1
+      fi
+
+      if [[ $current_layout == "dwindle" ]]; then
+        new_layout="scrolling"
+      else
+        new_layout="dwindle"
+      fi
+
+      layouts_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/hyprland/workspace-layouts"
+      layout_file="$layouts_dir/$workspace.lua"
+
+      hyprctl eval "hl.workspace_rule({ workspace = \"$workspace\", layout = \"$new_layout\" })" >/dev/null
+
+      install -d -- "$layouts_dir"
+      printf 'hl.workspace_rule({ workspace = "%s", layout = "%s" })\n' \
+        "$workspace" "$new_layout" > "$layout_file"
+
+      fos-internal-notification-send \
+        --icon preferences-desktop \
+        "Workspace layout" \
+        "Workspace $workspace set to $new_layout"
+    '';
+  };
   workspaceBinds = lib.concatMap (
     workspace:
     let
@@ -150,6 +188,7 @@ in
               };
 
               dwindle.preserve_split = true;
+              scrolling.column_width = 0.49;
 
               debug = {
                 disable_logs = false;
@@ -265,6 +304,7 @@ in
               (mkBind (modKey "CTRL + ALT + D") "Clock" (togglePanel "omarchy.clock"))
 
               # Layout manipulation
+              (mkBind (modKey "CTRL + L") "Toggle workspace layout" (exec (lib.getExe workspaceLayoutToggle)))
               (mkBind (modKey "SHIFT + O") "Toggle split direction" (lua ''hl.dsp.layout("togglesplit")''))
               (mkBind (modKey "comma") "Shrink split" (lua ''hl.dsp.layout("splitratio -0.1")''))
               (mkBind (modKey "semicolon") "Grow split" (lua ''hl.dsp.layout("splitratio +0.1")''))
@@ -350,6 +390,36 @@ in
             };
           };
           extraConfig = ''
+            local state_home = os.getenv("XDG_STATE_HOME")
+            if state_home == nil or state_home == "" then
+              state_home = os.getenv("HOME") .. "/.local/state"
+            end
+
+            local layouts_dir = state_home .. "/hyprland/workspace-layouts"
+            local function shell_quote(value)
+              local quote = "'"
+              local escaped_quote = quote .. "\\" .. quote .. quote
+              return quote .. value:gsub(quote, escaped_quote) .. quote
+            end
+
+            local layout_files = io.popen(
+              ${toLua (lib.getExe' pkgs.findutils "find")}
+                .. " " .. shell_quote(layouts_dir)
+                .. " -maxdepth 1 -type f -name '*.lua' -print 2>/dev/null | "
+                .. ${toLua (lib.getExe' pkgs.coreutils "sort")}
+            )
+            if layout_files then
+              for layout_file in layout_files:lines() do
+                local layout_rule, load_error = loadfile(layout_file)
+                if layout_rule then
+                  layout_rule()
+                else
+                  print("Failed to load workspace layout " .. layout_file .. ": " .. load_error)
+                end
+              end
+              layout_files:close()
+            end
+
             hl.layer_rule({ match = { namespace = "selection" }, no_anim = true, animation = "none" })
 
             local selection_layers = 0
