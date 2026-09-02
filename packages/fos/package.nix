@@ -47,6 +47,7 @@
   upower,
   usbutils,
   util-linux,
+  voxtype,
   wf-recorder,
   wireplumber,
   writeShellApplication,
@@ -147,6 +148,7 @@ let
       upower
       usbutils
       util-linux
+      voxtype
       wf-recorder
       wireplumber
       wl-clipboard

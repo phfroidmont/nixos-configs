@@ -53,6 +53,10 @@ media play-pause|media play-pause [PLAYER]|Play or pause media
 media next|media next [PLAYER]|Play the next item
 media previous|media previous [PLAYER]|Play the previous item
 media stop|media stop [PLAYER]|Stop media
+dictation status|dictation status|Show dictation status
+dictation start|dictation start|Start dictation
+dictation stop|dictation stop|Stop dictation
+dictation toggle|dictation toggle|Toggle dictation
 display status|display status|Show display status
 display brightness|display brightness [VALUE]|Show or set brightness
 display scale|display scale <up|down|SCALE>|Adjust display scale
@@ -131,6 +135,7 @@ NH=${FOS_NH:-nh}; NIX=${FOS_NIX:-nix}; HOSTNAME=${FOS_HOSTNAME:-hostname}
 GLAB=${FOS_GLAB:-glab}; AUTH=${FOS_AUTH_COMMAND:-refresh-nix-gitlab-token}; QS=${FOS_QUICKSHELL:-qs}
 WPCTL=${FOS_WPCTL:-wpctl}; PULSEMIXER=${FOS_PULSEMIXER:-pulsemixer}
 PLAYERCTL=${FOS_PLAYERCTL:-playerctl}
+VOXTYPE=${FOS_VOXTYPE:-voxtype}
 HYPRCTL=${FOS_HYPRCTL:-hyprctl}; WDISPLAYS=${FOS_WDISPLAYS:-wdisplays}; NMCLI=${FOS_NMCLI:-nmcli}
 BLUETOOTHCTL=${FOS_BLUETOOTHCTL:-bluetoothctl}
 POWERPROFILESCTL=${FOS_POWERPROFILESCTL:-powerprofilesctl}
@@ -387,6 +392,7 @@ audio_command() {
   esac
 }
 media_command() { local action=${1:-}; shift || true; (($# <= 1)) || fail 'media command accepts at most one player'; local -a selector=(); if (($#)); then safe_value "$1"; selector=(-p "$1"); fi; case $action in status) exec_command "$PLAYERCTL" "${selector[@]}" status;; play-pause|next|previous|stop) exec_command "$PLAYERCTL" "${selector[@]}" "$action";; *) fail 'invalid media command';; esac; }
+dictation_command() { local action=${1:-}; shift || true; no_args "$@"; case $action in status) exec_command "$VOXTYPE" status;; start|stop|toggle) exec_command "$VOXTYPE" record "$action";; *) fail 'dictation requires status, start, stop, or toggle';; esac; }
 display_command() {
   local action=${1:-} value
   shift || true
@@ -876,7 +882,7 @@ command_available() {
 
 doctor_rows() {
   local tool state
-  for tool in "$NIX" "$NH" "$QS" "$HYPRCTL" "$HYPRLOCK" "$NMCLI" "$WPCTL" "$PLAYERCTL" "$WF_RECORDER" \
+  for tool in "$NIX" "$NH" "$QS" "$HYPRCTL" "$HYPRLOCK" "$NMCLI" "$WPCTL" "$PLAYERCTL" "$VOXTYPE" "$WF_RECORDER" \
     "$MONITOR_STATE" "$NETWORK_STATUS" "$POWERPROFILES_LIST" "$SYSTEM_STATS" "$AUTH" "$LAUNCH_BROWSER" \
     "$LAUNCH_TERMINAL" "$LAUNCH_EDITOR" "$LAUNCH_FILES" "$KEYBINDINGS" "$VPN"; do
     if command_available "$tool"; then state=ok; else state=missing; fi
@@ -914,7 +920,7 @@ case $command in
   version) no_args "$@"; printf '%s\n' 'fos 2.0.0';;
   help) help_command "$@";; commands) commands_command "$@";; status) status_command "$@";; doctor) doctor_command "$@";;
   nixos) nixos_command "$@";; auth) auth_command "$@";; menu) menu_command "$@";; launch) launch_command "$@";;
-  audio) audio_command "$@";; media) media_command "$@";; display) display_command "$@";; network) network_command "$@";;
+  audio) audio_command "$@";; media) media_command "$@";; dictation) dictation_command "$@";; display) display_command "$@";; network) network_command "$@";;
   bluetooth) bluetooth_command "$@";; power) power_command "$@";; system) system_command "$@";;
   notifications) notifications_command "$@";; clipboard) clipboard_command "$@";; capture) capture_command "$@";;
   vpn) vpn_command "$@";; tailscale) tailscale_command "$@";; service) service_command "$@";; vm) vm_command "$@";; hardware) hardware_command "$@";;

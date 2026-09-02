@@ -32,7 +32,7 @@ migrate() {
     and (.[0].nixosConfigMigrations.menuWidget | type) == "number"
     and (.[0].nixosConfigMigrations.menuWidget // 0) >= 1
     and (.[0].nixosConfigMigrations.statusFeatures | type) == "number"
-    and (.[0].nixosConfigMigrations.statusFeatures // 0) >= 1
+    and (.[0].nixosConfigMigrations.statusFeatures // 0) >= 2
   ' "$config" >/dev/null 2>&1; then
     return 0
   fi
@@ -91,8 +91,10 @@ migrate() {
         or .indicators == "Dnd" or .indicators == ["Dnd"]
       );
     def status_indicator:
-      .items = ["ScreenRecording", "Reminder", "Dnd", "StayAwake"]
+      .items = ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"]
       | del(.indicators);
+    def add_dictation:
+      .items = [.items[] | ., if selected_id == "ScreenRecording" then "Dictation" else empty end];
     def insert_before($before; $entry):
       (map(widget_id) | index($before)) as $index
       | if $index == null then . + [$entry]
@@ -139,7 +141,10 @@ migrate() {
         | .nixosConfigMigrations.menuWidget = 1
       end
     | if ((.nixosConfigMigrations.statusFeatures | type) == "number"
-        and (.nixosConfigMigrations.statusFeatures // 0) >= 1) then . else
+        and (.nixosConfigMigrations.statusFeatures // 0) >= 2) then .
+      elif ((.disabledPlugins // []) | index("omarchy.indicators")) != null then
+        .nixosConfigMigrations.statusFeatures = 2
+      else
         .disabledPlugins = [
           (.disabledPlugins // [])[]
           | select(
@@ -151,17 +156,27 @@ migrate() {
         | .bar.layout.left = [(.bar.layout.left // [])[]]
         | .bar.layout.center = [
             (.bar.layout.center // [])[]
-            | if dnd_only_indicator then status_indicator else . end
+            | if dnd_only_indicator then status_indicator
+              elif widget_id == "omarchy.indicators"
+                and (.items | type) == "array"
+                and indicator_shows("ScreenRecording")
+                and (indicator_shows("Dictation") | not)
+              then add_dictation
+              else .
+              end
           ]
         | .bar.layout.right = [(.bar.layout.right // [])[]]
         | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
             | any(indicator_shows("ScreenRecording"))) as $has_recording
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+            | any(indicator_shows("Dictation"))) as $has_dictation
         | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
             | any(indicator_shows("Reminder"))) as $has_reminder
         | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
             | any(indicator_shows("StayAwake"))) as $has_stay_awake
         | ([
             (if $has_recording then empty else "ScreenRecording" end),
+            (if $has_dictation then empty else "Dictation" end),
             (if $has_reminder then empty else "Reminder" end),
             (if $has_stay_awake then empty else "StayAwake" end)
           ]) as $missing_indicators
@@ -190,7 +205,7 @@ migrate() {
         | if $has_microphone then . else
             .bar.layout.right |= insert_before("omarchy.audio"; {id: "omarchy.microphone"})
           end
-        | .nixosConfigMigrations.statusFeatures = 1
+        | .nixosConfigMigrations.statusFeatures = 2
       end
   ' "$config" >"$temporary"; then
     warn "leaving invalid config unchanged: $config"

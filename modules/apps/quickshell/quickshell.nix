@@ -149,6 +149,14 @@ let
   panelOldCommandNames = map (name: "omarchy-${name}") panelCommandNames;
   panelNewCommandNames = map (name: "fos-internal-${name}") panelCommandNames;
   panelTools = pkgs.quickshell-panel-tools;
+  dictationStatus = pkgs.writeShellApplication {
+    name = "fos-internal-dictation-status";
+    runtimeInputs = [
+      pkgs.util-linux
+      pkgs.voxtype
+    ];
+    text = builtins.readFile ./omarchy/scripts/dictation-status.sh;
+  };
   fosCommandPresent = pkgs.writeShellApplication {
     name = "fos-internal-cmd-present";
     bashOptions = [ ];
@@ -266,6 +274,7 @@ let
   shellRuntimePath = lib.makeBinPath ([
     quickshellConfig
     panelTools
+    dictationStatus
     fosCommandPresent
     fosShell
     fosMenuSelect
@@ -346,6 +355,9 @@ let
             "omarchy-launch-browser": "launch-browser",
             "omarchy-menu-select": "fos-internal-menu-select",
             "omarchy-menu-keybindings": "fos-internal-menu-keybindings",
+            "omarchy-voxtype-status": "fos-internal-dictation-status",
+            "omarchy-voxtype-config": "fos dictation toggle",
+            'active: state === "recording"\n  activeText: icon': 'active: state === "recording" || state === "transcribing"\n  activeText: icon',
             "omarchy-agent-usage-update": "fos-internal-agent-usage-update",
             "omarchy-agent-usage-claude": "fos-internal-agent-usage-claude",
             "omarchy-agent-usage-codex": "fos-internal-agent-usage-codex",
@@ -427,6 +439,8 @@ let
 
         QUICKSHELL_MODULE_ROOT=${./.} \
           ${pkgs.bash}/bin/bash ${./tests/notification-tools.test.sh}
+        DICTATION_STATUS_SOURCE=${./omarchy/scripts/dictation-status.sh} \
+          ${pkgs.bash}/bin/bash ${./tests/dictation-status.test.sh}
         QUICKSHELL_MODULE_ROOT=${./.} \
           PATH=${
             lib.makeBinPath (

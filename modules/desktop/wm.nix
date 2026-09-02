@@ -305,7 +305,7 @@ in
               (mkBind (modKey "CTRL + ALT + D") "Clock" (togglePanel "omarchy.clock"))
 
               # Layout manipulation
-              (mkBind (modKey "CTRL + L") "Toggle workspace layout" (exec (lib.getExe workspaceLayoutToggle)))
+              (mkBind (modKey "CTRL + O") "Toggle workspace layout" (exec (lib.getExe workspaceLayoutToggle)))
               (mkBind (modKey "SHIFT + O") "Toggle split direction" (lua ''hl.dsp.layout("togglesplit")''))
               (mkBind (modKey "comma") "Shrink split" (lua ''hl.dsp.layout("splitratio -0.1")''))
               (mkBind (modKey "semicolon") "Grow split" (lua ''hl.dsp.layout("splitratio +0.1")''))
@@ -319,7 +319,7 @@ in
               (mkBind (modKey "F") "Full screen" (
                 lua ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })''
               ))
-              (mkBind (modKey "X") "Lock system" (exec "hyprlock"))
+              (mkBind (modKey "CTRL + L") "Lock system" (exec "hyprlock"))
 
               # Move focus
               (mkBind (modKey "H") "Focus left" (lua ''hl.dsp.focus({ direction = "left" })''))
@@ -369,6 +369,9 @@ in
               (mkBind "XF86AudioNext" "Next track" (exec "${fos} media next jellyfin-tui"))
               (mkBind "XF86AudioPrev" "Previous track" (exec "${fos} media previous jellyfin-tui"))
               (mkBind (modKey "P") "Play or pause music" (exec "${fos} media play-pause jellyfin-tui"))
+
+              # Dictation
+              (mkBind (modKey "X") "Toggle dictation" (exec "${fos} dictation toggle"))
 
               (mkBind "XF86MonBrightnessDown" "Brightness down" (exec "xbacklight -ctrl amdgpu_bl1 -dec 5"))
               (mkBind "XF86MonBrightnessUp" "Brightness up" (exec "xbacklight -ctrl amdgpu_bl1 -inc 5"))

@@ -47,7 +47,7 @@ jq -e '
   and (.disabledPlugins | index("omarchy.tailscale") | not)
   and any(.bar.layout.center[];
     .id == "omarchy.indicators"
-    and .items == ["ScreenRecording", "Reminder", "Dnd", "StayAwake"])
+    and .items == ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
   and any(.bar.layout.center[]; .id == "omarchy.media")
   and any(.bar.layout.right[]; .id == "omarchy.tailscale")
   and any(.bar.layout.right[]; .id == "omarchy.microphone")
@@ -93,14 +93,14 @@ jq -e '
   .disabledPlugins == ["omarchy.idle"]
   and .nixosConfigMigrations.notifications == 1
   and .nixosConfigMigrations.menuWidget == 1
-  and .nixosConfigMigrations.statusFeatures == 1
+  and .nixosConfigMigrations.statusFeatures == 2
   and .bar.layout.left == []
 ' "$sync_config" >/dev/null
 jq -e '
   .bar.layout.center[0] == {"id": "omarchy.media"}
   and .bar.layout.center[1] == {
     "id": "omarchy.indicators",
-    "items": ["ScreenRecording", "Reminder", "Dnd", "StayAwake"],
+    "items": ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"],
     "alwaysShow": true
   }
   and .bar.layout.center[1].alwaysShow
@@ -125,6 +125,35 @@ cp "$sync_config" "$temporary/after-user-edit.json"
 HOME="$sync_home" bash "$root/scripts/sync-shell-config.sh"
 cmp "$temporary/after-user-edit.json" "$sync_config"
 
+version_one_home="$temporary/version-one-home"
+version_one_config="$version_one_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$version_one_config")"
+cat >"$version_one_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {
+    "layout": {
+      "left": [],
+      "center": [
+        {"id": "omarchy.indicators", "items": ["ScreenRecording", "Reminder", "Dnd", "StayAwake"]},
+        {"id": "omarchy.clock"}
+      ],
+      "right": []
+    }
+  },
+  "disabledPlugins": [],
+  "nixosConfigMigrations": {"notifications": 1, "menuWidget": 1, "statusFeatures": 1}
+}
+EOF
+HOME="$version_one_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  any(.bar.layout.center[];
+    .id == "omarchy.indicators"
+    and .items == ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
+  and ([.bar.layout.center[] | select(.id == "omarchy.indicators")] | length) == 1
+  and .nixosConfigMigrations.statusFeatures == 2
+' "$version_one_config" >/dev/null
+
 legacy_home="$temporary/legacy-home"
 legacy_config="$legacy_home/.config/omarchy/shell.json"
 mkdir -p "$(dirname "$legacy_config")"
@@ -148,7 +177,7 @@ jq -e '
   and .bar.layout.center[0] == {"id": "omarchy.media"}
   and .bar.layout.center[1] == {
     "id": "omarchy.indicators",
-    "items": ["ScreenRecording", "Reminder", "Dnd", "StayAwake"]
+    "items": ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"]
   }
   and (.bar.layout.center[1] | has("alwaysShow") | not)
   and .bar.layout.center[2].id == "omarchy.clock"
@@ -159,7 +188,7 @@ jq -e '
   ]
   and .nixosConfigMigrations.notifications == 1
   and .nixosConfigMigrations.menuWidget == 1
-  and .nixosConfigMigrations.statusFeatures == 1
+  and .nixosConfigMigrations.statusFeatures == 2
   and .bar.layout.left == []
 ' "$legacy_config" >/dev/null
 
@@ -188,7 +217,7 @@ jq -e '
   and .bar.layout.right == []
   and .nixosConfigMigrations.notifications == 1
   and .nixosConfigMigrations.menuWidget == 1
-  and .nixosConfigMigrations.statusFeatures == 1
+  and .nixosConfigMigrations.statusFeatures == 2
 ' "$menu_config" >/dev/null
 
 missing_home="$temporary/missing-home"

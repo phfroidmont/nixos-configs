@@ -66,13 +66,13 @@ esac
 EOF
 chmod +x "$bin/backend"
 
-backends=(nh nix hostname glab auth qs wpctl pulsemixer playerctl hyprctl hyprlock hyprpicker wdisplays nmcli bluetoothctl powerprofilesctl upower systemctl notify-send btop grim slurp satty tesseract wl-copy wf-recorder kill pkill vpn tailscale virsh lshw lscpu free lspci lsusb lsblk sensors fwupdmgr smartctl ip launch-browser launch-terminal launch-editor launch-file-manager show-keybindings uptime uname journalctl fos-internal-audio-output-set-default fos-internal-audio-input-set-default fos-internal-monitor-state fos-internal-brightness-display fos-internal-hyprland-monitor-scaling fos-internal-network-status fos-internal-network-speedtest fos-internal-network-band fos-internal-network-qr fos-internal-battery-status fos-internal-powerprofiles-list fos-internal-powerprofiles-set fos-internal-system-stats fos-internal-capture-region fos-internal-notification-send)
+backends=(nh nix hostname glab auth qs wpctl pulsemixer playerctl voxtype hyprctl hyprlock hyprpicker wdisplays nmcli bluetoothctl powerprofilesctl upower systemctl notify-send btop grim slurp satty tesseract wl-copy wf-recorder kill pkill vpn tailscale virsh lshw lscpu free lspci lsusb lsblk sensors fwupdmgr smartctl ip launch-browser launch-terminal launch-editor launch-file-manager show-keybindings uptime uname journalctl fos-internal-audio-output-set-default fos-internal-audio-input-set-default fos-internal-monitor-state fos-internal-brightness-display fos-internal-hyprland-monitor-scaling fos-internal-network-status fos-internal-network-speedtest fos-internal-network-band fos-internal-network-qr fos-internal-battery-status fos-internal-powerprofiles-list fos-internal-powerprofiles-set fos-internal-system-stats fos-internal-capture-region fos-internal-notification-send)
 for backend in "${backends[@]}"; do ln -s backend "$bin/$backend"; done
 
 export FOS_TEST_LOG=$log NH_FLAKE=$flake XDG_RUNTIME_DIR=$runtime XDG_VIDEOS_DIR=$root/Videos
 export FOS_NH=$bin/nh FOS_NIX=$bin/nix FOS_HOSTNAME=$bin/hostname FOS_GLAB=$bin/glab FOS_AUTH_COMMAND=$bin/auth
 export FOS_QUICKSHELL=$bin/qs FOS_WPCTL=$bin/wpctl FOS_PULSEMIXER=$bin/pulsemixer
-export FOS_PLAYERCTL=$bin/playerctl FOS_HYPRCTL=$bin/hyprctl FOS_HYPRLOCK=$bin/hyprlock FOS_WDISPLAYS=$bin/wdisplays
+export FOS_PLAYERCTL=$bin/playerctl FOS_VOXTYPE=$bin/voxtype FOS_HYPRCTL=$bin/hyprctl FOS_HYPRLOCK=$bin/hyprlock FOS_WDISPLAYS=$bin/wdisplays
 export FOS_NMCLI=$bin/nmcli FOS_BLUETOOTHCTL=$bin/bluetoothctl
 export FOS_POWERPROFILESCTL=$bin/powerprofilesctl
 export FOS_UPOWER=$bin/upower FOS_SYSTEMCTL=$bin/systemctl FOS_NOTIFY_SEND=$bin/notify-send
@@ -109,7 +109,7 @@ grep -Fq 'capture record start region' <<<"$help"
 commands=$($FOS_BIN commands)
 grep -Fq 'network wifi connect SSID' <<<"$commands"
 commands_json=$($FOS_BIN commands --json)
-jq -e 'length > 80 and any(.[]; .command == "hardware disk") and any(.[]; .command == "menu recording") and any(.[]; .command == "menu reminders") and any(.[]; .command == "menu tailscale")' <<<"$commands_json" >/dev/null
+jq -e 'length > 80 and any(.[]; .command == "hardware disk") and any(.[]; .command == "menu recording") and any(.[]; .command == "menu reminders") and any(.[]; .command == "menu tailscale") and any(.[]; .command == "dictation status") and any(.[]; .command == "dictation start") and any(.[]; .command == "dictation stop") and any(.[]; .command == "dictation toggle")' <<<"$commands_json" >/dev/null
 if grep -Eiq 'docker' <<<"$help" || jq -e 'any(.[]; .command | test("docker"; "i"))' <<<"$commands_json" >/dev/null; then exit 1; fi
 legacy_backend_prefix='omar''chy-'
 if grep -Fq "$legacy_backend_prefix" <<<"$commands_json"; then exit 1; fi
@@ -137,7 +137,7 @@ if grep -Fq "$GITLAB_TOKEN" <<<"$status_json"; then exit 1; fi
 jq -e '.host == "desktop" and .memory and .network and .power_profile == "balanced" and .recording' <<<"$status_json" >/dev/null
 doctor_json=$($FOS_BIN doctor --json)
 if grep -Fq "$GITLAB_TOKEN" <<<"$doctor_json"; then exit 1; fi
-jq -e 'any(.[]; .check == "session:hyprland") and any(.[]; .check | startswith("backend:"))' <<<"$doctor_json" >/dev/null
+jq -e 'any(.[]; .check == "session:hyprland") and any(.[]; .check == "backend:voxtype" and .status == "ok")' <<<"$doctor_json" >/dev/null
 default_doctor=$(env -u FOS_KEYBINDINGS XDG_DATA_HOME="$root/private-data" "$FOS_BIN" doctor --json)
 jq -e 'any(.[]; .check == "backend:menu-keybindings" and .status == "missing")' <<<"$default_doctor" >/dev/null
 if $FOS_BIN auth status 2>/dev/null | grep -Fq "$GITLAB_TOKEN"; then exit 1; fi
@@ -166,6 +166,10 @@ reset_log; $FOS_BIN audio volume +5 >/dev/null 2>&1; assert_log 'wpctl|set-volum
 reset_log; $FOS_BIN audio output set 42 sink.name >/dev/null 2>&1; assert_log 'fos-internal-audio-output-set-default|42 sink.name'
 reset_log; $FOS_BIN audio input set 7 source.name >/dev/null 2>&1; assert_log 'fos-internal-audio-input-set-default|7 source.name'
 reset_log; $FOS_BIN media next spotify >/dev/null 2>&1; assert_log 'playerctl|-p spotify next'
+reset_log; $FOS_BIN dictation status >/dev/null 2>&1; assert_log 'voxtype|status'
+for action in start stop toggle; do reset_log; $FOS_BIN dictation "$action" >/dev/null 2>&1; assert_log "voxtype|record $action"; done
+reset_log; assert_failure dictation start extra; assert_log ''
+reset_log; assert_failure dictation invalid; assert_log ''
 reset_log; assert_failure display scale nope; $FOS_BIN display status >/dev/null 2>&1; assert_log 'fos-internal-monitor-state|'
 reset_log; $FOS_BIN display brightness -5 >/dev/null 2>&1; assert_log 'fos-internal-brightness-display|5%-'
 reset_log; $FOS_BIN display scale up >/dev/null 2>&1; assert_log 'fos-internal-hyprland-monitor-scaling|up'
@@ -297,6 +301,7 @@ grep -Fq $'nixos\t' <<<"$completion"
 completion=$($FOS_BIN __complete network ''); grep -Fq $'wifi\t' <<<"$completion"
 completion=$($FOS_BIN __complete network wifi ''); grep -Fq $'connect\t' <<<"$completion"
 completion=$($FOS_BIN __complete media next ''); grep -Fq $'spotify\tdynamic value' <<<"$completion"
+completion=$($FOS_BIN __complete dictation ''); grep -Fq $'status\t' <<<"$completion"; grep -Fq $'toggle\t' <<<"$completion"
 completion=$($FOS_BIN __complete nixos build l); grep -Fq $'laptop\tdynamic value' <<<"$completion"
 completion=$($FOS_BIN __complete bluetooth connect A); grep -Fq $'AA:BB:CC:DD:EE:FF\tdynamic value' <<<"$completion"
 completion=$($FOS_BIN __complete vm start t); grep -Fq $'test-vm\tdynamic value' <<<"$completion"

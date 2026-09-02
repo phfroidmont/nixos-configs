@@ -31,7 +31,7 @@ jq -e '
   (.disabledPlugins | index("omarchy.notifications") | not)
   and any(.bar.layout.center[];
     .id == "omarchy.indicators"
-    and .items == ["ScreenRecording", "Reminder", "Dnd", "StayAwake"])
+    and .items == ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
 ' "$test_root/home/.config/omarchy/shell.json" >/dev/null
 
 "$PYTHON_BIN" - "$test_root/home/.local/share/opencode/opencode.db" <<'PYTHON'
@@ -78,6 +78,16 @@ grep -Fq '["fos-internal-reminder", "show", "--json"]' \
   "$SHELL_PATH/plugins/bar/indicators/Reminder.qml"
 grep -Fq '"fos capture record status >/dev/null 2>&1"' \
   "$SHELL_PATH/plugins/bar/indicators/ScreenRecording.qml"
+grep -Fq 'command: ["bash", "-c", "fos-internal-dictation-status"]' \
+  "$SHELL_PATH/plugins/bar/indicators/Dictation.qml"
+grep -Fq 'root.bar.run("fos dictation toggle")' \
+  "$SHELL_PATH/plugins/bar/indicators/Dictation.qml"
+grep -Fq 'active: state === "recording" || state === "transcribing"' \
+  "$SHELL_PATH/plugins/bar/indicators/Dictation.qml"
+if grep -Fq 'voxtype configure' "$SHELL_PATH/plugins/bar/indicators/Dictation.qml"; then
+  printf 'dictation indicator opens voxtype configuration\n' >&2
+  exit 1
+fi
 grep -Fq '"fos-stay-awake.service"' \
   "$SHELL_PATH/plugins/bar/indicators/StayAwake.qml"
 grep -Fq 'fileSharing = false' \

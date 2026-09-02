@@ -29,6 +29,8 @@ REQUIRED_IDS = {
     "controls.audio", "controls.network", "controls.bluetooth", "controls.display",
     "controls.power", "controls.notifications", "controls.reminders", "controls.clipboard",
     "controls.agents", "controls.clock", "controls.keybindings",
+    "controls.dictation.toggle", "controls.dictation.start", "controls.dictation.stop",
+    "controls.dictation.status",
     "capture.screenshot.smart", "capture.screenshot.region", "capture.screenshot.window",
     "capture.screenshot.screen", "capture.ocr", "capture.color", "capture.record.region", "capture.record.region-audio",
     "capture.record.screen", "capture.record.screen-audio", "capture.record.status",

@@ -19,6 +19,11 @@
   "controls.agents": {"icon":"󰚩","label":"Agents","description":"Open the agents menu","action":"fos menu agents"},
   "controls.clock": {"icon":"󰥔","label":"Clock","description":"Open clock controls","action":"fos menu clock"},
   "controls.keybindings": {"icon":"","label":"Keybindings","description":"Search desktop keybindings","action":"fos menu keybindings"},
+  "controls.dictation": {"icon":"󰍬","label":"Dictation","description":"Control voice dictation"},
+  "controls.dictation.toggle": {"icon":"󰍬","label":"Toggle Dictation","description":"Start or stop voice dictation","action":"fos dictation toggle"},
+  "controls.dictation.start": {"icon":"󰑊","label":"Start Dictation","description":"Start voice dictation","action":"fos dictation start"},
+  "controls.dictation.stop": {"icon":"󰓛","label":"Stop Dictation","description":"Stop voice dictation","action":"fos dictation stop"},
+  "controls.dictation.status": {"icon":"󰋼","label":"Dictation Status","description":"Show voice dictation status","action":"fos-internal-menu-terminal dictation status"},
 
   "capture.screenshot": {"icon":"","label":"Screenshots","description":"Capture a region, window, or monitor"},
   "capture.screenshot.smart": {"icon":"󰹑","label":"Smart","description":"Capture a region, window, or monitor","action":"fos capture screenshot smart"},

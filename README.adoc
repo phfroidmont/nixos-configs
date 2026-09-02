@@ -91,7 +91,8 @@ declarative Nix configuration:
   `auth` inspects and refreshes GitLab credentials used by Nix.
 * `menu` opens desktop controls and `launch` starts standard applications.
 * `audio` manages volume, mute, devices, and the mixer; `media` controls active
-  players; `display` reports and adjusts brightness, scale, and layout.
+  players; `dictation` controls local speech-to-text; `display` reports and
+  adjusts brightness, scale, and layout.
 * `network` reports connectivity and controls Wi-Fi; `bluetooth` manages its
   radio and devices.
 * `power` covers batteries and profiles; `system` covers statistics, locking,
@@ -140,6 +141,18 @@ writes uniquely named, timestamped MP4 files below `$XDG_VIDEOS_DIR`, or
 `stop` can validate the active process.
 `fos capture record stop` only signals the recorder started and owned by FOS;
 it refuses stale or unowned state rather than stopping another recorder.
+
+=== Dictation behavior
+
+Press `Super+X` to start recording and press it again to transcribe into the
+focused application. The same operations are available through `fos dictation
+start`, `stop`, `toggle`, and
+`status`, and the status bar shows recording and transcription activity.
+
+Voxtype performs transcription locally with the multilingual Whisper base model
+and automatic language detection. Its configuration and model are managed by
+Nix; typed output falls back to the clipboard when direct Wayland input is not
+available.
 
 == Bootstrap or manage without FOS
 
