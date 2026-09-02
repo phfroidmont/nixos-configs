@@ -255,6 +255,7 @@ in
                 enabled = true;
                 speed = 2;
                 bezier = "default";
+                style = "slidevert top";
               }
             ];
 
@@ -308,6 +309,12 @@ in
               (mkBind (modKey "SHIFT + O") "Toggle split direction" (lua ''hl.dsp.layout("togglesplit")''))
               (mkBind (modKey "comma") "Shrink split" (lua ''hl.dsp.layout("splitratio -0.1")''))
               (mkBind (modKey "semicolon") "Grow split" (lua ''hl.dsp.layout("splitratio +0.1")''))
+
+              # Scratchpad
+              (mkBind (modKey "S") "Toggle scratchpad" (lua ''hl.dsp.workspace.toggle_special("scratchpad")''))
+              (mkBind (modKey "SHIFT + S") "Move window to scratchpad" (
+                lua ''hl.dsp.window.move({ workspace = "special:scratchpad", follow = false })''
+              ))
 
               (mkBind (modKey "F") "Full screen" (
                 lua ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })''
