@@ -126,14 +126,6 @@ in
           icon = "disks";
           terminal = false;
         };
-        ocr = {
-          name = "OCR image";
-          exec = "${pkgs.writeScript "ocr" ''
-            ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | \
-            ${pkgs.tesseract}/bin/tesseract stdin stdout -l eng+fre | \
-            ${pkgs.wl-clipboard}/bin/wl-copy
-          ''}";
-        };
       };
 
       xdg.mimeApps = {
