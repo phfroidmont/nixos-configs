@@ -427,6 +427,20 @@ let
 
         QUICKSHELL_MODULE_ROOT=${./.} \
           ${pkgs.bash}/bin/bash ${./tests/notification-tools.test.sh}
+        QUICKSHELL_MODULE_ROOT=${./.} \
+          PATH=${
+            lib.makeBinPath (
+              with pkgs;
+              [
+                coreutils
+                findutils
+                gnugrep
+                gnused
+                jq
+              ]
+            )
+          }:$PATH \
+          ${pkgs.bash}/bin/bash ${./tests/clipboard-action.test.sh}
         ${lib.getExe pkgs.fos} commands --json > fos-commands.json
         ${lib.getExe pkgs.python3} ${./tests/command-menu.test.py} \
           "$out/default/omarchy/omarchy-menu.jsonc" fos-commands.json "$out/shell"
@@ -465,6 +479,10 @@ let
         assert "BorderSurface {" in clipboard, "Clipboard outer card does not use BorderSurface"
         assert "Color.menu.border" in clipboard, "Clipboard outer card does not use the shared menu border"
         assert "Style.cornerRadius" in clipboard, "Clipboard outer card does not use the shared corner radius"
+        assert "function editSelected()" in clipboard, "Clipboard image editing action is missing"
+        assert '"edit-image"' in clipboard, "Clipboard image editing backend is not wired"
+        assert "Qt.ControlModifier" in clipboard, "Clipboard image editing shortcut is missing"
+        assert "Qt.RightButton" in clipboard, "Clipboard image editing mouse action is missing"
 
         def argb(alpha, color):
             return "#%s%s" % (alpha, color.removeprefix("#"))
@@ -494,6 +512,7 @@ let
       findutils
       gnugrep
       jq
+      satty
       wl-clipboard
       wtype
       xdg-utils

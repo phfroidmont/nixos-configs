@@ -62,6 +62,39 @@ copy_image() {
   wl-copy --type "$mime" <"$path"
 }
 
+edit_image() {
+  local id="$1"
+  local snapshot type mime path extension hash output_dir output
+
+  [[ -n $id ]] || exit 1
+  snapshot=$(mktemp --tmpdir="$state_dir" clipboard-entry.XXXXXX)
+  temporary_files+=("$snapshot")
+  snapshot_entry "$id" "$snapshot"
+  type=$(jq -er '.type' "$snapshot")
+  mime=$(jq -er '.mime' "$snapshot")
+  path=$(jq -er '.path' "$snapshot")
+  [[ $type == image && ${path%/*} == "$image_dir" && -f $path && ! -L $path && -O $path && -r $path ]] || exit 1
+
+  case $mime in
+    image/png|image/jpeg|image/webp|image/gif|image/bmp|image/tiff) ;;
+    *) exit 1 ;;
+  esac
+  extension=${mime#image/}
+  [[ $extension == jpeg ]] && extension=jpg
+  hash=$(sha256sum "$path")
+  hash=${hash%% *}
+  [[ $path == "$image_dir/$hash.$extension" ]] || exit 1
+
+  output_dir=${FOS_SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}
+  mkdir -p "$output_dir"
+  output=$(mktemp --tmpdir="$output_dir" --suffix=.png "screenshot-$(date +%Y-%m-%d_%H-%M-%S)-XXXXXX")
+  if ! satty -f "$path" -o "$output"; then
+    rm -f "$output"
+    return 1
+  fi
+  [[ -s $output ]] || rm -f "$output"
+}
+
 open_entry() {
   local id="$1"
   local type text path first_line url open_dir open_file snapshot
@@ -186,6 +219,9 @@ case "$action" in
     fi
     copy_image "${1:-}" "${2:-}"
     [[ $copy_only == true ]] || paste_keys
+    ;;
+  edit-image)
+    edit_image "${1:-}"
     ;;
   open)
     open_entry "${1:-}"

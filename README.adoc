@@ -119,6 +119,8 @@ the arrow keys move between windows. Press `Print` again to cancel.
 Screenshots are written to `~/Pictures/Screenshots` and copied immediately to
 the clipboard as PNG images. The completion notification contains a preview;
 click it or press `Super+Alt+N` to annotate the saved image in Satty.
+Clipboard history can also edit any stored image with `Ctrl+Enter` or a
+right-click; the edited result is saved and added as a new clipboard entry.
 `Shift+Print` captures the focused monitor directly, `Alt+Print` opens recording
 controls, `Super+Print` picks a color, `Super+Ctrl+Print` copies OCR text from a
 region, and `Super+Ctrl+C` opens the Capture menu.

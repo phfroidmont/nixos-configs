@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 022
 
-root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+root=${QUICKSHELL_MODULE_ROOT:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}
 action="$root/scripts/clipboard-action.sh"
 temporary=$(mktemp -d)
 trap 'rm -rf "$temporary"' EXIT
@@ -22,6 +22,7 @@ export WTYPE_OUTPUT="$temporary/wtype"
 export OPEN_OUTPUT="$temporary/open"
 export BROWSER_OUTPUT="$temporary/browser"
 export EDITOR_TEXT_OUTPUT="$temporary/editor-text"
+export IMAGE_EDITOR_OUTPUT="$temporary/editor-image"
 
 cat >"$fake_bin/wl-copy" <<'EOF'
 #!/usr/bin/env bash
@@ -44,6 +45,12 @@ cat >"$fake_bin/editor" <<'EOF'
 #!/usr/bin/env bash
 cat "$1" >"$EDITOR_TEXT_OUTPUT"
 EOF
+cat >"$fake_bin/satty" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >"$IMAGE_EDITOR_OUTPUT"
+printf 'edited image' >"$4"
+EOF
+sed -i "1s|.*|#!$BASH|" "$fake_bin"/*
 chmod +x "$fake_bin"/*
 
 export PATH="$fake_bin:$PATH"
@@ -51,7 +58,10 @@ export CLIPBOARD_BROWSER="$fake_bin/browser"
 export CLIPBOARD_EDITOR="$fake_bin/editor"
 export CLIPBOARD_PRUNE_GRACE_SECONDS=0
 
-image="$image_dir/referenced.png"
+image_data='image data'
+image_hash=$(printf '%s' "$image_data" | sha256sum)
+image_hash=${image_hash%% *}
+image="$image_dir/$image_hash.png"
 printf 'image data' >"$image"
 jq -n --arg image "$image" '[
   {type: "text", text: "complete text value", id: "text-1"},
@@ -78,9 +88,21 @@ bash "$action" paste-text --copy-only delayed-1
 wait "$writer_pid"
 [[ $(<"$COPY_OUTPUT") == "delayed value" ]]
 
+jq -n --arg image "$image" '[
+  {type: "text", text: "complete text value", id: "text-1"},
+  {type: "image", mime: "image/png", path: $image, id: "image-1"}
+]' >"$history_path"
 bash "$action" paste-image --copy-only image/png "$image"
 [[ $(<"$COPY_OUTPUT") == "image data" ]]
 [[ $(<"$COPY_ARGS") == "--type image/png" ]]
+
+bash "$action" edit-image image-1
+read -r input_flag input_path output_flag output_path <"$IMAGE_EDITOR_OUTPUT"
+[[ $input_flag == -f && $input_path == "$image" && $output_flag == -o ]]
+[[ ${output_path%/*} == "$HOME/Pictures/Screenshots" && $(<"$output_path") == "edited image" ]]
+[[ $(<"$image") == "image data" ]]
+if bash "$action" edit-image text-1 2>/dev/null; then exit 1; fi
+if bash "$action" edit-image missing 2>/dev/null; then exit 1; fi
 
 jq -n --arg image "$image" '[
   {type: "image", mime: "image/png", path: $image, id: "image-1"}

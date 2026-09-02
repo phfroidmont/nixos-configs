@@ -211,6 +211,18 @@ Scope {
     Quickshell.execDetached([Quickshell.env("CLIPBOARD_ACTION"), "open", row.id])
   }
 
+  function editSelected() {
+    const row = selectedEntry
+    if (!row)
+      return
+
+    if (row.entryType !== "image")
+      return
+
+    hide()
+    Quickshell.execDetached([Quickshell.env("CLIPBOARD_ACTION"), "edit-image", row.id])
+  }
+
   function imageSource(path) {
     const value = String(path || "")
     if (!value)
@@ -507,7 +519,9 @@ Scope {
               } else if (event.key === Qt.Key_End) {
                 root.selectIndex(root.filteredEntries.length - 1)
               } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                if ((event.modifiers & Qt.AltModifier) !== 0)
+                if ((event.modifiers & Qt.ControlModifier) !== 0)
+                  root.editSelected()
+                else if ((event.modifiers & Qt.AltModifier) !== 0)
                   root.openSelected()
                 else
                   root.activateSelected((event.modifiers & Qt.ShiftModifier) !== 0)
@@ -600,10 +614,14 @@ Scope {
               MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onPositionChanged: root.selectedIndex = row.index
-                onClicked: {
+                onClicked: mouse => {
                   root.selectedIndex = row.index
-                  root.activateSelected(false)
+                  if (mouse.button === Qt.RightButton)
+                    root.editSelected()
+                  else
+                    root.activateSelected(false)
                 }
               }
             }
@@ -671,7 +689,9 @@ Scope {
 
           width: parent.width
           height: 16
-          text: "Enter paste  Shift+Enter copy  Alt+Enter open  Delete remove  Shift+Delete clear"
+          text: root.selectedEntry && root.selectedEntry.entryType === "image"
+            ? "Enter paste  Shift+Enter copy  Ctrl+Enter edit  Alt+Enter open  Delete remove  Shift+Delete clear"
+            : "Enter paste  Shift+Enter copy  Alt+Enter open  Delete remove  Shift+Delete clear"
           color: "@gruvboxFgMuted@"
           font.family: "monospace"
           font.pixelSize: 10
