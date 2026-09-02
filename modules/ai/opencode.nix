@@ -438,23 +438,6 @@ in
                   };
                 };
               };
-              debug = {
-                description = "Read-only primary agent for difficult, evidence-driven debugging.";
-                disable = false;
-                mode = "primary";
-                model = "openai/gpt-5.6-sol";
-                prompt = "{file:${./prompts/debug-rules.txt}}";
-                permission = {
-                  edit = "deny";
-                  task = {
-                    "*" = "deny";
-                    "explore" = "allow";
-                    "scout" = "allow";
-                    "test-triage" = "allow";
-                    "scan" = "allow";
-                  };
-                };
-              };
               explore = {
                 description = "Read-only codebase exploration that returns concise evidence and file references.";
                 mode = "subagent";
@@ -675,7 +658,7 @@ in
           - Accept small duplication when it is clearer than a “smart” abstraction.
           - Add abstractions only after patterns are proven and stable (never speculative).
           - Respect existing code: understand why it exists before replacing it (Chesterton’s Fence).
-          - For bugs, write a failing regression test first, then fix.
+          - For bugs, reproduce first and identify the root cause before changing code; add a failing regression test, then fix.
           - Log important branches with enough context (e.g., request/correlation IDs) for production debugging.
 
           ## Commits
