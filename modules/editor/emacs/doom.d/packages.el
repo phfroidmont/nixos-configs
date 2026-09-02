@@ -1,8 +1,0 @@
-(package! lsp-tailwindcss)
-(package! elfeed-protocol)
-(package! elfeed-tube)
-(package! elfeed-tube-mpv)
-(package! mpv)
-
-(unpin! org-roam)
-(package! org-roam-ui)

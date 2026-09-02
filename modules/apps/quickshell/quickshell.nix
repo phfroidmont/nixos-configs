@@ -148,7 +148,7 @@ let
   ];
   panelOldCommandNames = map (name: "omarchy-${name}") panelCommandNames;
   panelNewCommandNames = map (name: "fos-internal-${name}") panelCommandNames;
-  panelTools = import ../../../packages/quickshell-panel-tools/package.nix { inherit inputs pkgs; };
+  panelTools = pkgs.quickshell-panel-tools;
   fosCommandPresent = pkgs.writeShellApplication {
     name = "fos-internal-cmd-present";
     bashOptions = [ ];

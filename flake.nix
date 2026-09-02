@@ -10,17 +10,11 @@
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    emacs-overlay.url = "github:nix-community/emacs-overlay";
-    vim-org-roam = {
-      url = "github:chipsenkbeil/org-roam.nvim";
-      flake = false;
-    };
     llm-agents.url = "github:numtide/llm-agents.nix";
     herdr = {
       url = "github:herdrdev/herdr/v0.8.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hermes-agent.url = "github:NousResearch/hermes-agent";
     omarchy = {
       url = "github:basecamp/omarchy/981274b20af8e85c09845071ac33c6230909f119";
       flake = false;

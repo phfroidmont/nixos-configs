@@ -11,6 +11,8 @@
     inputs.nixos-wsl.nixosModules.default
   ];
 
+  systemd.oomd.enable = false;
+
   user.name = "nixos";
 
   wsl = {
@@ -156,9 +158,11 @@
     programs = {
       git = {
         enable = true;
-        userName = "Paul-Henri Froidmont";
-        userEmail = "rdo@foyer.lu";
-        extraConfig = {
+        settings = {
+          user = {
+            name = "Paul-Henri Froidmont";
+            email = "rdo@foyer.lu";
+          };
           init.defaultBranch = "master";
           http.sslVerify = false;
         };
@@ -186,10 +190,7 @@
 
   services.openssh = {
     enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      # LogLevel = "DEBUG";
-    };
+    settings.PasswordAuthentication = true;
   };
 
   system.stateVersion = "24.05";

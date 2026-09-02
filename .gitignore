@@ -2,3 +2,6 @@
 *.iml
 result
 .vscode/
+.opencode/
+.playwright-mcp/
+.superpowers/

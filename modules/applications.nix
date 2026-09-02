@@ -136,6 +136,9 @@ in
           browser.package
           launchBrowser
         ]
+        ++ lib.optionals (
+          desktopEnabled && config.modules.services.belgian-eid.enable && cfg.browser != "firefox"
+        ) [ firefox ]
         ++ lib.optionals editorEnabled [ launchEditor ]
         ++ lib.optionals fileManagerEnabled [ launchFileManager ];
 

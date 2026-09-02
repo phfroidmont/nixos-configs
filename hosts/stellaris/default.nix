@@ -15,7 +15,6 @@
     };
     editor = {
       vim.enable = true;
-      emacs.enable = true;
     };
     services = {
       nix-auth.enable = true;
@@ -25,15 +24,6 @@
       libvirt.enable = true;
       languagetool.enable = true;
       work-proxy.enable = true;
-      kanata.enable = false;
-      hermesAccounting = {
-        enable = false;
-        git = {
-          remoteUrl = "ssh://forgejo@forge.froidmont.org/phfroidmont/pta.git";
-          forgejoHost = "forge.froidmont.org";
-          branch = "master";
-        };
-      };
     };
     media = {
       emulators.gc.enable = true;
@@ -273,21 +263,7 @@
     '')
   ];
 
-  services.openssh = {
-    enable = false;
-    settings.PasswordAuthentication = false;
-    listenAddresses = [
-      {
-        # Tailscale interface
-        addr = "100.64.0.5";
-        port = 22;
-      }
-    ];
-  };
   users.users.${config.user.name} = {
-    openssh.authorizedKeys.keyFiles = [
-      ../../ssh_keys/phfroidmont-desktop.pub
-    ];
     extraGroups = [ "video" ];
   };
 

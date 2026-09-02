@@ -14,12 +14,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-
     services.pcscd.enable = true;
-
-    environment.systemPackages = with pkgs; [
-      (firefox.override { pkcs11Modules = [ eid-mw ]; })
-      eid-mw
-    ];
+    environment.systemPackages = [ pkgs.eid-mw ];
   };
 }
