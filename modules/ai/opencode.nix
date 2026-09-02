@@ -408,6 +408,7 @@ in
             };
             agent = {
               build = {
+                color = "secondary";
                 description = "Primary implementation agent and orchestrator for coding work.";
                 mode = "primary";
                 model = "openai/gpt-5.6-sol";
@@ -422,6 +423,7 @@ in
                 };
               };
               plan = {
+                color = "primary";
                 description = "Read-only planning and architectural analysis.";
                 mode = "primary";
                 model = "openai/gpt-5.6-sol";
