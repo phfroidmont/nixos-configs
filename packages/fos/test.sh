@@ -20,7 +20,11 @@ case $name in
   hostname) printf '%s\n' desktop ;;
   playerctl) [[ ${1:-} == -l ]] && printf '%s\n' spotify firefox || printf '%s\n' Playing ;;
   bluetoothctl) [[ ${1:-} == devices ]] && printf '%s\n' 'Device AA:BB:CC:DD:EE:FF Headphones' || printf '%s\n' 'Powered: yes' ;;
-  hyprctl) if [[ $* == '-j clients' ]]; then printf '%s\n' '[{"at":[10,20],"size":[800,600]}]'; fi ;;
+  hyprctl)
+    if [[ $* == '-j clients' ]]; then printf '%s\n' '[{"at":[10,20],"size":[800,600]}]'
+    elif [[ $* == 'getoption cursor:no_hardware_cursors -j' ]]; then printf '%s\n' '{"int":1}'
+    fi
+    ;;
   nmcli)
     if [[ $* == *'fields SSID device wifi list'* ]]; then printf '%s\n' Cafe 'Cafe [guest] $pecial' Office
     elif [[ $* == *'fields DEVICE,TYPE device status'* ]]; then printf '%s\n' 'wlan0:wifi' 'eth0:ethernet'
@@ -32,8 +36,23 @@ case $name in
   virsh) if [[ $* == *'--name'* ]]; then printf '%s\n' test-vm; fi ;;
   glab) printf '%s\n' 'Logged in to gitlab.example' ;;
   slurp) [[ ${FOS_TEST_EMPTY_SLURP:-false} == true ]] || printf '%s\n' '0,0 10x10' ;;
-  grim) printf '%s' image ;;
+  grim) if [[ ${!#} == - ]]; then printf '%s' image; else printf '%s' image >"${!#}"; fi ;;
   satty|wl-copy) dd of=/dev/null 2>/dev/null ;;
+  pkill)
+    case ${2:-} in
+      slurp) [[ ${FOS_TEST_SLURP_RUNNING:-false} == true ]] ;;
+      hyprpicker) [[ ${FOS_TEST_COLOR_RUNNING:-false} == true ]] ;;
+      *) false ;;
+    esac
+    ;;
+  fos-internal-capture-region)
+    if [[ ${FOS_TEST_EMPTY_SLURP:-false} == true ]]; then
+      sleep 60 >/dev/null 2>&1 &
+      printf '%s\n' "$!" | tee "${FOS_TEST_FREEZE_PID_FILE:?}"
+    else
+      printf '\n%s\n' '0,0 10x10'
+    fi
+    ;;
   tesseract) dd of=/dev/null 2>/dev/null; printf '%s\n' words ;;
   wf-recorder) [[ ${FOS_TEST_WF_FAIL:-false} == true ]] && exit 9; trap 'exit 0' INT; while :; do sleep 1; done ;;
   kill) builtin kill -TERM "${2:?missing PID}" ;;
@@ -47,7 +66,7 @@ esac
 EOF
 chmod +x "$bin/backend"
 
-backends=(nh nix hostname glab auth qs wpctl pulsemixer playerctl hyprctl hyprlock wdisplays nmcli bluetoothctl powerprofilesctl upower systemctl notify-send btop grim slurp satty tesseract wl-copy wf-recorder kill vpn tailscale virsh lshw lscpu free lspci lsusb lsblk sensors fwupdmgr smartctl ip launch-browser launch-terminal launch-editor launch-file-manager show-keybindings uptime uname journalctl fos-internal-audio-output-set-default fos-internal-audio-input-set-default fos-internal-monitor-state fos-internal-brightness-display fos-internal-hyprland-monitor-scaling fos-internal-network-status fos-internal-network-speedtest fos-internal-network-band fos-internal-network-qr fos-internal-battery-status fos-internal-powerprofiles-list fos-internal-powerprofiles-set fos-internal-system-stats)
+backends=(nh nix hostname glab auth qs wpctl pulsemixer playerctl hyprctl hyprlock hyprpicker wdisplays nmcli bluetoothctl powerprofilesctl upower systemctl notify-send btop grim slurp satty tesseract wl-copy wf-recorder kill pkill vpn tailscale virsh lshw lscpu free lspci lsusb lsblk sensors fwupdmgr smartctl ip launch-browser launch-terminal launch-editor launch-file-manager show-keybindings uptime uname journalctl fos-internal-audio-output-set-default fos-internal-audio-input-set-default fos-internal-monitor-state fos-internal-brightness-display fos-internal-hyprland-monitor-scaling fos-internal-network-status fos-internal-network-speedtest fos-internal-network-band fos-internal-network-qr fos-internal-battery-status fos-internal-powerprofiles-list fos-internal-powerprofiles-set fos-internal-system-stats fos-internal-capture-region fos-internal-notification-send)
 for backend in "${backends[@]}"; do ln -s backend "$bin/$backend"; done
 
 export FOS_TEST_LOG=$log NH_FLAKE=$flake XDG_RUNTIME_DIR=$runtime XDG_VIDEOS_DIR=$root/Videos
@@ -60,6 +79,9 @@ export FOS_UPOWER=$bin/upower FOS_SYSTEMCTL=$bin/systemctl FOS_NOTIFY_SEND=$bin/
 export FOS_JOURNALCTL=$bin/journalctl
 export FOS_BTOP=$bin/btop FOS_GRIM=$bin/grim FOS_SLURP=$bin/slurp FOS_SATTY=$bin/satty FOS_TESSERACT=$bin/tesseract
 export FOS_WL_COPY=$bin/wl-copy FOS_WF_RECORDER=$bin/wf-recorder FOS_VPN_COMMAND=$bin/vpn FOS_TAILSCALE=$bin/tailscale
+export FOS_HYPRPICKER=$bin/hyprpicker FOS_PKILL=$bin/pkill FOS_CAPTURE_REGION=$bin/fos-internal-capture-region
+export FOS_NOTIFICATION_SEND=$bin/fos-internal-notification-send FOS_SCREENSHOT_DIR=$root/Screenshots
+export FOS_TEST_FREEZE_PID_FILE=$root/freeze.pid
 export FOS_KILL=$bin/kill
 export FOS_VIRSH=$bin/virsh FOS_LSHW=$bin/lshw FOS_LSCPU=$bin/lscpu FOS_FREE=$bin/free FOS_LSPCI=$bin/lspci
 export FOS_LSUSB=$bin/lsusb FOS_LSBLK=$bin/lsblk FOS_SENSORS=$bin/sensors FOS_FWUPDMGR=$bin/fwupdmgr
@@ -124,6 +146,7 @@ reset_log; $FOS_BIN auth refresh gitlab.example >/dev/null 2>&1; assert_log 'aut
 # Every command domain has dispatch or validation coverage.
 reset_log; $FOS_BIN menu >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"root"}'
 reset_log; $FOS_BIN menu apps >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"apps"}'
+reset_log; $FOS_BIN menu capture >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"capture"}'
 reset_log; $FOS_BIN menu system >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"system"}'
 reset_log; $FOS_BIN menu recording >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.menu {"menu":"capture.record"}'
 reset_log; $FOS_BIN menu reminders >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- shell toggle omarchy.reminders {}'
@@ -161,11 +184,28 @@ reset_log; $FOS_BIN system lock >/dev/null 2>&1; assert_log 'hyprlock|'
 reset_log; $FOS_BIN notifications send Title Body >/dev/null 2>&1; assert_log 'notify-send|Title Body'
 reset_log; $FOS_BIN notifications status >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- notifications dndState'
 reset_log; $FOS_BIN clipboard open >/dev/null 2>&1; assert_log 'qs|-c desktop ipc call -- clipboard toggle'
-reset_log; $FOS_BIN capture screenshot screen >/dev/null 2>&1; grep -Fxq 'grim|-' "$log"; grep -Fxq 'satty|-f -' "$log"
-reset_log; $FOS_BIN capture screenshot window >/dev/null 2>&1
-grep -Fq 'hyprctl|-j clients' "$log"; grep -Fq 'slurp|-r' "$log"; grep -Fq 'grim|-g 0,0 10x10 -' "$log"
+rm -rf "$FOS_SCREENSHOT_DIR"
+reset_log; screenshot=$($FOS_BIN capture screenshot screen 2>/dev/null)
+[[ -f $screenshot && $(<"$screenshot") == image ]]
+[[ -f $runtime/fos/screenshot.lock && $(stat -c %a "$runtime/fos/screenshot.lock") == 600 ]]
+grep -Fq 'fos-internal-capture-region|fullscreen --keep-freeze' "$log"
+grep -Fq 'hyprctl|eval hl.config({ cursor = { no_hardware_cursors = 0 } })' "$log"
+grep -Fq 'hyprctl|eval hl.config({ cursor = { no_hardware_cursors = 1 } })' "$log"
+grep -Fq "grim|-g 0,0 10x10 $screenshot" "$log"
+grep -Fq 'wl-copy|--type image/png' "$log"
+grep -Fq "fos-internal-notification-send|Screenshot saved to clipboard and file Edit with Super + Alt + N (or click this) --image $screenshot --exec $bin/satty -f $screenshot -o $screenshot" "$log"
+reset_log; $FOS_BIN capture screenshot window >/dev/null 2>&1; grep -Fq 'fos-internal-capture-region|windows --keep-freeze' "$log"
+reset_log; second_screenshot=$($FOS_BIN capture screenshot smart 2>/dev/null); grep -Fq 'fos-internal-capture-region|smart --keep-freeze' "$log"
+[[ $second_screenshot != "$screenshot" && -f $second_screenshot ]]
 reset_log; $FOS_BIN capture ocr region >/dev/null 2>&1; grep -Fq 'tesseract|stdin stdout -l eng+fre' "$log"
-reset_log; FOS_TEST_EMPTY_SLURP=true assert_failure capture screenshot region; assert_log 'slurp|'
+reset_log; rm -f "$FOS_TEST_FREEZE_PID_FILE"; FOS_TEST_EMPTY_SLURP=true assert_failure capture screenshot region
+freeze_pid=$(<"$FOS_TEST_FREEZE_PID_FILE")
+for _ in {1..20}; do kill -0 "$freeze_pid" 2>/dev/null || break; sleep 0.05; done
+if kill -0 "$freeze_pid" 2>/dev/null; then printf 'screenshot freeze process was not cleaned up\n' >&2; exit 1; fi
+grep -Fq 'hyprctl|eval hl.config({ cursor = { no_hardware_cursors = 1 } })' "$log"
+reset_log; FOS_TEST_SLURP_RUNNING=true $FOS_BIN capture screenshot smart >/dev/null 2>&1; assert_log 'pkill|-x slurp'
+reset_log; FOS_TEST_SLURP_RUNNING=true $FOS_BIN capture color >/dev/null 2>&1; assert_log 'pkill|-x slurp'
+reset_log; $FOS_BIN capture color >/dev/null 2>&1; grep -Fxq 'hyprpicker|-a' "$log"
 reset_log; $FOS_BIN vpn status >/dev/null 2>&1; assert_log 'vpn|status'
 reset_log; $FOS_BIN tailscale status >/dev/null 2>&1; assert_log 'tailscale|status'
 reset_log; $FOS_BIN service status --user test.service >/dev/null 2>&1; assert_log 'systemctl|--user status test.service'

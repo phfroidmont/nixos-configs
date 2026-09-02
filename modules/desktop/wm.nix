@@ -15,6 +15,7 @@ let
   kitty = lib.getExe config.home-manager.users.${config.user.name}.programs.kitty.package;
   jellyfinTui = lib.getExe pkgs.jellyfin-tui;
   fos = lib.getExe pkgs.fos;
+  captureRegion = lib.getExe' pkgs.fos "fos-internal-capture-region";
   systemctl = lib.getExe' pkgs.systemd "systemctl";
   quickshell =
     lib.getExe' inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell
@@ -252,6 +253,7 @@ in
               (mkBind (modKey "SHIFT + ALT + N") "Notification history" (notification "showHistory"))
               (mkBind (modKey "T") "Toggle window floating" (lua ''hl.dsp.window.float({ action = "toggle" })''))
               (mkBind (modKey "SPACE") "Command menu" (exec "${fos} menu"))
+              (mkBind (modKey "CTRL + C") "Capture menu" (exec "${fos} menu capture"))
               (mkBind (modKey "ALT + SPACE") "Applications" (exec "${fos} menu apps"))
               (mkBind (modKey "ESCAPE") "System menu" (exec "${fos} menu system"))
               (mkBind (modKey "B") "Keybindings" (exec quickshellCommands.keybindings))
@@ -324,8 +326,11 @@ in
               (mkBind "XF86MonBrightnessDown" "Brightness down" (exec "xbacklight -ctrl amdgpu_bl1 -dec 5"))
               (mkBind "XF86MonBrightnessUp" "Brightness up" (exec "xbacklight -ctrl amdgpu_bl1 -inc 5"))
 
-              (mkBind "Print" "Screenshot region" (exec ''grim -g "$(slurp)" - | satty -f -''))
-              (mkBind "SHIFT + Print" "Screenshot screen" (exec "grim - | satty -f -"))
+              (mkBind "Print" "Screenshot" (exec "${fos} capture screenshot smart"))
+              (mkBind "SHIFT + Print" "Screenshot focused monitor" (exec "${fos} capture screenshot screen"))
+              (mkBind "ALT + Print" "Screen recording" (exec "${fos} menu recording"))
+              (mkBind (modKey "Print") "Color picker" (exec "${fos} capture color"))
+              (mkBind (modKey "CTRL + Print") "Extract text from screenshot" (exec "${fos} capture ocr region"))
 
               # Move/resize windows with mainMod + LMB/RMB and dragging
               (mkMouseBind (modKey "mouse:272") "Move window" (lua "hl.dsp.window.drag()"))
@@ -344,6 +349,44 @@ in
               ];
             };
           };
+          extraConfig = ''
+            hl.layer_rule({ match = { namespace = "selection" }, no_anim = true, animation = "none" })
+
+            local selection_layers = 0
+            local selection_binds = {}
+
+            hl.on("layer.opened", function(layer)
+              if layer.namespace == "selection" then
+                selection_layers = selection_layers + 1
+                if selection_layers == 1 then
+                  selection_binds = {
+                    hl.bind("RETURN", hl.dsp.exec_cmd(${toLua "${captureRegion} --take-window"}), { description = "Capture highlighted window" }),
+                    hl.bind("CTRL + RETURN", hl.dsp.exec_cmd(${toLua "${captureRegion} --take-fullscreen"}), { description = "Capture focused monitor" }),
+                    hl.bind("TAB", hl.dsp.exec_cmd(${toLua "${captureRegion} --select-window next"}), { description = "Select next window to capture" }),
+                    hl.bind("CTRL + TAB", hl.dsp.exec_cmd(${toLua "${captureRegion} --select-window prev"}), { description = "Select previous window to capture" }),
+                  }
+                  for _, direction in ipairs({ "left", "right", "up", "down" }) do
+                    table.insert(
+                      selection_binds,
+                      hl.bind(direction:upper(), hl.dsp.exec_cmd(${toLua captureRegion} .. " --select-window " .. direction), { description = "Select window to capture" })
+                    )
+                  end
+                end
+              end
+            end)
+
+            hl.on("layer.closed", function(layer)
+              if layer.namespace == "selection" and selection_layers > 0 then
+                selection_layers = selection_layers - 1
+                if selection_layers == 0 then
+                  for _, keybind in ipairs(selection_binds) do
+                    keybind:unbind()
+                  end
+                  selection_binds = {}
+                end
+              end
+            end)
+          '';
         };
 
         programs.satty = {

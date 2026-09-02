@@ -21,6 +21,7 @@ auth status|auth status|Show GitLab authentication status
 auth refresh|auth refresh [GITLAB_HOST]|Refresh Nix GitLab credentials
 menu|menu|Toggle the command menu
 menu apps|menu apps|Toggle the applications menu
+menu capture|menu capture|Open capture controls
 menu system|menu system|Toggle the system menu
 menu clipboard|menu clipboard|Open clipboard history
 menu keybindings|menu keybindings|Open the keybindings helper
@@ -87,9 +88,11 @@ notifications history|notifications history|Open notification history
 notifications send|notifications send TITLE [BODY]|Send a notification
 clipboard open|clipboard open|Open clipboard history
 clipboard clear|clipboard clear --yes|Clear Quickshell clipboard state
-capture screenshot region|capture screenshot region|Capture a region
+capture screenshot smart|capture screenshot smart|Smart capture a region, window, or monitor
+capture screenshot region|capture screenshot region|Capture a freeform region
 capture screenshot window|capture screenshot window|Capture a window
-capture screenshot screen|capture screenshot screen|Capture the screen
+capture screenshot screen|capture screenshot screen|Capture the focused monitor
+capture color|capture color|Copy a selected color
 capture ocr region|capture ocr region|Copy text from a region
 capture record start region|capture record start region [--audio]|Record a region
 capture record start screen|capture record start screen [--audio]|Record the screen
@@ -134,7 +137,8 @@ POWERPROFILESCTL=${FOS_POWERPROFILESCTL:-powerprofilesctl}
 UPOWER=${FOS_UPOWER:-upower}; SYSTEMCTL=${FOS_SYSTEMCTL:-systemctl}; JOURNALCTL=${FOS_JOURNALCTL:-journalctl}
 HYPRLOCK=${FOS_HYPRLOCK:-hyprlock}
 NOTIFY_SEND=${FOS_NOTIFY_SEND:-notify-send}; BTOP=${FOS_BTOP:-btop}; GRIM=${FOS_GRIM:-grim}; SLURP=${FOS_SLURP:-slurp}
-SATTY=${FOS_SATTY:-satty}; TESSERACT=${FOS_TESSERACT:-tesseract}; WL_COPY=${FOS_WL_COPY:-wl-copy}
+SATTY=${FOS_SATTY:-@fos-satty@}; TESSERACT=${FOS_TESSERACT:-tesseract}; WL_COPY=${FOS_WL_COPY:-wl-copy}
+HYPRPICKER=${FOS_HYPRPICKER:-hyprpicker}; PKILL=${FOS_PKILL:-pkill}
 WF_RECORDER=${FOS_WF_RECORDER:-wf-recorder}; VPN=${FOS_VPN_COMMAND:-aegis-vpn}; TAILSCALE=${FOS_TAILSCALE:-tailscale}
 VIRSH=${FOS_VIRSH:-virsh}; LSHW=${FOS_LSHW:-lshw}; LSCPU=${FOS_LSCPU:-lscpu}; FREE=${FOS_FREE:-free}
 LSPCI=${FOS_LSPCI:-lspci}; LSUSB=${FOS_LSUSB:-lsusb}; LSBLK=${FOS_LSBLK:-lsblk}; SENSORS=${FOS_SENSORS:-sensors}
@@ -161,6 +165,8 @@ BATTERY_STATUS=${FOS_BATTERY_STATUS:-fos-internal-battery-status}
 POWERPROFILES_LIST=${FOS_POWERPROFILES_LIST:-fos-internal-powerprofiles-list}
 POWERPROFILES_SET=${FOS_POWERPROFILES_SET:-fos-internal-powerprofiles-set}
 SYSTEM_STATS=${FOS_SYSTEM_STATS:-fos-internal-system-stats}
+CAPTURE_REGION=${FOS_CAPTURE_REGION:-fos-internal-capture-region}
+NOTIFICATION_SEND=${FOS_NOTIFICATION_SEND:-fos-internal-notification-send}
 
 fail() { printf 'fos: %s\n' "$1" >&2; exit 2; }
 need() { if [[ $1 == */* ]]; then [[ -x $1 ]] || fail "required command is not executable: $1"; else command -v "$1" >/dev/null || fail "required command is unavailable: $1"; fi; }
@@ -318,7 +324,7 @@ require_session() { [[ -n ${XDG_RUNTIME_DIR:-} ]] || fail 'a graphical session i
 qs() { require_session; exec_command "$QS" -c desktop ipc call -- "$@"; }
 # shellcheck disable=SC2016
 menu_route() { local payload; require_session; need "$JQ"; payload=$("$JQ" -cn --arg menu "$1" '{menu:$menu}'); qs shell toggle omarchy.menu "$payload"; }
-menu_command() { local item=${1:-}; shift || true; no_args "$@"; case $item in '') menu_route root;; apps|system) menu_route "$item";; recording) menu_route capture.record;; tailscale) menu_route network.tailscale;; clipboard) qs clipboard toggle;; keybindings) exec_command "$KEYBINDINGS";; notifications) qs notifications showHistory;; reminders) qs shell toggle omarchy.reminders '{}';; agents) qs shell toggle omarchy.agents '{}';; audio) qs shell toggle omarchy.audio '{}';; bluetooth) qs shell toggle omarchy.bluetooth '{}';; clock) qs shell toggle omarchy.clock '{}';; display) qs shell toggle omarchy.monitor '{}';; network) qs shell toggle omarchy.network '{}';; power) qs shell toggle omarchy.power '{}';; *) fail 'invalid menu';; esac; }
+menu_command() { local item=${1:-}; shift || true; no_args "$@"; case $item in '') menu_route root;; apps|capture|system) menu_route "$item";; recording) menu_route capture.record;; tailscale) menu_route network.tailscale;; clipboard) qs clipboard toggle;; keybindings) exec_command "$KEYBINDINGS";; notifications) qs notifications showHistory;; reminders) qs shell toggle omarchy.reminders '{}';; agents) qs shell toggle omarchy.agents '{}';; audio) qs shell toggle omarchy.audio '{}';; bluetooth) qs shell toggle omarchy.bluetooth '{}';; clock) qs shell toggle omarchy.clock '{}';; display) qs shell toggle omarchy.monitor '{}';; network) qs shell toggle omarchy.network '{}';; power) qs shell toggle omarchy.power '{}';; *) fail 'invalid menu';; esac; }
 
 public_path() {
   local entry result=''
@@ -508,6 +514,109 @@ select_geometry() {
   printf '%s\n' "$geometry"
 }
 
+screenshot_geometry() {
+  local mode=$1 freeze_pid geometry
+  case $mode in
+    smart) mode=smart ;;
+    region) mode=region ;;
+    window) mode=windows ;;
+    screen) mode=fullscreen ;;
+    *) fail 'invalid screenshot target' ;;
+  esac
+
+  need "$CAPTURE_REGION"
+  {
+    read -r freeze_pid || true
+    read -r geometry || true
+  } < <("$CAPTURE_REGION" "$mode" --keep-freeze)
+  SCREENSHOT_FREEZE_PID=$freeze_pid
+  [[ $geometry =~ ^-?[0-9]+,-?[0-9]+[[:space:]][1-9][0-9]*x[1-9][0-9]*$ ]] || fail 'capture selection was empty or invalid'
+  SCREENSHOT_GEOMETRY=$geometry
+}
+
+SCREENSHOT_FREEZE_PID=''
+SCREENSHOT_GEOMETRY=''
+SCREENSHOT_NO_HARDWARE_CURSORS=''
+SCREENSHOT_PENDING_OUTPUT=''
+SCREENSHOT_LOCK_FD=''
+screenshot_set_hardware_cursor_mode() {
+  "$HYPRCTL" eval "hl.config({ cursor = { no_hardware_cursors = $1 } })" >/dev/null 2>&1 ||
+    "$HYPRCTL" keyword cursor:no_hardware_cursors "$1" >/dev/null 2>&1
+}
+
+screenshot_cleanup() {
+  if [[ $SCREENSHOT_FREEZE_PID =~ ^[1-9][0-9]*$ ]]; then
+    kill "$SCREENSHOT_FREEZE_PID" 2>/dev/null || true
+  fi
+  SCREENSHOT_FREEZE_PID=''
+  if [[ $SCREENSHOT_NO_HARDWARE_CURSORS =~ ^[0-9]+$ ]]; then
+    screenshot_set_hardware_cursor_mode "$SCREENSHOT_NO_HARDWARE_CURSORS" || true
+  fi
+  SCREENSHOT_NO_HARDWARE_CURSORS=''
+  if [[ -n $SCREENSHOT_PENDING_OUTPUT ]]; then
+    rm -f -- "$SCREENSHOT_PENDING_OUTPUT"
+  fi
+  SCREENSHOT_PENDING_OUTPUT=''
+  if [[ $SCREENSHOT_LOCK_FD =~ ^[0-9]+$ ]]; then
+    exec {SCREENSHOT_LOCK_FD}>&-
+  fi
+  SCREENSHOT_LOCK_FD=''
+}
+
+screenshot_lock() {
+  local state_dir lock_file
+  state_dir=$(fos_runtime_state_dir)
+  mkdir -p -- "$state_dir"
+  [[ -d $state_dir && ! -L $state_dir && -O $state_dir ]] || fail 'screenshot state directory is unsafe or unowned'
+  chmod 700 -- "$state_dir"
+  lock_file=$state_dir/screenshot.lock
+  [[ ! -L $lock_file && ( ! -e $lock_file || -f $lock_file && -O $lock_file ) ]] || fail 'screenshot lock file is unsafe or unowned'
+  need "$FLOCK"
+  exec {SCREENSHOT_LOCK_FD}>>"$lock_file"
+  chmod 600 -- "$lock_file"
+  if ! "$FLOCK" --nonblock "$SCREENSHOT_LOCK_FD"; then
+    exec {SCREENSHOT_LOCK_FD}>&-
+    SCREENSHOT_LOCK_FD=''
+    return 1
+  fi
+}
+
+capture_screenshot() {
+  local mode=$1 geometry output_dir output
+
+  if "$PKILL" -x slurp 2>/dev/null; then
+    return
+  fi
+
+  trap screenshot_cleanup EXIT
+  if ! screenshot_lock; then
+    trap - EXIT
+    return
+  fi
+  SCREENSHOT_NO_HARDWARE_CURSORS=$("$HYPRCTL" getoption cursor:no_hardware_cursors -j | "$JQ" '.int')
+  [[ $SCREENSHOT_NO_HARDWARE_CURSORS =~ ^[0-9]+$ ]] || fail 'Hyprland returned an invalid cursor mode'
+  screenshot_set_hardware_cursor_mode 0
+  screenshot_geometry "$mode"
+  geometry=$SCREENSHOT_GEOMETRY
+  output_dir=${FOS_SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}
+  mkdir -p -- "$output_dir"
+  output=$(mktemp --tmpdir="$output_dir" --suffix=.png "screenshot-$(date +%Y-%m-%d_%H-%M-%S)-XXXXXX")
+  SCREENSHOT_PENDING_OUTPUT=$output
+
+  run_command "$GRIM" -g "$geometry" "$output"
+  SCREENSHOT_PENDING_OUTPUT=''
+  screenshot_cleanup
+  trap - EXIT
+  run_command "$WL_COPY" --type image/png <"$output"
+  printf '%s\n' "$output"
+
+  "$NOTIFICATION_SEND" \
+    'Screenshot saved to clipboard and file' \
+    'Edit with Super + Alt + N (or click this)' \
+    --image "$output" \
+    --exec "$SATTY" -f "$output" -o "$output" || true
+}
+
 fos_runtime_state_dir() {
   if [[ -n ${FOS_RUNTIME_STATE_DIR:-} ]]; then
     printf '%s\n' "$FOS_RUNTIME_STATE_DIR"
@@ -636,12 +745,20 @@ capture_command() {
   state_dir=$(fos_runtime_state_dir); state_file=$state_dir/recording.state
   case $kind in
     screenshot)
-      action=${1:-}; shift || true; no_args "$@"
+      action=${1:-smart}; shift || true; no_args "$@"
       case $action in
-        region|window) geometry=$(select_geometry "$action"); print_command "$GRIM" -g "$geometry" -; "$GRIM" -g "$geometry" - | exec_command "$SATTY" -f - ;;
-        screen) print_command "$GRIM" -; "$GRIM" - | exec_command "$SATTY" -f - ;;
+        smart|region|window|screen) capture_screenshot "$action" ;;
         *) fail 'invalid screenshot target' ;;
       esac
+      ;;
+    color)
+      no_args "$@"
+      if "$PKILL" -x slurp 2>/dev/null; then return; fi
+      trap screenshot_cleanup EXIT
+      if ! screenshot_lock; then trap - EXIT; return; fi
+      run_command "$HYPRPICKER" -a
+      screenshot_cleanup
+      trap - EXIT
       ;;
     ocr)
       [[ ${1:-} == region ]] || fail 'ocr requires region'; shift; no_args "$@"

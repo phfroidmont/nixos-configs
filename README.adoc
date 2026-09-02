@@ -108,6 +108,25 @@ them, especially in non-interactive use. Wi-Fi QR sharing reveals credentials
 and therefore requires `--reveal` (for example,
 `fos network wifi share --reveal`).
 
+=== Screenshot behavior
+
+`Print` freezes the visible workspace and opens a smart picker. Drag for a
+freeform region, or click a window or monitor to capture its rectangle. While
+the picker is open, `Return` captures the highlighted window, `Ctrl+Return`
+captures the focused monitor, `Tab` and `Ctrl+Tab` cycle through windows, and
+the arrow keys move between windows. Press `Print` again to cancel.
+
+Screenshots are written to `~/Pictures/Screenshots` and copied immediately to
+the clipboard as PNG images. The completion notification contains a preview;
+click it or press `Super+Alt+N` to annotate the saved image in Satty.
+`Shift+Print` captures the focused monitor directly, `Alt+Print` opens recording
+controls, `Super+Print` picks a color, `Super+Ctrl+Print` copies OCR text from a
+region, and `Super+Ctrl+C` opens the Capture menu.
+
+The explicit `fos capture screenshot smart`, `region`, `window`, and `screen`
+commands provide the same capture modes. Set `FOS_SCREENSHOT_DIR` to override
+the screenshot directory for an individual invocation or graphical session.
+
 === Recording behavior
 
 `fos capture record start region` and `fos capture record start screen` launch

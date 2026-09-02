@@ -11,7 +11,7 @@ in
 {
   fos = prev.callPackage ./packages/fos/package.nix {
     panelTools = quickshellPanelTools;
-    inherit quickshellPackage;
+    inherit inputs quickshellPackage;
   };
   quickshell-panel-tools = quickshellPanelTools;
   get-token = prev.callPackage ./packages/get-token/package.nix { };
