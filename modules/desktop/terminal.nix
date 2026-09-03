@@ -33,7 +33,6 @@ in
           "ctrl+;" = "next_tab";
           "ctrl+shift+," = "move_tab_backward";
           "ctrl+shift+;" = "move_tab_forward";
-          "alt+shift+enter" = "send_text all \\e[13;4u";
         };
         themeFile = "gruvbox-dark";
       };

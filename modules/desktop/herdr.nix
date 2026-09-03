@@ -161,6 +161,7 @@ let
         <<<"$panes_json")"
       edit_created=false
       agent_created=false
+      workspace_created=false
 
       if [[ -z "$workspace_id" ]]; then
         workspace_json="$(herdr workspace create --cwd "$project" --label "$label" --no-focus)"
@@ -171,6 +172,7 @@ let
         herdr tab rename "$edit_tab_id" edit >/dev/null
         herdr pane run "$edit_pane_id" 'nvim' >/dev/null
         edit_created=true
+        workspace_created=true
       else
         tabs_json="$(herdr tab list --workspace "$workspace_id")"
         edit_tab_id="$(jq -r '[.result.tabs[] | select(.label == "edit") | .tab_id][0] // empty' <<<"$tabs_json")"
@@ -227,7 +229,9 @@ let
       fi
 
       herdr workspace focus "$workspace_id" >/dev/null
-      herdr tab focus "$edit_tab_id" >/dev/null
+      if [[ "$workspace_created" == true ]]; then
+        herdr tab focus "$edit_tab_id" >/dev/null
+      fi
     '';
   };
 
@@ -308,7 +312,23 @@ let
       if ! herdr pane list >/dev/null 2>&1; then
         ${lib.getExe herdrProject} --restore-editors &
       fi
-      exec kitty --class herdr --title Herdr --directory ${lib.escapeShellArg projectsDirectory} herdr
+      exec kitty \
+        --override 'map=ctrl+shift+right' \
+        --override 'map=ctrl+tab' \
+        --override 'map=ctrl+shift+left' \
+        --override 'map=ctrl+shift+tab' \
+        --override 'map=ctrl+shift+t' \
+        --override 'map=ctrl+shift+q' \
+        --override 'map=ctrl+shift+.' \
+        --override 'map=ctrl+shift+,' \
+        --override 'map=ctrl+shift+alt+t' \
+        --override 'map=ctrl+,' \
+        --override 'map=ctrl+;' \
+        --override 'map=ctrl+shift+;' \
+        --class herdr \
+        --title Herdr \
+        --directory ${lib.escapeShellArg projectsDirectory} \
+        herdr
     '';
   };
 
@@ -372,6 +392,7 @@ in
 
           ui = {
             agent_panel_sort = "priority";
+            prompt_new_tab_name = false;
             status_indicators = "symbols";
             window_title = "{workspace}: {tab}";
             sound.enabled = false;
@@ -395,33 +416,38 @@ in
               "prefix+["
             ];
 
-            split_horizontal = [
-              "prefix+h"
-              "alt+enter"
-            ];
-            split_vertical = [
-              "prefix+v"
-              "alt+shift+enter"
-            ];
+            split_horizontal = "prefix+h";
+            split_vertical = "prefix+v";
             close_pane = "prefix+x";
             zoom = "prefix+z";
             last_pane = "prefix+semicolon";
-            focus_pane_left = "ctrl+alt+left";
-            focus_pane_down = "ctrl+alt+down";
-            focus_pane_up = "ctrl+alt+up";
-            focus_pane_right = "ctrl+alt+right";
-            resize_pane_left = "ctrl+alt+shift+left";
-            resize_pane_down = "ctrl+alt+shift+down";
-            resize_pane_up = "ctrl+alt+shift+up";
-            resize_pane_right = "ctrl+alt+shift+right";
+            focus_pane_left = "";
+            focus_pane_down = "";
+            focus_pane_up = "";
+            focus_pane_right = "";
+            swap_pane_left = "";
+            swap_pane_down = "";
+            swap_pane_up = "";
+            swap_pane_right = "";
+            resize_mode = "";
+            resize_pane_left = "";
+            resize_pane_down = "";
+            resize_pane_up = "";
+            resize_pane_right = "";
             rename_pane = "prefix+shift+o";
 
             new_tab = [
               "prefix+c"
               "alt+shift+t"
             ];
-            rename_tab = "prefix+r";
-            close_tab = "prefix+k";
+            rename_tab = [
+              "prefix+r"
+              "alt+shift+r"
+            ];
+            close_tab = [
+              "prefix+k"
+              "alt+shift+x"
+            ];
             switch_tab = "prefix+1..9";
             previous_tab = [
               "prefix+p"
