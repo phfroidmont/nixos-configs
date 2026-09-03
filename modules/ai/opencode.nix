@@ -24,6 +24,7 @@ in
           name = "mcp-atlassian-jira";
           runtimeInputs = [
             pkgs.libsecret
+            pkgs.python3
             pkgs.uv
           ];
           text = ''
@@ -38,7 +39,7 @@ in
             fi
 
             export JIRA_PERSONAL_TOKEN="$jiraPersonalToken"
-            exec uvx mcp-atlassian==0.23.0
+            exec uvx --python ${lib.getExe pkgs.python3} --no-python-downloads mcp-atlassian==0.23.0
           '';
         };
         jiraToolsets = [
