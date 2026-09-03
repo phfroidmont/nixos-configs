@@ -81,6 +81,13 @@ const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
   '*', '*', '*', '*'
 );
 
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+  (void)record;
+
+  // Resolve home-row modifier shortcuts early without changing Layer-Tap behavior.
+  return IS_QK_MOD_TAP(keycode);
+}
+
 
 
 
