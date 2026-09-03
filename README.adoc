@@ -171,6 +171,34 @@ nix build .#nixosConfigurations.thehostname.config.system.build.toplevel
 
 Update the lock file without FOS with `nix flake update`.
 
+== Build and flash the Voyager firmware
+
+The Voyager AZERTY keymap source is kept in `packages/voyager-firmware` and
+built against the ZSA `firmware25` QMK fork pinned in `flake.lock`.
+
+[source,bash]
+----
+nix build .#voyager-firmware
+----
+
+The firmware is available at `result/zsa_voyager_azerty.bin`. Build and flash
+it from the command line with:
+
+[source,bash]
+----
+nix run .#voyager-flash
+----
+
+Zapp waits for the keyboard to enter bootloader mode. Use the Voyager's reset
+button or the `QK_BOOT` key in the layout after starting the command. Update the
+pinned ZSA firmware separately, then compile before flashing it:
+
+[source,bash]
+----
+nix flake update qmk-firmware
+nix build .#voyager-firmware
+----
+
 == Refresh Nix GitLab authentication
 
 [source,bash]

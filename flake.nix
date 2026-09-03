@@ -10,6 +10,10 @@
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    qmk-firmware = {
+      url = "git+https://github.com/zsa/qmk_firmware.git?ref=firmware25&submodules=1";
+      flake = false;
+    };
     llm-agents.url = "github:numtide/llm-agents.nix";
     herdr = {
       url = "github:herdrdev/herdr/v0.8.2";
@@ -50,6 +54,7 @@
               "steam-run"
               "steam-unwrapped"
               "keymapp"
+              "zapp"
               "mongodb-compass"
               "nvidia-x11"
               "nvidia-settings"
@@ -87,8 +92,23 @@
         my = import ./overlay.nix { inherit inputs; };
       };
 
-      packages.${system}.fos = pkgs.fos;
-      checks.${system}.fos = pkgs.fos.tests;
+      packages.${system} = {
+        fos = pkgs.fos;
+        voyager-firmware = pkgs.voyager-firmware;
+        voyager-flash = pkgs.voyager-flash;
+      };
+
+      apps.${system}.voyager-flash = {
+        type = "app";
+        program = lib.getExe pkgs.voyager-flash;
+        meta.description = "Build and flash the ZSA Voyager firmware";
+      };
+
+      checks.${system} = {
+        fos = pkgs.fos.tests;
+        voyager-firmware = pkgs.voyager-firmware;
+        voyager-flash = pkgs.voyager-flash;
+      };
 
       nixosConfigurations = (mapHosts ./hosts { }) // {
         aegis = stableLib.my.mkHost ./hosts/aegis/default.nix {

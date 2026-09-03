@@ -256,6 +256,25 @@
         "type": "github"
       }
     },
+    "qmk-firmware": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788333284,
+        "narHash": "sha256-jWMYpBx7NT2953sWkB2KEetnlGPthtkdYYzW3/dtVZY=",
+        "ref": "firmware25",
+        "rev": "93b2b9ec3368f86c5eb5a2e3f934049f8daef885",
+        "revCount": 28736,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/zsa/qmk_firmware.git"
+      },
+      "original": {
+        "ref": "firmware25",
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/zsa/qmk_firmware.git"
+      }
+    },
     "quickshell": {
       "inputs": {
         "nixpkgs": [
@@ -287,6 +306,7 @@
         "nixpkgs": "nixpkgs_3",
         "nixpkgsStable": "nixpkgsStable",
         "omarchy": "omarchy",
+        "qmk-firmware": "qmk-firmware",
         "quickshell": "quickshell"
       }
     },
