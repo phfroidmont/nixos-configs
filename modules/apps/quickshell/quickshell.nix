@@ -435,6 +435,8 @@ let
             text = text.replace("omarchy-hyprland-focus-app", "fos-internal-hyprland-focus-app")
             path.write_text(text)
         PYTHON
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-recent-models.patch}
+        rm -f "$out/bin/"*.orig
         patchShebangs "$out/bin"
 
         QUICKSHELL_MODULE_ROOT=${./.} \

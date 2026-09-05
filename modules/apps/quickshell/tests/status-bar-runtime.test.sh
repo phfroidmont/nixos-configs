@@ -42,12 +42,12 @@ import time
 
 connection = sqlite3.connect(sys.argv[1])
 connection.execute("CREATE TABLE message (session_id TEXT, data TEXT)")
-connection.execute(
+connection.executemany(
     "INSERT INTO message VALUES (?, ?)",
-    (
-        "fixture-session",
-        json.dumps(
-            {
+    [
+        (
+            "fixture-session",
+            json.dumps({
                 "role": "assistant",
                 "providerID": "openai",
                 "modelID": "gpt-fixture",
@@ -58,9 +58,24 @@ connection.execute(
                     "reasoning": 10,
                     "cache": {"read": 0, "write": 0},
                 },
-            }
+            }),
         ),
-    ),
+        (
+            "old-fixture-session",
+            json.dumps({
+                "role": "assistant",
+                "providerID": "openai",
+                "modelID": "gpt-old-fixture",
+                "time": {"created": int((time.time() - 8 * 24 * 60 * 60) * 1000)},
+                "tokens": {
+                    "input": 500,
+                    "output": 400,
+                    "reasoning": 100,
+                    "cache": {"read": 0, "write": 0},
+                },
+            }),
+        ),
+    ],
 )
 connection.commit()
 connection.close()
@@ -184,7 +199,16 @@ usage_record="$test_root/home/.local/state/omarchy/agents/usage/codex.json"
 geometry=""
 for _ in {1..400}; do
   if [[ -f $usage_record ]] \
-    && jq -e '.id == "codex" and .totalPrompts == 1 and .modelUsage["gpt-fixture"]' "$usage_record" >/dev/null; then
+    && jq -e '
+      .id == "codex"
+      and .totalPrompts == 2
+      and .todayPrompts == 1
+      and ([.recentDays[].messageCount] | add) == 100
+      and .modelUsage["gpt-fixture"]
+      and (.modelUsage | has("gpt-old-fixture") | not)
+      and ([.modelUsage[] | .inputTokens + .outputTokens + .cacheReadInputTokens + .cacheCreationInputTokens] | add)
+        == ([.recentDays[].messageCount] | add)
+    ' "$usage_record" >/dev/null; then
     geometry=$("$QS_BIN" -p "$SHELL_PATH" ipc call -- shell debugBarGeometry)
     if jq -e 'any(.[]; .id == "omarchy.agents" and .visible and .itemVisible)' <<<"$geometry" >/dev/null; then
       break
@@ -197,7 +221,16 @@ for _ in {1..400}; do
   sleep 0.1
 done
 
-jq -e '.id == "codex" and .totalPrompts == 1 and .modelUsage["gpt-fixture"]' "$usage_record" >/dev/null
+jq -e '
+  .id == "codex"
+  and .totalPrompts == 2
+  and .todayPrompts == 1
+  and ([.recentDays[].messageCount] | add) == 100
+  and .modelUsage["gpt-fixture"]
+  and (.modelUsage | has("gpt-old-fixture") | not)
+  and ([.modelUsage[] | .inputTokens + .outputTokens + .cacheReadInputTokens + .cacheCreationInputTokens] | add)
+    == ([.recentDays[].messageCount] | add)
+' "$usage_record" >/dev/null
 jq -e 'any(.[]; .id == "omarchy.agents" and .visible and .itemVisible)' <<<"$geometry" >/dev/null
 
 jq -e '
