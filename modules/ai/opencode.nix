@@ -518,20 +518,6 @@ in
               title.model = "openai/gpt-5.6-luna";
               summary.model = "openai/gpt-5.6-luna";
             };
-            command = {
-              milestone-start = {
-                description = "Start or refine durable repository-local milestone state.";
-                agent = "build";
-                model = "openai/gpt-5.6-sol";
-                template = "{file:${./commands/milestone-start.md}}";
-              };
-              milestone-close = {
-                description = "Verify, summarize, and archive the current milestone.";
-                agent = "build";
-                model = "openai/gpt-5.6-sol";
-                template = "{file:${./commands/milestone-close.md}}";
-              };
-            };
             mcp = {
               metals = {
                 type = "local";
@@ -679,10 +665,6 @@ in
           - The primary agent reviews and integrates writer results. Subagents do not commit, push, or delegate further.
           - Subagents return concise findings, changed files, verification, and unresolved risks instead of raw output.
 
-          ## Milestones
-          - Treat compaction as a safety mechanism, not durable project memory.
-          - For substantial multi-session work, keep objectives, acceptance criteria, decisions, status, verification, and handoff notes in `.opencode/milestones/current.md`.
-          - Keep milestone state current at meaningful boundaries and before ending a session.
         '';
         xdg.configFile."opencode/plugin/foyer-skills.ts".text = ''
           import type { Plugin } from "@opencode-ai/plugin"
