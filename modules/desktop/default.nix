@@ -49,6 +49,15 @@ in
 
     services.udisks2.enable = true;
 
+    # Scala tooling leaves JVM daemons that ignore SIGTERM, otherwise delaying shutdown by 90 seconds.
+    systemd.units."session-.scope" = {
+      overrideStrategy = "asDropin";
+      text = ''
+        [Scope]
+        TimeoutStopSec=10s
+      '';
+    };
+
     home-manager.users.${config.user.name} = {
 
       services = {
