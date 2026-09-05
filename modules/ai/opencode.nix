@@ -251,7 +251,7 @@ in
           enable = true;
           package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
           settings = {
-            model = "openai/gpt-5.6-sol";
+            model = "openai/gpt-6-astra";
             small_model = "openai/gpt-5.6-luna";
             default_agent = "build";
             subagent_depth = 1;
@@ -412,7 +412,7 @@ in
                 color = "secondary";
                 description = "Primary implementation agent and orchestrator for coding work.";
                 mode = "primary";
-                model = "openai/gpt-5.6-sol";
+                model = "openai/gpt-6-astra";
                 permission.task = {
                   "*" = "deny";
                   explore = "allow";
@@ -427,7 +427,7 @@ in
                 color = "primary";
                 description = "Read-only planning and architectural analysis.";
                 mode = "primary";
-                model = "openai/gpt-5.6-sol";
+                model = "openai/gpt-6-astra";
                 permission = {
                   edit = "deny";
                   bash = planBash;
@@ -489,7 +489,7 @@ in
                 description = "Reviews changes for defects, regressions, risks, and missing tests without editing.";
                 disable = false;
                 mode = "subagent";
-                model = "openai/gpt-5.6-sol";
+                model = "openai/gpt-6-astra";
                 steps = 100;
                 prompt = "{file:${./prompts/review-rules.txt}}";
                 permission = {
@@ -501,7 +501,7 @@ in
               implement = {
                 description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent.";
                 mode = "subagent";
-                model = "openai/gpt-5.6-sol";
+                model = "openai/gpt-6-astra";
                 steps = 100;
                 prompt = "{file:${./prompts/implement-rules.txt}}";
                 permission = {
@@ -514,7 +514,7 @@ in
                 };
               };
               general.disable = true;
-              compaction.model = "openai/gpt-5.6-sol";
+              compaction.model = "openai/gpt-6-astra";
               title.model = "openai/gpt-5.6-luna";
               summary.model = "openai/gpt-5.6-luna";
             };
