@@ -1,0 +1,63 @@
+--- a/bin/fos-internal-agent-usage-claude
++++ b/bin/fos-internal-agent-usage-claude
+@@ -177,16 +177,15 @@
+           active_days.add(day)
+           prompts += 1
+ 
+-          bucket = usage_by_model.setdefault(model, empty_bucket())
+-          bucket["inputTokens"] += input_tokens
+-          bucket["outputTokens"] += output_tokens
+-          bucket["cacheReadInputTokens"] += cache_read
+-          bucket["cacheCreationInputTokens"] += cache_write
+-
+           if day in recent:
+             # recentDays.messageCount is actually a token total, despite the
+             # legacy name shared with synced snapshots.
+             recent[day]["messageCount"] += total
++            bucket = usage_by_model.setdefault(model, empty_bucket())
++            bucket["inputTokens"] += input_tokens
++            bucket["outputTokens"] += output_tokens
++            bucket["cacheReadInputTokens"] += cache_read
++            bucket["cacheCreationInputTokens"] += cache_write
+ 
+           if day == today:
+             today_prompt_count += 1
+@@ -400,13 +399,13 @@
+             sessions.add(session_key)
+             active_days.add(day)
+             prompts += 1
+-            bucket = usage_by_model.setdefault(model, empty_bucket())
+-            bucket["inputTokens"] += input_tokens
+-            bucket["outputTokens"] += output_tokens
+-            bucket["cacheReadInputTokens"] += cache_read
+-            bucket["cacheCreationInputTokens"] += cache_write
+             if day in recent:
+               recent[day]["messageCount"] += total
++              bucket = usage_by_model.setdefault(model, empty_bucket())
++              bucket["inputTokens"] += input_tokens
++              bucket["outputTokens"] += output_tokens
++              bucket["cacheReadInputTokens"] += cache_read
++              bucket["cacheCreationInputTokens"] += cache_write
+             if day == today:
+               today_prompt_count += 1
+               today_sessions.add(session_key)
+@@ -505,14 +504,13 @@
+       active_days.add(day)
+       prompts += 1
+ 
+-      bucket = usage_by_model.setdefault(model, empty_bucket())
+-      bucket["inputTokens"] += input_tokens
+-      bucket["outputTokens"] += output_tokens
+-      bucket["cacheReadInputTokens"] += cache_read
+-      bucket["cacheCreationInputTokens"] += cache_write
+-
+       if day in recent:
+         recent[day]["messageCount"] += total
++        bucket = usage_by_model.setdefault(model, empty_bucket())
++        bucket["inputTokens"] += input_tokens
++        bucket["outputTokens"] += output_tokens
++        bucket["cacheReadInputTokens"] += cache_read
++        bucket["cacheCreationInputTokens"] += cache_write
+       if day == today:
+         today_prompt_count += 1
+         today_sessions.add(session_key)

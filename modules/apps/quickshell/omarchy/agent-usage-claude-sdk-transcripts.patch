@@ -1,0 +1,21 @@
+--- a/bin/fos-internal-agent-usage-claude
++++ b/bin/fos-internal-agent-usage-claude
+@@ -152,6 +152,18 @@
+           if entry.get("type") != "assistant" and message.get("role") != "assistant":
+             continue
+ 
++          # A session some other program drove through the Agent SDK. Meridian
++          # and its kin serve opencode's Anthropic requests this way, and
++          # opencode already keeps a durable row per message, so counting the
++          # transcript too would bill this subscription twice. These files are
++          # a working set rather than a ledger besides — each turn forks a new
++          # one and the spent forks are cleaned up — so a day's total would
++          # fall while the work behind it was still going on. An interactive
++          # run says "cli" here, and a transcript naming no entrypoint at all
++          # is left counted.
++          if str(entry.get("entrypoint") or "").startswith("sdk"):
++            continue
++
+           usage = message.get("usage") or entry.get("usage")
+           if not isinstance(usage, dict):
+             continue
