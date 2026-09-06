@@ -236,6 +236,48 @@ in
           "nix flake metadata --no-write-lock-file*" = "allow";
           "nix flake show --no-write-lock-file*" = "allow";
         };
+        modelSet =
+          {
+            top,
+            research,
+            writer,
+            small,
+          }:
+          {
+            model = top;
+            small_model = small;
+            agent = {
+              build.model = top;
+              plan.model = top;
+              review.model = top;
+              compaction.model = top;
+              explore.model = research;
+              scout.model = research;
+              test-triage.model = research;
+              implement.model = writer;
+              scan.model = small;
+              title.model = small;
+              summary.model = small;
+            };
+          };
+        openaiModels = modelSet {
+          top = "openai/gpt-6-astra";
+          research = "openai/gpt-5.6-terra";
+          writer = "openai/gpt-5.6-sol";
+          small = "openai/gpt-5.6-luna";
+        };
+        anthropicModels = modelSet {
+          top = "anthropic/claude-opus-5";
+          research = "anthropic/claude-sonnet-5";
+          writer = "anthropic/claude-sonnet-5";
+          small = "anthropic/claude-haiku-4-5";
+        };
+        # Default: OpenAI does the work, Claude gives the second opinion on review.
+        balancedModels = lib.recursiveUpdate openaiModels {
+          agent.review.model = "anthropic/claude-opus-5";
+        };
+        openaiConfig = builtins.toJSON openaiModels;
+        anthropicConfig = builtins.toJSON anthropicModels;
         foyerConfig = builtins.toJSON {
           mcp.jira.enabled = true;
         };
@@ -268,8 +310,7 @@ in
           enable = true;
           package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
           settings = {
-            model = "openai/gpt-6-astra";
-            small_model = "openai/gpt-5.6-luna";
+            inherit (balancedModels) model small_model;
             default_agent = "build";
             subagent_depth = 1;
             compaction = {
@@ -431,12 +472,11 @@ in
                 };
               };
             };
-            agent = {
+            agent = lib.recursiveUpdate {
               build = {
                 color = "secondary";
                 description = "Primary implementation agent and orchestrator for coding work.";
                 mode = "primary";
-                model = "openai/gpt-6-astra";
                 permission.task = {
                   "*" = "deny";
                   explore = "allow";
@@ -451,7 +491,6 @@ in
                 color = "primary";
                 description = "Read-only planning and architectural analysis.";
                 mode = "primary";
-                model = "openai/gpt-6-astra";
                 permission = {
                   edit = "deny";
                   bash = planBash;
@@ -468,7 +507,6 @@ in
               explore = {
                 description = "Read-only codebase exploration that returns concise evidence and file references.";
                 mode = "subagent";
-                model = "openai/gpt-5.6-terra";
                 steps = 100;
                 permission = {
                   edit = "deny";
@@ -479,7 +517,6 @@ in
               scout = {
                 description = "Read-only dependency and external documentation research.";
                 mode = "subagent";
-                model = "openai/gpt-5.6-terra";
                 steps = 100;
                 permission = {
                   edit = "deny";
@@ -489,7 +526,6 @@ in
               test-triage = {
                 description = "Reproduces and analyzes test failures without modifying source files.";
                 mode = "subagent";
-                model = "openai/gpt-5.6-terra";
                 steps = 100;
                 prompt = "{file:${./prompts/test-triage-rules.txt}}";
                 permission = {
@@ -500,7 +536,6 @@ in
               scan = {
                 description = "Performs narrow mechanical searches, inventories, and consistency checks.";
                 mode = "subagent";
-                model = "openai/gpt-5.6-luna";
                 steps = 100;
                 prompt = "{file:${./prompts/scan-rules.txt}}";
                 permission = {
@@ -513,7 +548,6 @@ in
                 description = "Reviews changes for defects, regressions, risks, and missing tests without editing.";
                 disable = false;
                 mode = "subagent";
-                model = "openai/gpt-6-astra";
                 steps = 100;
                 prompt = "{file:${./prompts/review-rules.txt}}";
                 permission = {
@@ -525,7 +559,6 @@ in
               implement = {
                 description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent.";
                 mode = "subagent";
-                model = "openai/gpt-5.6-sol";
                 steps = 100;
                 prompt = "{file:${./prompts/implement-rules.txt}}";
                 permission = {
@@ -538,10 +571,7 @@ in
                 };
               };
               general.disable = true;
-              compaction.model = "openai/gpt-6-astra";
-              title.model = "openai/gpt-5.6-luna";
-              summary.model = "openai/gpt-5.6-luna";
-            };
+            } balancedModels.agent;
             mcp = {
               metals = {
                 type = "local";
@@ -598,6 +628,8 @@ in
         };
         programs.zsh.shellAliases = {
           oc = "opencode --auto";
+          oc-openai = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg openaiConfig} opencode --auto";
+          oc-anthropic = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg anthropicConfig} opencode --auto";
           oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode --auto";
           oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode --auto";
         };
