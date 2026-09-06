@@ -439,6 +439,7 @@ let
         patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-credits.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-recent-models.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-sdk-transcripts.patch}
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-all-provider-alarm.patch}
         rm -f "$out/bin/"*.orig
         patchShebangs "$out/bin"
 

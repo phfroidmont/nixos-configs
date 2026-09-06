@@ -16,9 +16,21 @@ shell_root=$(dirname "$SHELL_PATH")
 pid=""
 
 mkdir -p \
+  "$test_root/home/.cache/omarchy/agent-usage" \
   "$test_root/home/.config/omarchy" \
   "$test_root/home/.local/state/quickshell" \
   "$test_root/home/.local/share/opencode"
+# The sandbox has no Claude sign-in and no network, so the collector falls back
+# to its cached limits. Seeding that cache is the only way to give the panel a
+# second provider here, and a window past 90% is what lights the bar icon.
+cat >"$test_root/home/.cache/omarchy/agent-usage/claude-limits.json" <<'EOF'
+{
+  "fetchedAtMs": 0,
+  "limits": [
+    {"label": "Weekly (7-day)", "percent": 0.95, "resetsAt": "2099-01-01T00:00:00+00:00"}
+  ]
+}
+EOF
 printf '%s\n' '[{"type":"text","text":"clear me","id":"runtime-test"}]' \
   >"$test_root/home/.local/state/quickshell/clipboard-history.json"
 jq '
@@ -85,6 +97,8 @@ grep -Fq 'root.bar.run(Quickshell.env("AGENTS_LAUNCH"))' \
   "$SHELL_PATH/plugins/agents/Panel.qml"
 grep -Fq 'Border.localOrSurfaceSpec("notifications", "border", effectiveBorderColor' \
   "$SHELL_PATH/plugins/notifications/components/NotificationCard.qml"
+grep -Fq 'if (providerAlarming(providers[i])) return true' \
+  "$SHELL_PATH/plugins/agents/Panel.qml"
 grep -Fq 'var command = ["fos-internal-agent-usage-update"]' \
   "$SHELL_PATH/plugins/agents/Main.qml"
 grep -Fq '["fos-internal-notification-send", "Invalid reminder"' \
@@ -232,6 +246,37 @@ jq -e '
     == ([.recentDays[].messageCount] | add)
 ' "$usage_record" >/dev/null
 jq -e 'any(.[]; .id == "omarchy.agents" and .visible and .itemVisible)' <<<"$geometry" >/dev/null
+
+claude_record="$test_root/home/.local/state/omarchy/agents/usage/claude.json"
+for _ in {1..400}; do
+  if [[ -f $claude_record ]] \
+    && jq -e '.id == "claude" and any(.limits[]; .percent >= 0.9)' "$claude_record" >/dev/null; then
+    break
+  fi
+  kill -0 "$pid" 2>/dev/null || {
+    cat "$log" >&2
+    exit 1
+  }
+  sleep 0.1
+done
+jq -e '.id == "claude" and any(.limits[]; .percent >= 0.9)' "$claude_record" >/dev/null
+
+# Codex reaches no app-server here, so its record carries no limits: the alarm
+# can only come from Claude. Walking the whole chip row proves the bar icon
+# reports it from every selection, not just when Claude happens to be shown.
+jq -e '.limits == []' "$usage_record" >/dev/null
+for _ in {1..400}; do
+  [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- omarchy.agents alarming) == true ]] && break
+  kill -0 "$pid" 2>/dev/null || {
+    cat "$log" >&2
+    exit 1
+  }
+  sleep 0.1
+done
+for _ in 1 2; do
+  [[ $("$QS_BIN" -p "$SHELL_PATH" ipc call -- omarchy.agents alarming) == true ]]
+  "$QS_BIN" -p "$SHELL_PATH" ipc call -- omarchy.agents next >/dev/null
+done
 
 jq -e '
   map(.id) as $ids

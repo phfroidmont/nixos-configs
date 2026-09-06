@@ -1,0 +1,35 @@
+--- a/shell/plugins/agents/Panel.qml
++++ b/shell/plugins/agents/Panel.qml
+@@ -44,7 +44,21 @@
+   // last 10% of the funded credits lights the same alarm.
+   readonly property bool balanceAlarming: !!balance && balance.funded > 0
+     && balance.remaining / balance.funded <= 0.1
+-  readonly property bool alarming: (!!headline && headline.percent >= 0.9) || balanceAlarming
++
++  // The hero and the balance meter speak for the provider on screen, but the
++  // bar icon speaks for all of them: a Claude window filling up while Codex
++  // is the selected chip still has to light the icon.
++  function providerAlarming(p) {
++    var window = bindingWindow(p)
++    if (window && window.percent >= 0.9) return true
++    var credit = p ? (p.balance || null) : null
++    return !!credit && credit.funded > 0 && credit.remaining / credit.funded <= 0.1
++  }
++  readonly property bool alarming: {
++    for (var i = 0; i < providers.length; i++)
++      if (providerAlarming(providers[i])) return true
++    return false
++  }
+ 
+   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
+   function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
+@@ -333,6 +347,9 @@
+     function toggle(): void { root.toggle() }
+     function refresh(): string { root.refreshNow(); return "ok" }
+     function next(): string { root.selectProvider(root.providerIndex + 1); return "ok" }
++    // Whether the bar icon is lit, for the runtime test: the alarm folds
++    // over every enabled provider, and nothing else reports that.
++    function alarming(): string { return root.alarming ? "true" : "false" }
+   }
+ 
+   BarIconButton {
