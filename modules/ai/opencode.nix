@@ -236,9 +236,11 @@ in
           "nix flake metadata --no-write-lock-file*" = "allow";
           "nix flake show --no-write-lock-file*" = "allow";
         };
+        fableReview = "anthropic/claude-fable-5-1";
         modelSet =
           {
             top,
+            review ? top,
             research,
             writer,
             small,
@@ -249,7 +251,7 @@ in
             agent = {
               build.model = top;
               plan.model = top;
-              review.model = top;
+              review.model = review;
               compaction.model = top;
               explore.model = research;
               scout.model = research;
@@ -268,13 +270,14 @@ in
         };
         anthropicModels = modelSet {
           top = "anthropic/claude-opus-5";
+          review = fableReview;
           research = "anthropic/claude-sonnet-5";
           writer = "anthropic/claude-sonnet-5";
           small = "anthropic/claude-haiku-4-5";
         };
-        # Default: OpenAI does the work, Claude gives the second opinion on review.
+        # Default: OpenAI does the work, Fable gives the second opinion on review.
         balancedModels = lib.recursiveUpdate openaiModels {
-          agent.review.model = "anthropic/claude-opus-5";
+          agent.review.model = fableReview;
         };
         openaiConfig = builtins.toJSON openaiModels;
         anthropicConfig = builtins.toJSON anthropicModels;
