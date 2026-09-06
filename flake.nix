@@ -15,6 +15,7 @@
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    meridian.url = "github:rynfar/meridian";
     herdr = {
       url = "github:herdrdev/herdr/v0.8.2";
       inputs.nixpkgs.follows = "nixpkgs";

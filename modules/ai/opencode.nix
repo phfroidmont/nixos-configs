@@ -17,6 +17,10 @@ in
     home-manager.users.${config.user.name} =
       { config, ... }:
       let
+        claudeCode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
+        meridian = inputs.meridian.packages.${pkgs.stdenv.hostPlatform.system}.meridian.override {
+          claude-code = claudeCode;
+        };
         foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
         foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
         foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
@@ -247,6 +251,19 @@ in
         ];
       in
       {
+        imports = [ inputs.meridian.homeModules.default ];
+
+        services.meridian = {
+          enable = true;
+          package = meridian;
+          settings.pluginConfig = [
+            {
+              path =
+                inputs.meridian.legacyPackages.${pkgs.stdenv.hostPlatform.system}.meridianPlugins.opencode-scrub.path;
+            }
+          ];
+        };
+
         programs.opencode = {
           enable = true;
           package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
@@ -266,7 +283,10 @@ in
               max_lines = 400;
               max_bytes = 24576;
             };
-            plugin = [ foyerSkillsPlugin ];
+            plugin = [
+              foyerSkillsPlugin
+              config.services.meridian.opencode.pluginPath
+            ];
             permission = {
               external_directory = {
                 "*" = "ask";
@@ -390,6 +410,10 @@ in
               "grafana-staging_alerting_manage_rules" = "ask";
             };
             provider = {
+              anthropic.options = {
+                apiKey = "x";
+                baseURL = "http://127.0.0.1:3456";
+              };
               vllm = {
                 npm = "@ai-sdk/openai-compatible";
                 name = "vLLM";
@@ -693,6 +717,8 @@ in
           }) satisfies Plugin
         '';
         home.packages = with pkgs; [
+          claudeCode
+          meridian
           metals
         ];
       };
