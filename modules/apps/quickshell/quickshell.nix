@@ -436,9 +436,11 @@ let
             path.write_text(text)
         PYTHON
         patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-recent-models.patch}
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-credits.patch}
         rm -f "$out/bin/"*.orig
         patchShebangs "$out/bin"
 
+        python3 ${./tests/codex-credits.test.py} "$out/bin/fos-internal-agent-usage-codex"
         QUICKSHELL_MODULE_ROOT=${./.} \
           ${pkgs.bash}/bin/bash ${./tests/notification-tools.test.sh}
         DICTATION_STATUS_SOURCE=${./omarchy/scripts/dictation-status.sh} \

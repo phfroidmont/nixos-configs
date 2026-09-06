@@ -1,0 +1,71 @@
+--- a/bin/fos-internal-agent-usage-codex
++++ b/bin/fos-internal-agent-usage-codex
+@@ -552,4 +552,13 @@
+     plan = limits.get("planType") or account.get("planType") or account.get("type") or ""
+     result["tierLabel"] = str(plan) if plan else ""
+ 
++    # Codex credits are native units, not a dollar balance or token estimate.
++    credits = limits.get("credits")
++    if isinstance(credits, dict):
++      balance = credits.get("balance")
++      if credits.get("unlimited") is True:
++        result["creditsText"] = "Unlimited"
++      elif isinstance(balance, str) and balance.strip():
++        result["creditsText"] = balance.strip().split(".", 1)[0]
++
+     for window in (limits.get("primary"), limits.get("secondary")):
+--- a/shell/plugins/agents/Main.qml
++++ b/shell/plugins/agents/Main.qml
+@@ -223,1 +223,1 @@
+-      || !!p.balance
++      || !!p.balance || !!p.creditsText
+@@ -258,1 +258,2 @@
+       balance: balanceValue(record.balance),
++      creditsText: typeof record.creditsText === "string" ? record.creditsText : "",
+--- a/shell/plugins/agents/Panel.qml
++++ b/shell/plugins/agents/Panel.qml
+@@ -524,1 +524,1 @@
+-            visible: balanceSection.visible || limitsSection.visible
++            visible: balanceSection.visible || creditsSection.visible || limitsSection.visible
+@@ -591,2 +591,41 @@
++          Column {
++            id: creditsSection
++            visible: !!root.provider && !!root.provider.creditsText
++            width: parent.width
++            spacing: Style.space(10)
++
++            PanelSectionHeader {
++              text: "CREDITS"
++              foreground: root.foreground
++              fontFamily: root.fontFamily
++            }
++
++            Item {
++              width: parent.width
++              implicitHeight: Math.max(creditsLabel.implicitHeight, creditsValue.implicitHeight)
++
++              Text {
++                id: creditsLabel
++                text: "Remaining credits"
++                color: root.foreground
++                font.family: root.fontFamily
++                font.pixelSize: Style.font.body
++                anchors.left: parent.left
++                anchors.verticalCenter: parent.verticalCenter
++              }
++
++              Text {
++                id: creditsValue
++                textFormat: Text.PlainText
++                text: root.provider ? (root.provider.creditsText || "") : ""
++                color: root.foreground
++                font.family: root.fontFamily
++                font.pixelSize: Style.font.caption
++                anchors.right: parent.right
++                anchors.verticalCenter: parent.verticalCenter
++              }
++            }
++          }
++
+           Column {
+             id: limitsSection
