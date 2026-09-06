@@ -501,7 +501,7 @@ in
               implement = {
                 description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent.";
                 mode = "subagent";
-                model = "openai/gpt-6-astra";
+                model = "openai/gpt-5.6-sol";
                 steps = 100;
                 prompt = "{file:${./prompts/implement-rules.txt}}";
                 permission = {
