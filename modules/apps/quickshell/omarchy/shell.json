@@ -26,7 +26,7 @@
         {
           "id": "omarchy.agents",
           "providers": {
-            "claude": { "enabled": false },
+            "claude": { "enabled": true },
             "codex": { "enabled": true },
             "fireworks": { "enabled": false }
           }

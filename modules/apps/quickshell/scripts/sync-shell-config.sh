@@ -33,6 +33,8 @@ migrate() {
     and (.[0].nixosConfigMigrations.menuWidget // 0) >= 1
     and (.[0].nixosConfigMigrations.statusFeatures | type) == "number"
     and (.[0].nixosConfigMigrations.statusFeatures // 0) >= 2
+    and (.[0].nixosConfigMigrations.claudeAgent | type) == "number"
+    and (.[0].nixosConfigMigrations.claudeAgent // 0) >= 1
   ' "$config" >/dev/null 2>&1; then
     return 0
   fi
@@ -100,6 +102,11 @@ migrate() {
       | if $index == null then . + [$entry]
         else .[0:$index] + [$entry] + .[$index:]
         end;
+    def enable_claude:
+      if widget_id != "omarchy.agents" then .
+      elif type == "string" then {id: ., providers: {claude: {enabled: true}}}
+      else .providers.claude.enabled = true
+      end;
 
     if length != 1 then
       error("shell config must contain one JSON document")
@@ -206,6 +213,13 @@ migrate() {
             .bar.layout.right |= insert_before("omarchy.audio"; {id: "omarchy.microphone"})
           end
         | .nixosConfigMigrations.statusFeatures = 2
+      end
+    | if ((.nixosConfigMigrations.claudeAgent | type) == "number"
+        and (.nixosConfigMigrations.claudeAgent // 0) >= 1) then . else
+        .bar.layout.left = [(.bar.layout.left // [])[] | enable_claude]
+        | .bar.layout.center = [(.bar.layout.center // [])[] | enable_claude]
+        | .bar.layout.right = [(.bar.layout.right // [])[] | enable_claude]
+        | .nixosConfigMigrations.claudeAgent = 1
       end
   ' "$config" >"$temporary"; then
     warn "leaving invalid config unchanged: $config"
