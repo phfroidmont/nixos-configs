@@ -236,7 +236,17 @@ in
           "nix flake metadata --no-write-lock-file*" = "allow";
           "nix flake show --no-write-lock-file*" = "allow";
         };
-        fableReview = "anthropic/claude-fable-5-1";
+        reviewAgentSettings = {
+          mode = "subagent";
+          steps = 100;
+          prompt = "{file:${./prompts/review-rules.txt}}";
+          permission = {
+            edit = "deny";
+            bash = reviewBash;
+            task = "deny";
+          };
+        };
+        opusReview = "anthropic/claude-opus-5";
         modelSet =
           {
             top,
@@ -272,14 +282,14 @@ in
         };
         anthropicModels = modelSet {
           top = "anthropic/claude-opus-5";
-          review = fableReview;
+          review = opusReview;
           research = "anthropic/claude-sonnet-5";
           writer = "anthropic/claude-sonnet-5";
           small = "anthropic/claude-haiku-4-5";
         };
-        # Default: OpenAI does the work, Fable gives the second opinion on review.
+        # Default: OpenAI does the work, Opus gives the second opinion on review.
         balancedModels = lib.recursiveUpdate openaiModels {
-          agent.review.model = fableReview;
+          agent.review.model = opusReview;
         };
         openaiConfig = builtins.toJSON openaiModels;
         anthropicConfig = builtins.toJSON anthropicModels;
@@ -489,6 +499,7 @@ in
                   test-triage = "allow";
                   scan = "allow";
                   review = "allow";
+                  review-sol = "allow";
                   implement = "allow";
                 };
               };
@@ -506,6 +517,7 @@ in
                     test-triage = "allow";
                     scan = "allow";
                     review = "allow";
+                    review-sol = "allow";
                   };
                 };
               };
@@ -552,17 +564,13 @@ in
                   task = "deny";
                 };
               };
-              review = {
+              review = reviewAgentSettings // {
                 description = "Reviews changes for defects, regressions, risks, and missing tests without editing. Use proactively after completing a non-trivial change and before committing. Returns findings ordered by severity with file and line references.";
                 disable = false;
-                mode = "subagent";
-                steps = 100;
-                prompt = "{file:${./prompts/review-rules.txt}}";
-                permission = {
-                  edit = "deny";
-                  bash = reviewBash;
-                  task = "deny";
-                };
+              };
+              review-sol = reviewAgentSettings // {
+                description = "Fallback reviewer for an explicitly exhausted Claude subscription quota. Reviews the same scope for defects, regressions, risks, and missing tests without editing.";
+                model = "openai/gpt-5.6-sol";
               };
               implement = {
                 description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent. Use proactively to parallelize independent edits once you can name each agent's exact file ownership up front. Does not commit, push, or delegate.";
@@ -732,6 +740,9 @@ in
             - bounded implementation work in a file scope you can name up front -> implement
           - Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
           - Delegate only bounded, independent work with an explicit expected report.
+          - For defect reviews, the primary agent must first call review.
+          - Only when review returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the Opus task with task_id.
+          - Do not fall back for generic errors or transient rate limits. If review-sol fails, report the blocker; do not retry or enter another fallback loop.
           - Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
           - Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.
           - The primary agent reviews and integrates writer results. Subagents do not commit, push, or delegate further.
