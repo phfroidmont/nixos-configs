@@ -24,6 +24,33 @@ in
         foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
         foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
         foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
+        sonarMcpJar = pkgs.fetchurl {
+          url = "https://binaries.sonarsource.com/Distribution/sonarqube-mcp-server/sonarqube-mcp-server-1.26.0.4269.jar";
+          sha256 = "f5cb214b948a1e2a7b2f8c64eb5da4185ab58c864cf3d7afb4a8bbb67fb76650";
+        };
+        sonarMcp = pkgs.writeShellApplication {
+          name = "mcp-sonar-foyer";
+          runtimeInputs = [
+            pkgs.coreutils
+            pkgs.libsecret
+          ];
+          text = ''
+            if ! sonarToken="$(secret-tool lookup application opencode service sonarqube.foyer.lu)"; then
+              echo "Unable to retrieve the SonarQube user token from Secret Service" >&2
+              exit 1
+            fi
+
+            if [[ -z "$sonarToken" ]]; then
+              echo "The SonarQube user token retrieved from Secret Service is empty" >&2
+              exit 1
+            fi
+
+            export SONARQUBE_TOKEN="$sonarToken"
+            export STORAGE_PATH="''${XDG_STATE_HOME:-$HOME/.local/state}/sonarqube-mcp/foyer"
+            mkdir -p "$STORAGE_PATH"
+            exec ${pkgs.jdk21}/bin/java -jar ${sonarMcpJar}
+          '';
+        };
         jiraMcp = pkgs.writeShellApplication {
           name = "mcp-atlassian-jira";
           runtimeInputs = [
@@ -635,6 +662,16 @@ in
                 environment = {
                   JIRA_URL = "https://jira.foyer.lu/";
                   TOOLSETS = lib.concatStringsSep "," jiraToolsets;
+                };
+                enabled = false;
+                timeout = 60000;
+              };
+              sonar-foyer = {
+                type = "local";
+                command = [ "${sonarMcp}/bin/mcp-sonar-foyer" ];
+                environment = {
+                  SONARQUBE_URL = "https://sonarqube.foyer.lu/";
+                  TELEMETRY_DISABLED = "true";
                 };
                 enabled = false;
                 timeout = 60000;
