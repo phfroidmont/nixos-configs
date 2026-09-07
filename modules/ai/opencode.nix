@@ -244,6 +244,8 @@ in
             research,
             writer,
             small,
+            # Compaction is repeated large-input summarization, not reasoning.
+            compaction ? research,
           }:
           {
             model = top;
@@ -252,7 +254,7 @@ in
               build.model = top;
               plan.model = top;
               review.model = review;
-              compaction.model = top;
+              compaction.model = compaction;
               explore.model = research;
               scout.model = research;
               test-triage.model = research;
@@ -318,7 +320,7 @@ in
             subagent_depth = 1;
             compaction = {
               auto = true;
-              prune = false;
+              prune = true;
               reserved = 32000;
               tail_turns = 4;
               preserve_recent_tokens = 12000;
@@ -508,36 +510,39 @@ in
                 };
               };
               explore = {
-                description = "Read-only codebase exploration that returns concise evidence and file references.";
+                description = ''Fast read-only agent specialized for exploring codebases. Use proactively when you need to find files by pattern (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about how the codebase works (eg. "how do API endpoints work?"). Specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions. Returns concise evidence with file and line references; never edits.'';
                 mode = "subagent";
                 steps = 100;
                 permission = {
                   edit = "deny";
-                  bash = planBash;
+                  bash = readOnlyBash;
                   task = "deny";
                 };
               };
               scout = {
-                description = "Read-only dependency and external documentation research.";
+                description = "Read-only dependency and external documentation research. Use proactively before adopting or upgrading a library, when you need a package's actual API surface, or when a question is answered by upstream docs, changelogs, or dependency source rather than by this repository. Returns the answer with its exact source and any version caveats.";
                 mode = "subagent";
                 steps = 100;
+                prompt = "{file:${./prompts/scout-rules.txt}}";
                 permission = {
                   edit = "deny";
+                  bash = readOnlyBash;
                   task = "deny";
                 };
               };
               test-triage = {
-                description = "Reproduces and analyzes test failures without modifying source files.";
+                description = "Reproduces and analyzes test or build failures without modifying source. Use proactively whenever a test suite, compile, or check fails and the root cause is not already obvious. Returns the failing command, the first causal error, likely ownership, and the smallest next diagnostic.";
                 mode = "subagent";
                 steps = 100;
                 prompt = "{file:${./prompts/test-triage-rules.txt}}";
                 permission = {
                   edit = "deny";
+                  bash = reviewBash;
                   task = "deny";
                 };
               };
               scan = {
-                description = "Performs narrow mechanical searches, inventories, and consistency checks.";
+                description = "Performs narrow mechanical searches, inventories, and consistency checks. Use proactively for counting occurrences, listing every call site, or verifying that a pattern holds repo-wide. Returns terse counts, paths, and line references; no bash, no edits.";
                 mode = "subagent";
                 steps = 100;
                 prompt = "{file:${./prompts/scan-rules.txt}}";
@@ -548,7 +553,7 @@ in
                 };
               };
               review = {
-                description = "Reviews changes for defects, regressions, risks, and missing tests without editing.";
+                description = "Reviews changes for defects, regressions, risks, and missing tests without editing. Use proactively after completing a non-trivial change and before committing. Returns findings ordered by severity with file and line references.";
                 disable = false;
                 mode = "subagent";
                 steps = 100;
@@ -560,7 +565,7 @@ in
                 };
               };
               implement = {
-                description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent.";
+                description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent. Use proactively to parallelize independent edits once you can name each agent's exact file ownership up front. Does not commit, push, or delegate.";
                 mode = "subagent";
                 steps = 100;
                 prompt = "{file:${./prompts/implement-rules.txt}}";
@@ -717,8 +722,16 @@ in
           - Search known dependency caches directly; never glob or search all of `~/.cache`.
 
           ## Delegation
+          - This file explicitly instructs you to use the Task tool. Delegating is the expected default, not an exception.
+          - Delegate proactively, without being asked:
+            - "where is X", "how does X work", any multi-file codebase search -> explore
+            - dependency, library, or external documentation research -> scout
+            - failing tests or build errors you have not yet diagnosed -> test-triage
+            - inventories, counts, consistency checks across many files -> scan
+            - defect review of a completed change -> review
+            - bounded implementation work in a file scope you can name up front -> implement
+          - Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
           - Delegate only bounded, independent work with an explicit expected report.
-          - Prefer read-only agents for exploration, dependency research, test triage, scans, and review.
           - Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
           - Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.
           - The primary agent reviews and integrates writer results. Subagents do not commit, push, or delegate further.

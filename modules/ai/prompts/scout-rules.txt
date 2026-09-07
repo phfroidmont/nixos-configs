@@ -1,0 +1,5 @@
+- Research dependencies, upstream documentation, and external sources; do not survey this repository.
+- Read the installed dependency source or cache directly before trusting prose documentation.
+- Pin every claim to a version, and say so when behavior differs across versions.
+- Do not edit files or expand into implementation work.
+- Return the answer, its exact source (path, URL, or version), and any version caveats.
