@@ -333,6 +333,9 @@ let
         patch -d "$out" -p1 < ${./omarchy/omarchy-nixos.patch}
         patch -d "$out" -p1 < ${./omarchy/fos-command-menu.patch}
 
+        ${lib.getExe pkgs.nodejs} ${./tests/notification-urgency.test.cjs} \
+          "$out/shell/plugins/notifications/NotificationLogic.js"
+
         cp ${clipboardQml} "$out/shell/Clipboard.qml"
         cp ${./config/ClipboardHistory.js} "$out/shell/ClipboardHistory.js"
 

@@ -204,6 +204,24 @@ index bfcd7f5..b798ce1 100644
 -  readonly property var cardBorderSpec: Border.surfaceSpec("notifications", "border", Color.notifications.border, Math.max(1, Style.space(2)))
 +  readonly property color effectiveBorderColor: urgency === 2 ? Color.urgent : Color.notifications.border
 +  readonly property var cardBorderSpec: Border.localOrSurfaceSpec("notifications", "border", effectiveBorderColor, Color.notifications.border, Math.max(1, Style.space(2)))
+diff --git a/shell/plugins/notifications/NotificationLogic.js b/shell/plugins/notifications/NotificationLogic.js
+--- a/shell/plugins/notifications/NotificationLogic.js
++++ b/shell/plugins/notifications/NotificationLogic.js
+@@ -185,6 +185,9 @@ function snapshotOf(notification, timestamp) {
+   var id = n.id || 0
+   var expireTimeout = Number(n.expireTimeout || 0)
+   if (!isFinite(expireTimeout) || expireTimeout < 0) expireTimeout = 0
++  var braveIdentity = /^(brave|brave browser|brave-browser)(\.desktop)?$/i
++  var isBrave = braveIdentity.test(String(n.appName || "")) ||
++                braveIdentity.test(String(n.desktopEntry || ""))
+   return {
+     id: id,
+     originalId: id,
+@@ -198,3 +201,3 @@ function snapshotOf(notification, timestamp) {
+-    urgency: n.urgency,
++    urgency: isBrave ? 1 : n.urgency,
+     expireTimeout: expireTimeout,
+     timestamp: timestamp === undefined ? Date.now() : timestamp
 diff --git a/shell/services/AppLibrary.qml b/shell/services/AppLibrary.qml
 --- a/shell/services/AppLibrary.qml
 +++ b/shell/services/AppLibrary.qml
