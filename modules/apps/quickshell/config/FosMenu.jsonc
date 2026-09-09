@@ -35,8 +35,8 @@
   "capture.record": {"icon":"","label":"Recording","description":"Start, inspect, or stop a screen recording"},
   "capture.record.region": {"icon":"󰹑","label":"Region","description":"Record a selected region without audio","action":"fos capture record start region"},
   "capture.record.region-audio": {"icon":"󰕾","label":"Region with Audio","description":"Record a selected region with audio","action":"fos capture record start region --audio"},
-  "capture.record.screen": {"icon":"󰍹","label":"Screen","description":"Record the entire screen without audio","action":"fos capture record start screen"},
-  "capture.record.screen-audio": {"icon":"󰕾","label":"Screen with Audio","description":"Record the entire screen with audio","action":"fos capture record start screen --audio"},
+  "capture.record.screen": {"icon":"󰍹","label":"Screen","description":"Record the focused monitor without audio","action":"fos capture record start screen"},
+  "capture.record.screen-audio": {"icon":"󰕾","label":"Screen with Audio","description":"Record the focused monitor with audio","action":"fos capture record start screen --audio"},
   "capture.record.status": {"icon":"󰋼","label":"Recording Status","description":"Show the active recording status","action":"fos-internal-menu-terminal capture record status"},
   "capture.record.stop": {"icon":"󰓛","label":"Stop Recording","description":"Stop the active FOS recording","action":"fos capture record stop"},
 

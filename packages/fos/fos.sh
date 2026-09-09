@@ -99,7 +99,7 @@ capture screenshot screen|capture screenshot screen|Capture the focused monitor
 capture color|capture color|Copy a selected color
 capture ocr region|capture ocr region|Copy text from a region
 capture record start region|capture record start region [--audio]|Record a region
-capture record start screen|capture record start screen [--audio]|Record the screen
+capture record start screen|capture record start screen [--audio]|Record the focused monitor
 capture record status|capture record status|Show recording status
 capture record stop|capture record stop|Stop the FOS recording
 vpn status|vpn status|Show VPN status
@@ -745,7 +745,7 @@ recording_write_state() {
 }
 
 capture_command() {
-  local kind=${1:-} action mode geometry output pid state_dir state_file state_temp audio=''
+  local kind=${1:-} action mode geometry monitor output pid state_dir state_file state_temp audio=''
   local -a args
   shift || true
   state_dir=$(fos_runtime_state_dir); state_file=$state_dir/recording.state
@@ -787,6 +787,14 @@ capture_command() {
             recording_state_valid "$state_file" && fail 'a FOS recording is already active'
             rm -f -- "$state_file"
           fi
+          if [[ $mode == screen ]]; then
+            need "$HYPRCTL"; need "$JQ"
+            monitor=$("$HYPRCTL" -j monitors | "$JQ" -er '
+              [.[] | select(.focused == true)]
+              | select(length == 1) | .[0].name
+              | select(type == "string" and length > 0)
+            ') || fail 'could not determine the focused monitor'
+          fi
           mkdir -p -- "${XDG_VIDEOS_DIR:-$HOME/Videos}"
           output=$(mktemp --tmpdir="${XDG_VIDEOS_DIR:-$HOME/Videos}" "fos-recording-$(date +%Y%m%d-%H%M%S)-XXXXXX.mp4")
           state_temp=$(mktemp --tmpdir="$state_dir" '.recording.state.XXXXXX')
@@ -796,6 +804,7 @@ capture_command() {
             -F 'scale=in_range=full:out_range=limited,format=yuv420p'
             -p color_range=tv)
           [[ $mode == region ]] && args+=(-g "$(select_geometry region)")
+          [[ $mode == screen ]] && args+=(-o "$monitor")
           [[ -n $audio ]] && args+=(--audio)
           need "$WF_RECORDER"; print_command "$WF_RECORDER" "${args[@]}"
           (

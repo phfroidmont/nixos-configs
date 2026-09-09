@@ -21,7 +21,11 @@ case $name in
   playerctl) [[ ${1:-} == -l ]] && printf '%s\n' spotify firefox || printf '%s\n' Playing ;;
   bluetoothctl) [[ ${1:-} == devices ]] && printf '%s\n' 'Device AA:BB:CC:DD:EE:FF Headphones' || printf '%s\n' 'Powered: yes' ;;
   hyprctl)
-    if [[ $* == '-j clients' ]]; then printf '%s\n' '[{"at":[10,20],"size":[800,600]}]'
+    if [[ $* == '-j monitors' ]]; then
+      [[ ${FOS_TEST_MONITORS_ERROR:-false} == true ]] && exit 9
+      monitors='[{"name":"DP-6","focused":false},{"name":"DP-7","focused":true}]'
+      printf '%s\n' "${FOS_TEST_MONITORS-$monitors}"
+    elif [[ $* == '-j clients' ]]; then printf '%s\n' '[{"at":[10,20],"size":[800,600]}]'
     elif [[ $* == 'getoption cursor:no_hardware_cursors -j' ]]; then printf '%s\n' '{"int":1}'
     fi
     ;;
@@ -248,7 +252,8 @@ wait "$starter"
 first_output=$(<"$root/first-output")
 pid=$(state_value pid)
 [[ $pid =~ ^[0-9]+$ && -d /proc/$pid && -f $first_output ]]
-assert_log "wf-recorder|--overwrite -f $first_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv"
+assert_log "hyprctl|-j monitors
+wf-recorder|--overwrite -f $first_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv -o DP-7"
 [[ $(stat -c %a "$runtime/fos") == 700 ]]
 for field in pid start_time argv0 exe backend output; do state_value "$field" >/dev/null; done
 $FOS_BIN capture record status | grep -Fq "pid $pid"
@@ -271,11 +276,41 @@ fi
 [[ ! -e $runtime/fos/recording.state && -f $runtime/fos/recording.lock ]]
 
 # Region/audio recording preserves color options and reserves a unique output.
+reset_log
 $FOS_BIN capture record start region --audio >"$root/second-output" 2>/dev/null
 second_output=$(<"$root/second-output")
 [[ $second_output != "$first_output" ]]
-grep -Fxq "wf-recorder|--overwrite -f $second_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv -g 0,0 10x10 --audio" "$log"
+assert_log "slurp|
+wf-recorder|--overwrite -f $second_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv -g 0,0 10x10 --audio"
 $FOS_BIN capture record stop >/dev/null 2>&1
+
+# Screen/audio recording uses the focused output selected by Hyprland.
+reset_log
+FOS_TEST_MONITORS='[{"name":"DP-6","focused":true},{"name":"DP-7","focused":false}]' \
+  $FOS_BIN capture record start screen --audio >"$root/third-output" 2>/dev/null
+third_output=$(<"$root/third-output")
+assert_log "hyprctl|-j monitors
+wf-recorder|--overwrite -f $third_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv -o DP-6 --audio"
+$FOS_BIN capture record stop >/dev/null 2>&1
+
+# Invalid or unavailable monitor data never invokes the recorder or commits output/state.
+for monitors in \
+  '[{"name":"DP-6","focused":false},{"name":"DP-7","focused":false}]' \
+  '[{"name":"DP-6","focused":true},{"name":"DP-7","focused":true}]' \
+  'not-json' \
+  '[{"focused":true}]' \
+  '[{"name":"","focused":true}]'; do
+  outputs_before=$(printf '%s\n' "$root"/Videos/fos-recording-*.mp4)
+  reset_log; FOS_TEST_MONITORS=$monitors assert_failure capture record start screen
+  outputs_after=$(printf '%s\n' "$root"/Videos/fos-recording-*.mp4)
+  [[ $outputs_after == "$outputs_before" && ! -e $runtime/fos/recording.state ]]
+  assert_log 'hyprctl|-j monitors'
+done
+outputs_before=$(printf '%s\n' "$root"/Videos/fos-recording-*.mp4)
+reset_log; FOS_TEST_MONITORS_ERROR=true assert_failure capture record start screen
+outputs_after=$(printf '%s\n' "$root"/Videos/fos-recording-*.mp4)
+[[ $outputs_after == "$outputs_before" && ! -e $runtime/fos/recording.state ]]
+assert_log 'hyprctl|-j monitors'
 
 # Immediate startup failure commits no state and removes its reserved output and lock.
 outputs_before=$(printf '%s\n' "$root"/Videos/fos-recording-*.mp4)
