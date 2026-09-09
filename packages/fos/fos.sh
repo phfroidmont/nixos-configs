@@ -791,7 +791,10 @@ capture_command() {
           output=$(mktemp --tmpdir="${XDG_VIDEOS_DIR:-$HOME/Videos}" "fos-recording-$(date +%Y%m%d-%H%M%S)-XXXXXX.mp4")
           state_temp=$(mktemp --tmpdir="$state_dir" '.recording.state.XXXXXX')
           RECORDING_CLEANUP_FILES=("$output" "$state_temp")
-          args=(--overwrite -f "$output")
+          # Keep RGB-to-YUV conversion and the encoded range tag consistent.
+          args=(--overwrite -f "$output" -x yuv420p
+            -F 'scale=in_range=full:out_range=limited,format=yuv420p'
+            -p color_range=tv)
           [[ $mode == region ]] && args+=(-g "$(select_geometry region)")
           [[ -n $audio ]] && args+=(--audio)
           need "$WF_RECORDER"; print_command "$WF_RECORDER" "${args[@]}"

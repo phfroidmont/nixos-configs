@@ -248,7 +248,7 @@ wait "$starter"
 first_output=$(<"$root/first-output")
 pid=$(state_value pid)
 [[ $pid =~ ^[0-9]+$ && -d /proc/$pid && -f $first_output ]]
-grep -Fq 'wf-recorder|--overwrite -f' "$log"
+assert_log "wf-recorder|--overwrite -f $first_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv"
 [[ $(stat -c %a "$runtime/fos") == 700 ]]
 for field in pid start_time argv0 exe backend output; do state_value "$field" >/dev/null; done
 $FOS_BIN capture record status | grep -Fq "pid $pid"
@@ -270,10 +270,11 @@ if ! $FOS_BIN capture record stop >/dev/null 2>"$root/record-stop.err"; then
 fi
 [[ ! -e $runtime/fos/recording.state && -f $runtime/fos/recording.lock ]]
 
-# Output names remain unique even within one second.
-$FOS_BIN capture record start screen >"$root/second-output" 2>/dev/null
+# Region/audio recording preserves color options and reserves a unique output.
+$FOS_BIN capture record start region --audio >"$root/second-output" 2>/dev/null
 second_output=$(<"$root/second-output")
 [[ $second_output != "$first_output" ]]
+grep -Fxq "wf-recorder|--overwrite -f $second_output -x yuv420p -F scale=in_range=full:out_range=limited,format=yuv420p -p color_range=tv -g 0,0 10x10 --audio" "$log"
 $FOS_BIN capture record stop >/dev/null 2>&1
 
 # Immediate startup failure commits no state and removes its reserved output and lock.
