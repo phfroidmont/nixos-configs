@@ -328,6 +328,37 @@ if [[ -n ${FOS_COMPLETION:-} ]]; then
   completion=$(PATH="${FOS_BIN%/*}:$PATH" zsh -c '
     compadd() {
       while (( $# )); do
+        if [[ $1 == -d ]]; then
+          shift
+          printf "display: %s\n" "${(@P)1}"
+        elif [[ $1 == -- ]]; then
+          shift
+          printf "value: %s\n" "$@"
+          return
+        fi
+        shift
+      done
+    }
+    words=(fos "")
+    CURRENT=2
+    source "$FOS_COMPLETION"
+    words=(fos vpn "")
+    CURRENT=3
+    _fos
+    words=(fos vpn down "")
+    CURRENT=4
+    _fos
+  ')
+  grep -Fxq 'display: doctor -- Check command backends' <<<"$completion"
+  grep -Fxq 'value: doctor' <<<"$completion"
+  grep -Fxq 'display: down -- Stop the VPN' <<<"$completion"
+  grep -Fxq 'value: down' <<<"$completion"
+  grep -Fxq 'display: --yes -- Skip confirmation' <<<"$completion"
+  grep -Fxq 'value: --yes' <<<"$completion"
+
+  completion=$(PATH="${FOS_BIN%/*}:$PATH" zsh -c '
+    compadd() {
+      while (( $# )); do
         if [[ $1 == -- ]]; then shift; print -rl -- "$@"; return; fi
         shift
       done

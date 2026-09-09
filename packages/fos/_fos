@@ -10,7 +10,7 @@ _fos() {
   while IFS=$'\t' read -r value description; do
     if [[ -n $value ]]; then
       values+=("$value")
-      descriptions+=("$description")
+      descriptions+=("$value -- $description")
     fi
   done <<<"$output"
   if (( ${#values[@]} )); then
