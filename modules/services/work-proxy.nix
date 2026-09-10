@@ -32,7 +32,7 @@ in
         LogLevel = "Info";
         Port = 2345;
         Upstream = [
-          ''upstream http wsl:2345 ".microsoftonline.com"''
+          ''upstream http foyer-wsl.internal:2345 ".microsoftonline.com"''
         ];
       };
     };
@@ -50,15 +50,30 @@ in
     };
 
     home-manager.users.${config.user.name} = {
-      home = {
-        file.".sbt/repositories".text = ''
-          [repositories]
-            local
-            maven-local
-            nexus-maven: https://nexus.foyer.lu/repository/mvn-all/
-            nexus-ivy: https://nexus.foyer.lu/repository/ivy-all/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
-            nexus-ivy-sbt: https://nexus.foyer.lu/repository/ivy-all/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[artifact](-[classifier])-[type].[ext]
-        '';
+      home.file.".sbt/repositories".text = ''
+        [repositories]
+          local
+          maven-local
+          nexus-maven: https://nexus.foyer.lu/repository/mvn-all/
+          nexus-ivy: https://nexus.foyer.lu/repository/ivy-all/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+          nexus-ivy-sbt: https://nexus.foyer.lu/repository/ivy-all/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[artifact](-[classifier])-[type].[ext]
+      '';
+
+      home.file.".config/pangolin/config.json".text = builtins.toJSON {
+        up = {
+          override_dns = true;
+          tunnel_dns = true;
+          upstream_dns = [ "10.33.0.100" ];
+          match_domains_dns = [
+            "foyer.cloud"
+            "*.foyer.cloud"
+            "foyer.lu"
+            "*.foyer.lu"
+            "lefoyer.lu"
+            "*.lefoyer.lu"
+            "*.internal"
+          ];
+        };
       };
     };
 
@@ -69,6 +84,7 @@ in
       get-token
       mia
       jira-cli-go
+      pangolin-cli
     ];
   };
 }
