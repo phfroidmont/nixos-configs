@@ -72,6 +72,7 @@ in
             "lefoyer.lu"
             "*.lefoyer.lu"
             "*.internal"
+            "uptime.banditlair.com"
           ];
         };
       };
