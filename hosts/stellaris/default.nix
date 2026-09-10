@@ -248,6 +248,7 @@
   environment.systemPackages = [
     pkgs.fos
     pkgs.jellyfin-cli
+    pkgs.pangolin-cli
     (pkgs.writeShellScriptBin "aegis-vpn" ''
       set -euo pipefail
 
