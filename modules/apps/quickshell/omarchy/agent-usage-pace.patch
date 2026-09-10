@@ -1,0 +1,175 @@
+--- a/shell/plugins/agents/Panel.qml
++++ b/shell/plugins/agents/Panel.qml
+@@ -32,8 +32,8 @@
+ 
+   property bool cursorActive: false
+ 
+-  // Countdowns and "updated" read this instead of Date.now() so the
+-  // panel keeps telling the truth while it sits open.
++  // Countdowns, pace alarms, and "updated" share this clock so both the bar
++  // icon and an open panel keep telling the truth.
+   property double nowMs: Date.now()
+ 
+   readonly property var limits: limitWindows(provider)
+@@ -48,9 +48,10 @@
+   // The hero and the balance meter speak for the provider on screen, but the
+   // bar icon speaks for all of them: a Claude window filling up while Codex
+   // is the selected chip still has to light the icon.
+   function providerAlarming(p) {
+-    var window = bindingWindow(p)
+-    if (window && window.percent >= 0.9) return true
++    var windows = limitWindows(p)
++    for (var i = 0; i < windows.length; i++)
++      if (limitAlarming(windows[i])) return true
+     var credit = p ? (p.balance || null) : null
+     return !!credit && credit.funded > 0 && credit.remaining / credit.funded <= 0.1
+   }
+@@ -111,15 +112,29 @@
+     return plain === "" ? "Limit" : plain
+   }
+ 
++  function limitSpanMs(label, title) {
++    var explicit = String(title || "").toLowerCase()
++    if (explicit !== "") {
++      // Scoped Claude titles carry the collector's settled window kind. Do
++      // not parse arbitrary model text here: "1M context" is not one minute.
++      if (explicit.indexOf("month") >= 0) return 30 * 24 * 3600 * 1000
++      if (explicit.indexOf("week") >= 0) return 7 * 24 * 3600 * 1000
++      if (explicit.indexOf("session") >= 0) return 5 * 3600 * 1000
++      return 0
++    }
++    return windowSpanMs(label)
++  }
++
+   // A collector that already knows which window a limit belongs to says so,
+   // and that beats reading it back out of the label: a model-scoped limit is
+   // titled after its model, and a name like "Opus 5 (1M context)" would parse
+   // as a one-minute window.
+   function limitWindow(label, percent, resetAt, title) {
+     return {
+       title: String(title || "") !== "" ? String(title) : windowTitle(label),
+       percent: Number(percent),
+-      resetAt: String(resetAt || "")
++      resetAt: String(resetAt || ""),
++      spanMs: limitSpanMs(label, title)
+     }
+   }
+ 
+@@ -146,12 +161,43 @@
+     return best
+   }
+ 
++  function resetTimestampMs(w) {
++    if (!w || w.resetAt === "") return NaN
++    return new Date(w.resetAt).getTime()
++  }
++
+   function resetMsFor(w) {
+-    if (!w || w.resetAt === "") return -1
+-    var ms = new Date(w.resetAt).getTime()
++    var ms = resetTimestampMs(w)
+     return isFinite(ms) ? ms - root.nowMs : -1
+   }
+ 
++  function windowElapsedRatio(w) {
++    var spanMs = w ? Number(w.spanMs) : 0
++    var resetMs = resetTimestampMs(w)
++    if (!(spanMs > 0) || !isFinite(spanMs) || !isFinite(resetMs)) return -1
++    var elapsed = (root.nowMs - (resetMs - spanMs)) / spanMs
++    return elapsed < 0 ? -1 : clamp(elapsed, 0, 1)
++  }
++
++  function limitAlarming(w) {
++    if (!w) return false
++    var resetMs = resetTimestampMs(w)
++    // A valid reset closes the old sample even if its duration is unknown.
++    if (isFinite(resetMs) && resetMs <= root.nowMs) return false
++    var elapsed = windowElapsedRatio(w)
++    if (elapsed < 0) return Number(w.percent) >= 0.9
++    return Number(w.percent) > elapsed
++  }
++
++  function resetTextFor(w) {
++    var remainingMs = resetMsFor(w)
++    if (!(remainingMs > 0)) return ""
++    var text = "Resets in " + formatDuration(remainingMs)
++    var elapsed = windowElapsedRatio(w)
++    if (elapsed >= 0) text += " · " + Math.round(elapsed * 100) + "% of period elapsed"
++    return text
++  }
++
+   function formatDuration(ms) {
+     if (!(ms > 0)) return "now"
+     var minutes = Math.floor(ms / 60000)
+@@ -332,8 +378,8 @@
+-  // Cheap enough to keep running: it only re-evaluates text bindings, and a
+-  // stale "resets in 2h" on a panel that is open is worse than a timer.
++  // Pace alarms drive the bar icon even while the panel is closed, so their
++  // shared clock must keep advancing too.
+   Timer {
+     interval: 30000
+-    running: root.opened
++    running: true
+     repeat: true
+     onTriggered: root.nowMs = Date.now()
+   }
+@@ -761,7 +807,7 @@
+     id: limitRow
+     property var window: null
+ 
+-    readonly property bool alarming: window && window.percent >= 0.9
++    readonly property bool alarming: root.limitAlarming(window)
+ 
+     spacing: Style.space(6)
+ 
+@@ -802,6 +848,7 @@
+       width: parent.width
+       value: limitRow.window ? limitRow.window.percent : -1
+       alarming: limitRow.alarming
++      markerValue: root.resetMsFor(limitRow.window) > 0 ? root.windowElapsedRatio(limitRow.window) : -1
+     }
+ 
+     Text {
+@@ -809,13 +856,11 @@
+       id: resetText
+       textFormat: Text.PlainText
+       width: parent.width
+-      text: {
+-        var remainingMs = root.resetMsFor(limitRow.window)
+-        return remainingMs > 0 ? "Resets in " + root.formatDuration(remainingMs) : ""
+-      }
++      text: root.resetTextFor(limitRow.window)
+       color: root.dim
+       font.family: root.fontFamily
+       font.pixelSize: Style.font.caption
++      wrapMode: Text.WordWrap
+     }
+   }
+ 
+@@ -824,6 +869,7 @@
+     id: meter
+     property real value: -1
+     property bool alarming: false
++    property real markerValue: -1
+     property real thickness: Math.max(Style.space(4), Math.round(Style.spacing.controlHeight * 0.14))
+ 
+     implicitHeight: thickness
+@@ -847,6 +893,18 @@
+         NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+       }
+     }
++
++    Rectangle {
++      visible: meter.markerValue >= 0
++      x: root.clamp(meterTrack.width * meter.markerValue - width / 2, 0, meterTrack.width - width)
++      anchors.verticalCenter: meterTrack.verticalCenter
++      width: Math.max(Style.space(3), 3)
++      height: meterTrack.height + Style.space(2)
++      radius: width / 2
++      color: root.surface
++      border.color: root.dim
++      border.width: 1
++    }
+ 
+   }
+ 

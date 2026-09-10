@@ -443,11 +443,13 @@ let
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-recent-models.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-sdk-transcripts.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-all-provider-alarm.patch}
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-pace.patch}
         rm -f "$out/bin/"*.orig
         patchShebangs "$out/bin"
 
         python3 ${./tests/codex-credits.test.py} "$out/bin/fos-internal-agent-usage-codex"
         python3 ${./tests/claude-usage.test.py} "$out/bin/fos-internal-agent-usage-claude"
+        ${lib.getExe pkgs.nodejs} ${./tests/agent-usage-pace.test.cjs} "$out/shell/plugins/agents/Panel.qml"
         QUICKSHELL_MODULE_ROOT=${./.} \
           ${pkgs.bash}/bin/bash ${./tests/notification-tools.test.sh}
         DICTATION_STATUS_SOURCE=${./omarchy/scripts/dictation-status.sh} \
