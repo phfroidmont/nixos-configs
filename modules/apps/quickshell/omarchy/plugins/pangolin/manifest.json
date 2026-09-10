@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "phfroidmont.pangolin",
+  "name": "Pangolin",
+  "version": "1.0.0",
+  "author": "phfroidmont",
+  "description": "Read-only Pangolin client and site status",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Pangolin",
+    "description": "Show Pangolin connection and site status",
+    "category": "Network",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {},
+    "schema": []
+  }
+}

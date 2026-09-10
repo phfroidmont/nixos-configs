@@ -8,6 +8,7 @@
 
 let
   cfg = config.modules.apps.quickshell;
+  tailscaleEnabled = config.services.tailscale.enable;
   palette = import ../../desktop/themes/_palette.nix;
   toml = pkgs.formats.toml { };
   quickshellColors = {
@@ -72,6 +73,10 @@ let
       "scale-with-font" = true;
     };
     font."base-size" = 12;
+    pangolin = {
+      connected = palette.hex.green;
+      unavailable = palette.hex.yellow;
+    };
     popups = {
       background = palette.hex.bg0;
       "background-alpha" = 1.0;
@@ -271,36 +276,38 @@ let
         KEYBINDINGS_MENU_BIN="$out/bin/fos-internal-menu-keybindings" \
           ${pkgs.bash}/bin/bash ${./tests/keybindings-menu.test.sh}
       '';
-  shellRuntimePath = lib.makeBinPath ([
-    quickshellConfig
-    panelTools
-    dictationStatus
-    fosCommandPresent
-    fosShell
-    fosMenuSelect
-    publicEnvironment
-    menuTerminal
-    keybindingsMenu
-    pkgs.bash
-    pkgs.codex
-    pkgs.coreutils
-    pkgs.curl
-    pkgs.findutils
-    pkgs.fos
-    pkgs.fontconfig
-    pkgs.gawk
-    pkgs.hyprland
-    pkgs.inotify-tools
-    pkgs.jq
-    pkgs.networkmanager
-    pkgs.python3
-    pkgs.ripgrep
-    pkgs.systemd
-    pkgs.tailscale
-    pkgs.util-linux
-    pkgs.which
-    pkgs.wl-clipboard
-  ]);
+  shellRuntimePath = lib.makeBinPath (
+    [
+      quickshellConfig
+      panelTools
+      dictationStatus
+      fosCommandPresent
+      fosShell
+      fosMenuSelect
+      publicEnvironment
+      menuTerminal
+      keybindingsMenu
+      pkgs.bash
+      pkgs.codex
+      pkgs.coreutils
+      pkgs.curl
+      pkgs.findutils
+      pkgs.fos
+      pkgs.fontconfig
+      pkgs.gawk
+      pkgs.hyprland
+      pkgs.inotify-tools
+      pkgs.jq
+      pkgs.networkmanager
+      pkgs.python3
+      pkgs.ripgrep
+      pkgs.systemd
+      pkgs.util-linux
+      pkgs.which
+      pkgs.wl-clipboard
+    ]
+    ++ lib.optional tailscaleEnabled pkgs.tailscale
+  );
   wrappedQuickshell = pkgs.symlinkJoin {
     name = "quickshell-${quickshellPackage.version}-desktop";
     paths = [ quickshellPackage ];
@@ -341,6 +348,11 @@ let
 
         mkdir -p "$out/shell/plugins/panels/nextcloud"
         cp -R ${./omarchy/plugins/nextcloud}/. "$out/shell/plugins/panels/nextcloud/"
+
+        mkdir -p "$out/shell/plugins/panels/pangolin"
+        cp -R ${./omarchy/plugins/pangolin}/. "$out/shell/plugins/panels/pangolin/"
+        ${lib.getExe pkgs.nodejs} ${./tests/pangolin-status.test.cjs} \
+          "$out/shell/plugins/panels/pangolin"
 
         python3 - "$out/shell" <<'PYTHON'
         import os
@@ -556,7 +568,10 @@ let
       coreutils
       jq
     ];
-    text = builtins.readFile ./scripts/sync-shell-config.sh;
+    text = ''
+      export FOS_TAILSCALE_ENABLED=${if tailscaleEnabled then "1" else "0"}
+      ${builtins.readFile ./scripts/sync-shell-config.sh}
+    '';
   };
 in
 {
@@ -603,6 +618,8 @@ in
         "NEXTCLOUD_OPEN=${lib.getExe pkgs.nextcloud-client}"
         "NEXTCLOUD_OPEN_FOLDER=${lib.getExe' pkgs.xdg-utils "xdg-open"}"
         "NEXTCLOUD_STATUS=${lib.getExe' panelTools "nextcloud-status"}"
+        "PANGOLIN_BIN=${lib.getExe' pkgs.pangolin-cli "pangolin"}"
+        "PANGOLIN_TIMEOUT_BIN=${lib.getExe' pkgs.coreutils "timeout"}"
         "OMARCHY_PATH=${quickshellConfig}"
         "QUICKSHELL_THEME_PATH=${quickshellConfig}/theme"
         "TAILSCALE_BROWSER=${config.modules.applications.commands.browser}"

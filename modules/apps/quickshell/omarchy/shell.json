@@ -34,7 +34,7 @@
         { "id": "phfroidmont.nextcloud" },
         { "id": "omarchy.bluetooth" },
         { "id": "omarchy.network" },
-        { "id": "omarchy.tailscale" },
+        { "id": "phfroidmont.pangolin" },
         { "id": "omarchy.microphone" },
         { "id": "omarchy.audio" },
         { "id": "omarchy.monitor" },

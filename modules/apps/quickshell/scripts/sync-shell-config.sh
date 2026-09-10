@@ -4,6 +4,11 @@ set -uo pipefail
 
 config="$HOME/.config/omarchy/shell.json"
 temporary=""
+if [[ ${FOS_TAILSCALE_ENABLED:-1} == 0 ]]; then
+  tailscale_enabled=false
+else
+  tailscale_enabled=true
+fi
 
 trap '[[ -z ${temporary:-} ]] || rm -f "$temporary"' EXIT
 
@@ -24,7 +29,7 @@ migrate() {
     return 0
   fi
 
-  if jq --exit-status --slurp '
+  if jq --exit-status --slurp --argjson tailscale_enabled "$tailscale_enabled" '
     length == 1
     and (.[0] | type) == "object"
     and (.[0].nixosConfigMigrations.notifications | type) == "number"
@@ -35,6 +40,13 @@ migrate() {
     and (.[0].nixosConfigMigrations.statusFeatures // 0) >= 2
     and (.[0].nixosConfigMigrations.claudeAgent | type) == "number"
     and (.[0].nixosConfigMigrations.claudeAgent // 0) >= 1
+    and (.[0].nixosConfigMigrations.pangolinStatus | type) == "number"
+    and (.[0].nixosConfigMigrations.pangolinStatus // 0) >= 1
+    and (if $tailscale_enabled then true else
+      ((.[0].disabledPlugins // []) | index("omarchy.tailscale")) != null
+      and ([.[0].bar.layout.left[], .[0].bar.layout.center[], .[0].bar.layout.right[]]
+        | any(if type == "string" then . == "omarchy.tailscale" else .id == "omarchy.tailscale" end) | not)
+    end)
   ' "$config" >/dev/null 2>&1; then
     return 0
   fi
@@ -46,7 +58,7 @@ migrate() {
     return 0
   }
 
-  if ! jq --slurp '
+  if ! jq --slurp --argjson tailscale_enabled "$tailscale_enabled" '
     def widget_id:
       if type == "string" then . else (.id // "") end;
     def selected_id:
@@ -107,6 +119,27 @@ migrate() {
       elif type == "string" then {id: ., providers: {claude: {enabled: true}}}
       else .providers.claude.enabled = true
       end;
+    def replace_tailscale:
+      if widget_id != "omarchy.tailscale" then .
+      elif type == "string" then "phfroidmont.pangolin"
+      else .id = "phfroidmont.pangolin"
+      end;
+    def replace_first_tailscale:
+      reduce .[] as $entry ({entries: [], replaced: false};
+        if ($entry | widget_id) != "omarchy.tailscale" then
+          .entries += [$entry]
+        elif .replaced then .
+        else
+          .entries += [$entry | replace_tailscale]
+          | .replaced = true
+        end)
+      | .entries;
+    def insert_status_widget($entry):
+      if (map(widget_id) | index("omarchy.microphone")) != null then
+        insert_before("omarchy.microphone"; $entry)
+      else
+        insert_before("omarchy.audio"; $entry)
+      end;
 
     if length != 1 then
       error("shell config must contain one JSON document")
@@ -157,7 +190,7 @@ migrate() {
           | select(
               . != "omarchy.microphone"
               and . != "omarchy.reminders"
-              and . != "omarchy.tailscale"
+              and . != "phfroidmont.pangolin"
             )
         ]
         | .bar.layout.left = [(.bar.layout.left // [])[]]
@@ -203,9 +236,9 @@ migrate() {
             .bar.layout.center = [{id: "omarchy.media"}] + .bar.layout.center
           end
         | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
-            | any(widget_id == "omarchy.tailscale")) as $has_tailscale
-        | if $has_tailscale then . else
-            .bar.layout.right |= insert_before("omarchy.audio"; {id: "omarchy.tailscale"})
+            | any(widget_id == "phfroidmont.pangolin")) as $has_pangolin
+        | if $has_pangolin then . else
+            .bar.layout.right |= insert_before("omarchy.audio"; {id: "phfroidmont.pangolin"})
           end
         | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
             | any(widget_id == "omarchy.microphone")) as $has_microphone
@@ -220,6 +253,49 @@ migrate() {
         | .bar.layout.center = [(.bar.layout.center // [])[] | enable_claude]
         | .bar.layout.right = [(.bar.layout.right // [])[] | enable_claude]
         | .nixosConfigMigrations.claudeAgent = 1
+      end
+    | if ((.nixosConfigMigrations.pangolinStatus | type) == "number"
+        and (.nixosConfigMigrations.pangolinStatus // 0) >= 1) then . else
+        ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+          | any(widget_id == "phfroidmont.pangolin")) as $has_pangolin
+        | ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+          | any(widget_id == "omarchy.tailscale")) as $has_tailscale
+        | (((.disabledPlugins // []) | index("omarchy.tailscale")) != null
+          and ($tailscale_enabled or $has_tailscale)) as $user_disabled_tailscale
+        | if $user_disabled_tailscale
+            and ((.disabledPlugins // []) | index("phfroidmont.pangolin")) == null
+          then .disabledPlugins = (.disabledPlugins // []) + ["phfroidmont.pangolin"]
+          else . end
+        | if $has_pangolin then
+            .bar.layout.left = [(.bar.layout.left // [])[] | select(widget_id != "omarchy.tailscale")]
+            | .bar.layout.center = [(.bar.layout.center // [])[] | select(widget_id != "omarchy.tailscale")]
+            | .bar.layout.right = [(.bar.layout.right // [])[] | select(widget_id != "omarchy.tailscale")]
+          elif $has_tailscale then
+            if ([.bar.layout.left[]] | any(widget_id == "omarchy.tailscale")) then
+              .bar.layout.left |= replace_first_tailscale
+              | .bar.layout.center = [(.bar.layout.center // [])[] | select(widget_id != "omarchy.tailscale")]
+              | .bar.layout.right = [(.bar.layout.right // [])[] | select(widget_id != "omarchy.tailscale")]
+            elif ([.bar.layout.center[]] | any(widget_id == "omarchy.tailscale")) then
+              .bar.layout.center |= replace_first_tailscale
+              | .bar.layout.right = [(.bar.layout.right // [])[] | select(widget_id != "omarchy.tailscale")]
+            else
+              .bar.layout.right |= replace_first_tailscale
+            end
+          elif ($tailscale_enabled | not) then
+            .bar.layout.right |= insert_status_widget({id: "phfroidmont.pangolin"})
+          # On enabled hosts, an absent Tailscale widget is deliberate user layout intent.
+          else . end
+        | .nixosConfigMigrations.pangolinStatus = 1
+      end
+    | if $tailscale_enabled then . else
+        .disabledPlugins = if ((.disabledPlugins // []) | index("omarchy.tailscale")) == null then
+            (.disabledPlugins // []) + ["omarchy.tailscale"]
+          else
+            .disabledPlugins
+          end
+        | .bar.layout.left = [(.bar.layout.left // [])[] | select(widget_id != "omarchy.tailscale")]
+        | .bar.layout.center = [(.bar.layout.center // [])[] | select(widget_id != "omarchy.tailscale")]
+        | .bar.layout.right = [(.bar.layout.right // [])[] | select(widget_id != "omarchy.tailscale")]
       end
   ' "$config" >"$temporary"; then
     warn "leaving invalid config unchanged: $config"

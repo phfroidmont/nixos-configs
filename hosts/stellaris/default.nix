@@ -243,8 +243,6 @@
     };
   };
 
-  services.tailscale.enable = true;
-
   environment.systemPackages = [
     pkgs.fos
     pkgs.jellyfin-cli

@@ -44,12 +44,12 @@ jq -e '
   and (.disabledPlugins | index("omarchy.indicators") | not)
   and (.disabledPlugins | index("omarchy.microphone") | not)
   and (.disabledPlugins | index("omarchy.reminders") | not)
-  and (.disabledPlugins | index("omarchy.tailscale") | not)
+  and (.disabledPlugins | index("phfroidmont.pangolin") | not)
   and any(.bar.layout.center[];
     .id == "omarchy.indicators"
     and .items == ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
   and any(.bar.layout.center[]; .id == "omarchy.media")
-  and any(.bar.layout.right[]; .id == "omarchy.tailscale")
+  and any(.bar.layout.right[]; .id == "phfroidmont.pangolin")
   and any(.bar.layout.right[]; .id == "omarchy.microphone")
   and ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
     | map(.id) | index("omarchy.menu") | not)
@@ -112,7 +112,7 @@ jq -e '
     "items": ["NightLight"]
   }
   and .bar.layout.right[1].providers.codex.enabled
-  and .bar.layout.right[2] == {"id": "omarchy.tailscale"}
+  and .bar.layout.right[2] == {"id": "phfroidmont.pangolin"}
   and .bar.layout.right[3] == {"id": "omarchy.microphone"}
 ' "$sync_config" >/dev/null
 
@@ -124,6 +124,209 @@ mv "$temporary/user-edited.json" "$sync_config"
 cp "$sync_config" "$temporary/after-user-edit.json"
 HOME="$sync_home" bash "$root/scripts/sync-shell-config.sh"
 cmp "$temporary/after-user-edit.json" "$sync_config"
+
+tailscale_disabled_home="$temporary/tailscale-disabled-home"
+tailscale_disabled_config="$tailscale_disabled_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$tailscale_disabled_config")"
+cat >"$tailscale_disabled_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {
+    "layout": {
+      "left": ["custom.left", "omarchy.tailscale"],
+      "center": [{"id": "custom.center"}],
+      "right": [{"id": "omarchy.tailscale"}, {"id": "custom.right"}]
+    }
+  },
+  "disabledPlugins": ["custom.disabled"],
+  "nixosConfigMigrations": {
+    "notifications": 1,
+    "menuWidget": 1,
+    "statusFeatures": 2,
+    "claudeAgent": 1
+  }
+}
+EOF
+FOS_TAILSCALE_ENABLED=0 HOME="$tailscale_disabled_home" \
+  bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .disabledPlugins == ["custom.disabled", "omarchy.tailscale"]
+  and .bar.layout.left == ["custom.left", "phfroidmont.pangolin"]
+  and .bar.layout.center == [{"id": "custom.center"}]
+  and .bar.layout.right == [{"id": "custom.right"}]
+  and .nixosConfigMigrations == {
+    "notifications": 1,
+    "menuWidget": 1,
+    "statusFeatures": 2,
+    "claudeAgent": 1,
+    "pangolinStatus": 1
+  }
+' "$tailscale_disabled_config" >/dev/null
+cp "$tailscale_disabled_config" "$temporary/tailscale-disabled-after-sync.json"
+FOS_TAILSCALE_ENABLED=0 HOME="$tailscale_disabled_home" \
+  bash "$root/scripts/sync-shell-config.sh"
+cmp "$temporary/tailscale-disabled-after-sync.json" "$tailscale_disabled_config"
+
+object_home="$temporary/object-home"
+object_config="$object_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$object_config")"
+cat >"$object_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {"layout": {
+    "left": [{"id": "custom.left"}],
+    "center": [{"id": "omarchy.tailscale", "compact": true}, {"id": "custom.center"}],
+    "right": [{"id": "custom.right"}]
+  }},
+  "disabledPlugins": [],
+  "nixosConfigMigrations": {
+    "notifications": 1, "menuWidget": 1, "statusFeatures": 2, "claudeAgent": 1
+  }
+}
+EOF
+HOME="$object_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .bar.layout.left == [{"id": "custom.left"}]
+  and .bar.layout.center == [
+    {"id": "phfroidmont.pangolin", "compact": true},
+    {"id": "custom.center"}
+  ]
+  and .bar.layout.right == [{"id": "custom.right"}]
+  and .nixosConfigMigrations.pangolinStatus == 1
+' "$object_config" >/dev/null
+
+user_disabled_home="$temporary/user-disabled-home"
+user_disabled_config="$user_disabled_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$user_disabled_config")"
+cat >"$user_disabled_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {"layout": {"left": [], "center": [], "right": [{"id": "custom.right"}]}},
+  "disabledPlugins": ["custom.first", "omarchy.tailscale", "custom.last"],
+  "nixosConfigMigrations": {
+    "notifications": 1, "menuWidget": 1, "statusFeatures": 2, "claudeAgent": 1
+  }
+}
+EOF
+HOME="$user_disabled_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .disabledPlugins == [
+    "custom.first", "omarchy.tailscale", "custom.last", "phfroidmont.pangolin"
+  ]
+  and .bar.layout.right == [{"id": "custom.right"}]
+  and .nixosConfigMigrations.pangolinStatus == 1
+' "$user_disabled_config" >/dev/null
+
+enabled_hidden_home="$temporary/enabled-hidden-home"
+enabled_hidden_config="$enabled_hidden_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$enabled_hidden_config")"
+cat >"$enabled_hidden_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {"layout": {
+    "left": ["custom.left"], "center": [], "right": [{"id": "custom.right"}]
+  }},
+  "disabledPlugins": ["custom.disabled"],
+  "nixosConfigMigrations": {
+    "notifications": 1, "menuWidget": 1, "statusFeatures": 2, "claudeAgent": 1
+  }
+}
+EOF
+HOME="$enabled_hidden_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .bar.layout == {
+    "left": ["custom.left"], "center": [], "right": [{"id": "custom.right"}]
+  }
+  and .disabledPlugins == ["custom.disabled"]
+  and .nixosConfigMigrations.pangolinStatus == 1
+' "$enabled_hidden_config" >/dev/null
+
+policy_migrated_home="$temporary/policy-migrated-home"
+policy_migrated_config="$policy_migrated_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$policy_migrated_config")"
+cat >"$policy_migrated_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {"layout": {
+    "left": [],
+    "center": [],
+    "right": ["custom.network", {"id": "omarchy.microphone"}, {"id": "omarchy.audio"}]
+  }},
+  "disabledPlugins": ["omarchy.tailscale"],
+  "nixosConfigMigrations": {
+    "notifications": 1, "menuWidget": 1, "statusFeatures": 2, "claudeAgent": 1
+  }
+}
+EOF
+FOS_TAILSCALE_ENABLED=0 HOME="$policy_migrated_home" \
+  bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .disabledPlugins == ["omarchy.tailscale"]
+  and .bar.layout.right == [
+    "custom.network",
+    {"id": "phfroidmont.pangolin"},
+    {"id": "omarchy.microphone"},
+    {"id": "omarchy.audio"}
+  ]
+  and .nixosConfigMigrations.pangolinStatus == 1
+' "$policy_migrated_config" >/dev/null
+
+host_user_disabled_home="$temporary/host-user-disabled-home"
+host_user_disabled_config="$host_user_disabled_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$host_user_disabled_config")"
+cat >"$host_user_disabled_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {"layout": {
+    "left": [], "center": [],
+    "right": [{"id": "omarchy.tailscale"}, {"id": "omarchy.microphone"}]
+  }},
+  "disabledPlugins": ["omarchy.tailscale"],
+  "nixosConfigMigrations": {
+    "notifications": 1, "menuWidget": 1, "statusFeatures": 2, "claudeAgent": 1
+  }
+}
+EOF
+FOS_TAILSCALE_ENABLED=0 HOME="$host_user_disabled_home" \
+  bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .disabledPlugins == ["omarchy.tailscale", "phfroidmont.pangolin"]
+  and .bar.layout.right == [
+    {"id": "phfroidmont.pangolin"},
+    {"id": "omarchy.microphone"}
+  ]
+  and .nixosConfigMigrations.pangolinStatus == 1
+' "$host_user_disabled_config" >/dev/null
+
+duplicate_home="$temporary/duplicate-home"
+duplicate_config="$duplicate_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$duplicate_config")"
+cat >"$duplicate_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {"layout": {
+    "left": [{"id": "phfroidmont.pangolin", "label": "keep"}],
+    "center": ["omarchy.tailscale"],
+    "right": [{"id": "omarchy.tailscale", "label": "remove"}]
+  }},
+  "disabledPlugins": [],
+  "nixosConfigMigrations": {
+    "notifications": 1, "menuWidget": 1, "statusFeatures": 2, "claudeAgent": 1
+  }
+}
+EOF
+HOME="$duplicate_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .bar.layout.left == [{"id": "phfroidmont.pangolin", "label": "keep"}]
+  and .bar.layout.center == []
+  and .bar.layout.right == []
+  and ([.bar.layout.left[], .bar.layout.center[], .bar.layout.right[]]
+    | map(if type == "string" then . else .id end)
+    | map(select(. == "phfroidmont.pangolin")) | length) == 1
+' "$duplicate_config" >/dev/null
+cp "$duplicate_config" "$temporary/duplicate-after-sync.json"
+HOME="$duplicate_home" bash "$root/scripts/sync-shell-config.sh"
+cmp "$temporary/duplicate-after-sync.json" "$duplicate_config"
 
 version_one_home="$temporary/version-one-home"
 version_one_config="$version_one_home/.config/omarchy/shell.json"
@@ -183,7 +386,7 @@ jq -e '
   and .bar.layout.center[2].id == "omarchy.clock"
   and .bar.layout.right == [
     {"id": "omarchy.power"},
-    {"id": "omarchy.tailscale"},
+    {"id": "phfroidmont.pangolin"},
     {"id": "omarchy.microphone"}
   ]
   and .nixosConfigMigrations.notifications == 1
