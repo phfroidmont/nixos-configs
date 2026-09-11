@@ -14,6 +14,7 @@
       docker.enable = true;
       libvirt.enable = true;
       languagetool.enable = true;
+      pangolin.enable = true;
       work-proxy.enable = true;
     };
     media = {
