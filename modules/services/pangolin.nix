@@ -70,7 +70,8 @@ in
         up = {
           override_dns = true;
           tunnel_dns = true;
-          upstream_dns = [ "10.33.0.100" ];
+          # With tunnel DNS, this is the conditional resolver on relay1's loopback.
+          upstream_dns = [ "127.0.0.1:53" ];
           match_domains_dns = [
             "foyer.cloud"
             "*.foyer.cloud"
@@ -79,7 +80,7 @@ in
             "lefoyer.lu"
             "*.lefoyer.lu"
             "*.internal"
-            "uptime.banditlair.com"
+            "*.banditlair.com"
           ];
         };
       };
