@@ -70,8 +70,8 @@ in
         up = {
           override_dns = true;
           tunnel_dns = true;
-          # With tunnel DNS, this is the conditional resolver on relay1's loopback.
-          upstream_dns = [ "127.0.0.1:53" ];
+          # Pangolin's virtual IP for dns.internal; recheck if the resource is recreated.
+          upstream_dns = [ "100.96.128.11:53" ];
           match_domains_dns = [
             "foyer.cloud"
             "*.foyer.cloud"
