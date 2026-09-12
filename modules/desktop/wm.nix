@@ -129,6 +129,7 @@ in
           qt.enable = true;
         };
         terminal.enable = true;
+        sddm.enable = true;
         herdr.enable = true;
         file-manager.enable = true;
         zsh.enable = true;
@@ -142,6 +143,13 @@ in
         quickshell.enable = true;
         newsboat.enable = true;
       };
+    };
+
+    programs.hyprland.enable = true;
+    services.displayManager.defaultSession = "hyprland";
+    services.xserver.xkb = {
+      layout = "fr";
+      options = "caps:escape";
     };
 
     home-manager.users.${config.user.name} =
