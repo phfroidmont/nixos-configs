@@ -58,12 +58,16 @@ diff --git a/shell/plugins/panels/clock/BarWidget.qml b/shell/plugins/panels/clo
 index ea1ceec..087cd8e 100644
 --- a/shell/plugins/panels/clock/BarWidget.qml
 +++ b/shell/plugins/panels/clock/BarWidget.qml
-@@ -157,8 +157,7 @@ BarWidget {
+@@ -156,9 +156,10 @@ BarWidget {
+-    tooltipText: "Right-click to toggle format"
++    tooltipText: Quickshell.env("CALENDAR_LAUNCH") ? "Click for calendar; middle-click for clock; right-click to toggle format" : "Click for clock; right-click to toggle format"
  
      onPressed: function(b) {
        if (b === Qt.RightButton) root.cycleFormat()
 -      else if (b === Qt.MiddleButton) { if (root.bar) root.bar.run("omarchy-menu-timezone") }
 -      else root.togglePanel()
++      else if (b === Qt.LeftButton && root.bar && Quickshell.env("CALENDAR_LAUNCH"))
++        root.bar.run(Quickshell.env("CALENDAR_LAUNCH"))
 +      else root.togglePanel()
      }
  

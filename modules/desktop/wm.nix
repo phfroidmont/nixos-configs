@@ -12,6 +12,8 @@ let
   herdr = config.modules.desktop.herdr.commands;
   quickshellCommands = config.modules.apps.quickshell.commands;
   btop = lib.getExe config.home-manager.users.${config.user.name}.programs.btop.package;
+  calendar = lib.getExe config.home-manager.users.${config.user.name}.programs.dank-calendar.package;
+  calendarEnabled = config.modules.apps.dank-calendar.enable;
   kitty = lib.getExe config.home-manager.users.${config.user.name}.programs.kitty.package;
   jellyfinTui = lib.getExe pkgs.jellyfin-tui;
   fos = lib.getExe pkgs.fos;
@@ -140,6 +142,7 @@ in
         audio.enable = true;
       };
       apps = {
+        dank-calendar.enable = true;
         quickshell.enable = true;
         newsboat.enable = true;
       };
@@ -362,6 +365,7 @@ in
               ))
             ]
             ++ workspaceBinds
+            ++ lib.optional calendarEnabled (mkBind (modKey "SHIFT + D") "Calendar" (exec "${calendar} show"))
             ++ [
 
               # Scroll through existing workspaces with mainMod + scroll

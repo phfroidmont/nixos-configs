@@ -28,6 +28,10 @@
       url = "github:quickshell-mirror/quickshell/v0.3.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    dankcalendar = {
+      url = "github:AvengeMedia/dankcalendar/v1.6.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
   };
 

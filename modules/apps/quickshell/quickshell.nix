@@ -607,6 +607,7 @@ in
       };
 
       systemd.user.services.quickshell.Service.Environment = [
+        "CALENDAR_LAUNCH=${lib.optionalString config.modules.apps.dank-calendar.enable "${lib.getExe config.home-manager.users.${config.user.name}.programs.dank-calendar.package} show"}"
         "AGENTS_LAUNCH=${config.modules.desktop.herdr.commands.launch}"
         "CLIPBOARD_ACTION=${lib.getExe clipboardAction}"
         "CLIPBOARD_BROWSER=${config.modules.applications.commands.browser}"
