@@ -279,6 +279,7 @@ in
             top,
             review ? top,
             research,
+            explore ? research,
             writer,
             small,
             # Compaction is repeated large-input summarization, not reasoning.
@@ -292,7 +293,7 @@ in
               plan.model = top;
               review.model = review;
               compaction.model = compaction;
-              explore.model = research;
+              explore.model = explore;
               scout.model = research;
               test-triage.model = research;
               implement.model = writer;
@@ -304,6 +305,7 @@ in
         openaiModels = modelSet {
           top = "openai/gpt-6-astra";
           research = "openai/gpt-5.6-terra";
+          explore = "openai/gpt-6-astra";
           writer = "openai/gpt-5.6-sol";
           small = "openai/gpt-5.6-luna";
         };
@@ -549,7 +551,7 @@ in
                 };
               };
               explore = {
-                description = ''Fast read-only agent specialized for exploring codebases. Use proactively when you need to find files by pattern (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about how the codebase works (eg. "how do API endpoints work?"). Specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions. Returns concise evidence with file and line references; never edits.'';
+                description = ''Read-only codebase exploration and reasoning. Use proactively to understand behavior, trace interactions, or synthesize findings across files. Use scan instead for bounded lookups and mechanical inventories. Specify thoroughness: "quick" for focused questions, "medium" for moderate exploration, or "very thorough" for comprehensive analysis. Returns concise evidence with file and line references; never edits.'';
                 mode = "subagent";
                 steps = 100;
                 permission = {
@@ -769,12 +771,13 @@ in
           ## Delegation
           - This file explicitly instructs you to use the Task tool. Delegating is the expected default, not an exception.
           - Delegate proactively, without being asked:
-            - "where is X", "how does X work", any multi-file codebase search -> explore
+            - understanding codebase behavior, tracing interactions, or synthesizing findings across files -> explore
             - dependency, library, or external documentation research -> scout
             - failing tests or build errors you have not yet diagnosed -> test-triage
-            - inventories, counts, consistency checks across many files -> scan
+            - bounded lookups ("where is X"), inventories, counts, and mechanical consistency checks across many files -> scan
             - defect review of a completed change -> review
             - bounded implementation work in a file scope you can name up front -> implement
+          - If a scan lookup is inconclusive or requires tracing behavior, delegate the follow-up to explore.
           - Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
           - Delegate only bounded, independent work with an explicit expected report.
           - For defect reviews, the primary agent must first call review.
