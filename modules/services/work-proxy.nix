@@ -32,7 +32,7 @@ in
         LogLevel = "Info";
         Port = 2345;
         Upstream = [
-          ''upstream http foyer-wsl.internal:2345 ".microsoftonline.com"''
+          ''upstream http wsl.foyer.internal:2345 ".microsoftonline.com"''
         ];
       };
     };

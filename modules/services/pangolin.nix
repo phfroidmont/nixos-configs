@@ -70,7 +70,7 @@ in
         up = {
           override_dns = true;
           tunnel_dns = true;
-          # Pangolin's virtual IP for dns.internal; recheck if the resource is recreated.
+          # Pangolin's virtual IP for dns.bl.internal; recheck if the resource is recreated.
           upstream_dns = [ "100.96.128.11:53" ];
           match_domains_dns = [
             "foyer.cloud"
