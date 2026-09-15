@@ -111,6 +111,27 @@
 
       checks.${system} = {
         fos = pkgs.fos.tests;
+        mullvad-gateway =
+          let
+            gateway = import ./hosts/aegis/mullvad.nix { pkgs = stablePkgs; };
+            wrapper = builtins.head gateway.environment.systemPackages;
+          in
+          stablePkgs.runCommand "mullvad-gateway-tests"
+            {
+              nativeBuildInputs = [
+                stablePkgs.python3
+                stablePkgs.bash
+                stablePkgs.shellcheck
+                stablePkgs.util-linux
+              ];
+            }
+            ''
+              export PYTHONDONTWRITEBYTECODE=1
+              python3 -m unittest discover -s ${./hosts/aegis/mullvad} -p 'test_*.py'
+              shellcheck ${wrapper}/bin/mullvad-gw ${./hosts/aegis/mullvad/test_wrapper.sh}
+              bash ${./hosts/aegis/mullvad/test_wrapper.sh} ${wrapper}/bin/mullvad-gw
+              touch "$out"
+            '';
         pangolin-fallback =
           let
             fallback = self.nixosConfigurations.stellaris.config.systemd;

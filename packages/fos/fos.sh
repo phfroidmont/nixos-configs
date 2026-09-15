@@ -104,8 +104,9 @@ capture record status|capture record status|Show recording status
 capture record stop|capture record stop|Stop the FOS recording
 vpn status|vpn status|Show VPN status
 vpn list|vpn list|List VPN servers
-vpn up|vpn up [--yes]|Start the VPN
-vpn down|vpn down [--yes]|Stop the VPN
+vpn refresh|vpn refresh|Refresh the VPN connection
+vpn up|vpn up|Start the VPN
+vpn down|vpn down|Stop the VPN
 vpn switch|vpn switch SERVER [--yes]|Switch VPN server
 tailscale status|tailscale status|Show Tailscale status
 tailscale up|tailscale up [--yes]|Start Tailscale
@@ -302,7 +303,7 @@ completion() {
     'network wifi share'|network\ wifi\ share\ *) completion_add --reveal 'Allow revealing Wi-Fi credentials' ;;
     'service status'|'service logs') completion_add --user 'Use the user service manager' ;;
     'service restart') completion_add --user 'Use the user service manager'; completion_add --yes 'Skip confirmation' ;;
-    'system logout'|'system suspend'|'system hibernate'|'system reboot'|'system shutdown'|'network wifi disconnect'|'bluetooth forget'|'clipboard clear'|'vpn up'|'vpn down'|'tailscale up'|'tailscale down'|'vm shutdown'|vpn\ switch\ *|network\ wifi\ disconnect\ *|bluetooth\ forget\ *|service\ restart\ *|vm\ shutdown\ *) completion_add --yes 'Skip confirmation' ;;
+    'system logout'|'system suspend'|'system hibernate'|'system reboot'|'system shutdown'|'network wifi disconnect'|'bluetooth forget'|'clipboard clear'|'tailscale up'|'tailscale down'|'vm shutdown'|vpn\ switch\ *|network\ wifi\ disconnect\ *|bluetooth\ forget\ *|service\ restart\ *|vm\ shutdown\ *) completion_add --yes 'Skip confirmation' ;;
   esac
   return 0
 }
@@ -848,7 +849,7 @@ capture_command() {
 }
 recording_process_active() { local _pid=$1 _comm _state=''; [[ -r /proc/$_pid/stat ]] || return 1; read -r _pid _comm _state _ <"/proc/$_pid/stat" 2>/dev/null || return 1; [[ $_state != Z ]]; }
 
-vpn_command() { local action=${1:-}; shift || true; local server; case $action in status|list) no_args "$@"; exec_command "$VPN" "$action";; up|down) confirm "VPN $action" "$@"; exec_command "$VPN" "$action";; switch) (($# >= 1 && $# <= 2)) || fail 'vpn switch requires SERVER [--yes]'; server=$1; safe_value "$server"; shift; confirm 'switch VPN server' "$@"; exec_command "$VPN" switch "$server";; *) fail 'invalid vpn command';; esac; }
+vpn_command() { local action=${1:-}; shift || true; local server; case $action in status|list|refresh|up|down) no_args "$@"; exec_command "$VPN" "$action";; switch) (($# >= 1 && $# <= 2)) || fail 'vpn switch requires SERVER [--yes]'; server=$1; safe_value "$server"; shift; confirm 'switch VPN server' "$@"; exec_command "$VPN" switch "$server";; *) fail 'invalid vpn command';; esac; }
 tailscale_command() { local action=${1:-}; shift || true; case $action in status) no_args "$@"; exec_command "$TAILSCALE" status;; up|down) confirm "Tailscale $action" "$@"; exec_command "$TAILSCALE" "$action";; *) fail 'invalid tailscale command';; esac; }
 service_command() { local action=${1:-}; shift || true; local scope='' unit yes=''; [[ ${1:-} == --user ]] && { scope=--user; shift; }; (($# >= 1)) || fail 'service command requires UNIT'; unit=$1; shift; unit_name "$unit"; case $action in status) no_args "$@"; exec_command "$SYSTEMCTL" ${scope:+"$scope"} status "$unit";; logs) no_args "$@"; exec_command "$JOURNALCTL" ${scope:+"$scope"} --unit "$unit" --no-pager;; restart) (($# <= 1)) || fail 'service restart accepts only --yes'; (($# == 0)) || yes=$1; confirm "restart service $unit" ${yes:+"$yes"}; exec_command "$SYSTEMCTL" ${scope:+"$scope"} restart "$unit";; *) fail 'invalid service command';; esac; }
 vm_command() { local action=${1:-}; shift || true; local name; case $action in list) no_args "$@"; exec_command "$VIRSH" -c qemu:///system list --all;; status|start) (($# == 1)) || fail "vm $action requires NAME"; name=$1; safe_value "$name"; if [[ $action == status ]]; then exec_command "$VIRSH" -c qemu:///system dominfo "$name"; else exec_command "$VIRSH" -c qemu:///system start "$name"; fi;; shutdown) (($# >= 1 && $# <= 2)) || fail 'vm shutdown requires NAME [--yes]'; name=$1; safe_value "$name"; shift; confirm "shut down VM $name" "$@"; exec_command "$VIRSH" -c qemu:///system shutdown "$name";; *) fail 'invalid vm command';; esac; }

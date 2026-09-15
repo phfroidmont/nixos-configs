@@ -113,7 +113,7 @@ grep -Fq 'capture record start region' <<<"$help"
 commands=$($FOS_BIN commands)
 grep -Fq 'network wifi connect SSID' <<<"$commands"
 commands_json=$($FOS_BIN commands --json)
-jq -e 'length > 80 and any(.[]; .command == "hardware disk") and any(.[]; .command == "menu recording") and any(.[]; .command == "menu reminders") and any(.[]; .command == "menu tailscale") and any(.[]; .command == "dictation status") and any(.[]; .command == "dictation start") and any(.[]; .command == "dictation stop") and any(.[]; .command == "dictation toggle")' <<<"$commands_json" >/dev/null
+jq -e 'length > 80 and any(.[]; .command == "hardware disk") and any(.[]; .command == "menu recording") and any(.[]; .command == "menu reminders") and any(.[]; .command == "menu tailscale") and any(.[]; .command == "dictation status") and any(.[]; .command == "dictation start") and any(.[]; .command == "dictation stop") and any(.[]; .command == "dictation toggle") and any(.[]; .command == "vpn refresh")' <<<"$commands_json" >/dev/null
 if grep -Eiq 'docker' <<<"$help" || jq -e 'any(.[]; .command | test("docker"; "i"))' <<<"$commands_json" >/dev/null; then exit 1; fi
 legacy_backend_prefix='omar''chy-'
 if grep -Fq "$legacy_backend_prefix" <<<"$commands_json"; then exit 1; fi
@@ -123,6 +123,9 @@ assert_failure commands --yaml
 assert_failure build
 help=$($FOS_BIN help nixos build)
 grep -Fq 'Usage: fos nixos build [HOST]' <<<"$help"
+help=$($FOS_BIN help vpn)
+grep -Fq 'Usage: fos vpn refresh' <<<"$help"
+if grep -Eq 'vpn (up|down).*--yes' <<<"$help"; then exit 1; fi
 help=$($FOS_BIN network wifi --help)
 grep -Fq 'Usage: fos network wifi list' <<<"$help"
 assert_failure help no-such-command
@@ -215,6 +218,13 @@ reset_log; FOS_TEST_SLURP_RUNNING=true $FOS_BIN capture screenshot smart >/dev/n
 reset_log; FOS_TEST_SLURP_RUNNING=true $FOS_BIN capture color >/dev/null 2>&1; assert_log 'pkill|-x slurp'
 reset_log; $FOS_BIN capture color >/dev/null 2>&1; grep -Fxq 'hyprpicker|-a' "$log"
 reset_log; $FOS_BIN vpn status >/dev/null 2>&1; assert_log 'vpn|status'
+for action in refresh up down; do
+  reset_log; $FOS_BIN vpn "$action" >/dev/null 2>&1; assert_log "vpn|$action"
+  reset_log; assert_failure vpn "$action" unexpected; assert_log ''
+done
+for action in up down; do
+  reset_log; assert_failure vpn "$action" --yes; assert_log ''
+done
 reset_log; $FOS_BIN tailscale status >/dev/null 2>&1; assert_log 'tailscale|status'
 reset_log; $FOS_BIN service status --user test.service >/dev/null 2>&1; assert_log 'systemctl|--user status test.service'
 reset_log; assert_failure service status '../bad'; assert_log ''
@@ -225,7 +235,7 @@ reset_log; assert_failure hardware disk /dev/../secret; assert_log ''
 # Disruptive operations never dispatch without confirmation.
 for invocation in \
   'system reboot' 'network wifi disconnect wlan0' 'bluetooth forget AA:BB:CC:DD:EE:FF' \
-  'clipboard clear' 'vpn down' 'tailscale up' 'service restart test.service' 'vm shutdown test-vm'; do
+  'clipboard clear' 'tailscale up' 'service restart test.service' 'vm shutdown test-vm'; do
   reset_log
   read -r -a args <<<"$invocation"
   assert_failure "${args[@]}"
@@ -359,6 +369,9 @@ completion=$($FOS_BIN __complete network wifi disconnect w); grep -Fq $'wlan0\t'
 completion=$($FOS_BIN __complete service status ''); grep -Fq $'test.service\t' <<<"$completion"; grep -Fq -- $'--user\t' <<<"$completion"
 completion=$($FOS_BIN __complete hardware disk /); grep -Fq $'/dev/nvme0n1\t' <<<"$completion"
 completion=$($FOS_BIN __complete system reboot -); grep -Fq -- $'--yes\t' <<<"$completion"
+completion=$($FOS_BIN __complete vpn ''); grep -Fq $'refresh\t' <<<"$completion"
+for action in up down; do completion=$($FOS_BIN __complete vpn "$action" -); if grep -Fq -- $'--yes\t' <<<"$completion"; then exit 1; fi; done
+completion=$($FOS_BIN __complete vpn switch nl-ams-001 -); grep -Fq -- $'--yes\t' <<<"$completion"
 
 if [[ -n ${FOS_COMPLETION:-} ]]; then
   completion=$(PATH="${FOS_BIN%/*}:$PATH" zsh -c '
@@ -389,8 +402,7 @@ if [[ -n ${FOS_COMPLETION:-} ]]; then
   grep -Fxq 'value: doctor' <<<"$completion"
   grep -Fxq 'display: down -- Stop the VPN' <<<"$completion"
   grep -Fxq 'value: down' <<<"$completion"
-  grep -Fxq 'display: --yes -- Skip confirmation' <<<"$completion"
-  grep -Fxq 'value: --yes' <<<"$completion"
+  if grep -Fq -- '--yes' <<<"$completion"; then exit 1; fi
 
   completion=$(PATH="${FOS_BIN%/*}:$PATH" zsh -c '
     compadd() {

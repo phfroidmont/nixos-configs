@@ -10,8 +10,6 @@ ROOT_IDS = ["apps", "controls", "capture", "network", "nixos", "hardware", "tool
 ROOT_LABELS = ["Apps", "Controls", "Capture", "Network", "NixOS", "Hardware", "Tools", "System"]
 CONFIRM_ONLY = {"nixos update"}
 DISRUPTIVE = CONFIRM_ONLY | {
-    "vpn up",
-    "vpn down",
     "tailscale up",
     "tailscale down",
     "system logout",

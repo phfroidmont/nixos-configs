@@ -49,7 +49,7 @@ in
                 local -a subcmds servers
                 local output
 
-                subcmds=(up down status list switch)
+                subcmds=(up down status list refresh switch)
 
                 if (( CURRENT == 2 )); then
                   _describe 'aegis-vpn command' subcmds

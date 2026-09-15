@@ -257,7 +257,7 @@
       TARGET="''${AEGIS_SSH_TARGET:-admin@192.168.1.1}"
 
       if [[ $# -lt 1 ]]; then
-        echo "Usage: aegis-vpn <up|down|status|list|switch SERVER>" >&2
+        echo "Usage: aegis-vpn <up|down|status|list|refresh|switch SERVER>" >&2
         exit 1
       fi
 

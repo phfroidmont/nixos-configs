@@ -268,20 +268,51 @@ sudo sh -c 'printf "%s\n" "your-8-to-63-char-passphrase" > /etc/secrets/aegis-wi
 == Aegis Mullvad VPN gateway (kill-switch)
 `aegis` can run a Mullvad WireGuard client and route all LAN traffic through it.
 
-1. Copy your Mullvad WireGuard `.conf` files to `aegis`:
+Server profiles are generated automatically from Mullvad's public relay list.
+The router only needs one registered device identity; it does not store your
+Mullvad account number. Account renewal and replacing a revoked device remain
+manual operations.
+
+1. On a new installation, obtain one WireGuard configuration for the Aegis device
+from Mullvad and install it privately on `aegis`:
 
 [source,bash]
 ----
-sudo install -d -m 0755 /etc/secrets/mullvad/servers
-sudo cp /path/to/mullvad/*.conf /etc/secrets/mullvad/servers/
-sudo ln -sfn /etc/secrets/mullvad/servers/your-default.conf /etc/secrets/mullvad/current.conf
+sudo install -d -m 0700 /etc/secrets/mullvad
+sudo install -o root -g root -m 0600 /path/to/mullvad/device.conf /etc/secrets/mullvad/current.conf
+sudo mullvad-gw refresh
 ----
+
+Existing installations already have `current.conf`; do not overwrite it.
+The first refresh migrates its private key and IPv4 address to the root-only
+`/etc/secrets/mullvad/identity.conf`. It preserves the old `servers` directory
+as `servers.pre-refresh.<timestamp>` and replaces it with a managed symlink.
+Treat both the identity and the backup as secrets; never commit them or place
+them in the Nix store. After verifying the migration, the old backup may be
+removed manually. Do not edit the generated server profiles.
+
+The `mullvad-relay-refresh` timer refreshes all active direct WireGuard servers
+after boot and daily. Invalid metadata or a failed download leaves the previous
+profile set intact. The selected server is retained while available; otherwise
+another server in the same country is selected, falling back to Switzerland.
+If neither country has an available server, refresh fails without publishing
+the new set. A stopped VPN stays stopped. An active VPN is restarted only when
+the selected profile changes, and a failed handshake leaves the kill-switch on.
+An unchanged refresh does not retry or replace an unhealthy active server;
+use `up` to retry or `switch` to choose another server.
+
+Metadata recovery uses marked WAN sockets for the fixed Mullvad HTTPS API and
+DNS queries for that API through `1.1.1.1`, even when the tunnel is active.
+TLS certificates are verified and redirects are rejected. This reveals the
+metadata lookup/connection to the upstream network but does not bypass the VPN
+for LAN traffic or other applications.
 
 2. Control it on `aegis`:
 
 [source,bash]
 ----
 sudo mullvad-gw list
+sudo mullvad-gw refresh
 sudo mullvad-gw up
 sudo mullvad-gw status
 sudo mullvad-gw switch nl-ams-wg-001
@@ -289,12 +320,16 @@ sudo mullvad-gw down
 ----
 
 `up` enables a LAN kill-switch (LAN forwarding is blocked unless traffic exits via `mullvad`).
+`down` deliberately restores direct internet access. The VPN remains opt-in
+after reboot; the refresh timer does not enable it. `status` checks handshake
+freshness and traffic counters, not end-to-end DNS or internet reachability.
 
 3. Control it remotely from `stellaris`:
 
 [source,bash]
 ----
 fos vpn list
+fos vpn refresh
 fos vpn up
 fos vpn status
 fos vpn switch nl-ams-wg-001
@@ -302,3 +337,14 @@ fos vpn down
 ----
 
 The underlying `aegis-vpn` command remains available for direct use.
+`fos vpn up` and `fos vpn down` run without confirmation and do not accept
+`--yes`; server switching still requires confirmation. Refresh may reconnect
+an active VPN if the selected profile has changed.
+
+Inspect automatic refresh failures on Aegis with:
+
+[source,bash]
+----
+systemctl status mullvad-relay-refresh.service mullvad-relay-refresh.timer
+journalctl -u mullvad-relay-refresh.service
+----
