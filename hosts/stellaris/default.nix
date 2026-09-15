@@ -24,6 +24,10 @@
       libvirt.enable = true;
       languagetool.enable = true;
       pangolin.enable = true;
+      pangolin-fallback = {
+        enable = true;
+        connectionUUIDs = [ "2bcb55f5-c6ac-4ad8-bd08-cc07fdf68460" ]; # WifiGuest 1
+      };
       work-proxy.enable = true;
     };
     media = {

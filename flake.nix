@@ -111,6 +111,31 @@
 
       checks.${system} = {
         fos = pkgs.fos.tests;
+        pangolin-fallback =
+          let
+            fallback = self.nixosConfigurations.stellaris.config.systemd;
+          in
+          assert builtins.elem "multi-user.target" fallback.timers.pangolin-fallback-reconcile.wantedBy;
+          assert builtins.elem "pangolin.service" fallback.timers.pangolin-fallback-reconcile.wantedBy;
+          assert builtins.elem "pangolin.service" fallback.timers.pangolin-fallback-reconcile.partOf;
+          assert builtins.elem "pangolin.service" fallback.services.wg-quick-pg-fallback.requisite;
+          assert
+            self.nixosConfigurations.stellaris.config.networking.wg-quick.interfaces.pg-fallback.table == "off";
+          assert
+            !self.nixosConfigurations.stellaris.config.networking.wg-quick.interfaces.pg-fallback.autostart;
+          pkgs.runCommand "pangolin-fallback-tests"
+            {
+              nativeBuildInputs = [
+                pkgs.bash
+                pkgs.shellcheck
+              ];
+            }
+            ''
+              shellcheck ${./modules/services/pangolin-fallback.sh} ${./modules/services/pangolin-fallback-routing.sh} ${./tests/pangolin-fallback.test.sh} ${./tests/pangolin-fallback-routing.test.sh} ${./tests/pangolin-fallback-network.sh}
+              bash ${./tests/pangolin-fallback.test.sh} ${./modules/services/pangolin-fallback.sh}
+              bash ${./tests/pangolin-fallback-routing.test.sh} ${./modules/services/pangolin-fallback-routing.sh}
+              touch "$out"
+            '';
         voyager-firmware = pkgs.voyager-firmware;
         voyager-flash = pkgs.voyager-flash;
       };
