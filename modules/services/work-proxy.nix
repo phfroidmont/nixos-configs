@@ -61,7 +61,7 @@ in
     };
 
     environment.systemPackages = with pkgs; [
-      (sbt.override { jre = jdk17; })
+      (sbt.override { jre = jdk25; })
       mongodbCompass
       chisel
       get-token
