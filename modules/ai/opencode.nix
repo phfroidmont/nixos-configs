@@ -274,6 +274,7 @@ in
           };
         };
         opusReview = "anthropic/claude-opus-5";
+        fableReview = "anthropic/claude-fable-5-1";
         modelSet =
           {
             top,
@@ -316,11 +317,35 @@ in
           writer = "anthropic/claude-sonnet-5";
           small = "anthropic/claude-haiku-4-5";
         };
-        # Default: OpenAI does the work, Opus gives the second opinion on review.
+        # Default: OpenAI does the work, Fable gives the second opinion on review.
         balancedModels = lib.recursiveUpdate openaiModels {
-          agent.review.model = opusReview;
+          agent.review.model = fableReview;
         };
+        premiumModels =
+          lib.recursiveUpdate
+            (modelSet {
+              top = "openai/gpt-6-astra";
+              review = fableReview;
+              research = "openai/gpt-6-astra";
+              writer = "openai/gpt-6-astra";
+              small = "openai/gpt-6-astra";
+            })
+            {
+              agent = {
+                build.variant = "xhigh";
+                plan.variant = "xhigh";
+                implement.variant = "xhigh";
+                review.variant = "xhigh";
+                explore.variant = "xhigh";
+                test-triage.variant = "xhigh";
+                review-sol = {
+                  model = "openai/gpt-6-astra";
+                  variant = "xhigh";
+                };
+              };
+            };
         openaiConfig = builtins.toJSON openaiModels;
+        premiumConfig = builtins.toJSON premiumModels;
         anthropicConfig = builtins.toJSON anthropicModels;
         foyerConfig = builtins.toJSON {
           mcp.jira.enabled = true;
@@ -684,6 +709,7 @@ in
         programs.zsh.shellAliases = {
           oc = "opencode --auto";
           oc-openai = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg openaiConfig} opencode --auto";
+          oc-premium = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg premiumConfig} opencode --auto";
           oc-anthropic = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg anthropicConfig} opencode --auto";
           oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode --auto";
           oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode --auto";
@@ -781,7 +807,7 @@ in
           - Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
           - Delegate only bounded, independent work with an explicit expected report.
           - For defect reviews, the primary agent must first call review.
-          - Only when review returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the Opus task with task_id.
+          - Only when review returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the original review task with task_id.
           - Do not fall back for generic errors or transient rate limits. If review-sol fails, report the blocker; do not retry or enter another fallback loop.
           - Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
           - Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.
