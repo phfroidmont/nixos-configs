@@ -271,9 +271,21 @@ in
             '';
         };
 
-        xdg.configFile."nvim/lua" = {
-          recursive = true;
-          source = ./lua;
+        xdg = {
+          configFile."nvim/lua" = {
+            recursive = true;
+            source = ./lua;
+          };
+          dataFile = {
+            "nvim/site/spell/fr.utf-8.spl".source = pkgs.fetchurl {
+              url = "https://ftp.nluug.nl/pub/vim/runtime/spell/fr.utf-8.spl";
+              hash = "sha256-q/uXArmNiHwXWs5Y8as5cz3AjQO2dNkU9WNE74bmO2E=";
+            };
+            "nvim/site/spell/fr.utf-8.sug".source = pkgs.fetchurl {
+              url = "https://ftp.nluug.nl/pub/vim/runtime/spell/fr.utf-8.sug";
+              hash = "sha256-ApS8MrQskLuyhqieI8o3c7fvUO/xq1I7FRPWolxrP1g=";
+            };
+          };
         };
 
         home.sessionVariables = {
