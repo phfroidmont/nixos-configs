@@ -302,11 +302,64 @@ return {
 					metals_config.handlers = metals_config.handlers or {}
 					metals_config.handlers["workspace/applyEdit"] = apply_edit_and_save
 
+					local metals_setup = require("metals.setup")
+					local initialize_or_attach = metals_setup.initialize_or_attach
+					local function initialize_workspace(config)
+						-- nvim-metals mutates and caches its input, including the generated command.
+						config = vim.deepcopy(config or metals_config)
+						local find_root = config.find_root_dir or require("metals.rootdir").find_root_dir
+						config.find_root_dir = function(patterns, filename, nesting)
+							filename = vim.uv.fs_realpath(filename) or filename
+							local root = find_root(patterns, filename, nesting) or vim.fn.getcwd()
+							root = assert(vim.uv.fs_realpath(root), "Cannot resolve Metals workspace root: " .. root)
+							-- Metals 1.6.8 derives Bloop's address from XDG_DATA_HOME. Keep socket paths short.
+							local data_home = vim.fn.stdpath("data") .. "/metals/" .. vim.fn.sha256(root):sub(1, 20)
+							config.cmd_env =
+								vim.tbl_extend("force", config.cmd_env or {}, { XDG_DATA_HOME = data_home })
+							return root
+						end
+						initialize_or_attach(config)
+					end
+					-- Cover both FileType initialization and nvim-metals' cached start entry point.
+					metals_setup.initialize_or_attach = initialize_workspace
+					metals.initialize_or_attach = initialize_workspace
+
+					-- The installed nvim-metals restart helpers otherwise select clients globally.
+					metals.restart_build_server = function()
+						local clients = vim.lsp.get_clients({ bufnr = 0, name = "metals" })
+						if #clients ~= 1 then
+							vim.notify(
+								"Bloop restart requires exactly one Metals client on this buffer",
+								vim.log.levels.WARN
+							)
+							return
+						end
+						clients[1]:request(
+							"workspace/executeCommand",
+							{ command = "metals.build-restart" },
+							function(err)
+								if err then
+									vim.notify("Bloop restart: " .. err.message, vim.log.levels.ERROR)
+								end
+							end
+						)
+					end
+					metals.restart_metals = function()
+						local clients = vim.lsp.get_clients({ bufnr = 0, name = "metals" })
+						if #clients == 0 then
+							vim.notify("No Metals client attached to this buffer", vim.log.levels.WARN)
+						end
+						for _, client in ipairs(clients) do
+							-- Same restart as Neovim 0.12's :lsp restart, retaining this client's config/buffers.
+							client:_restart(client.exit_timeout)
+						end
+					end
+
 					local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
 					vim.api.nvim_create_autocmd("FileType", {
 						pattern = { "scala", "sbt", "mill" },
 						callback = function()
-							metals.initialize_or_attach(metals_config)
+							metals.initialize_or_attach()
 						end,
 						group = nvim_metals_group,
 					})
