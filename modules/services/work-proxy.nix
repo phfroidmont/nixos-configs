@@ -7,6 +7,17 @@
 
 let
   cfg = config.modules.services.work-proxy;
+  pacScript = ''
+    function FindProxyForURL(url, host) {
+      if (host.toLowerCase() === "login.microsoftonline.com") {
+        return "PROXY wsl.foyer.internal:2345";
+      }
+
+      return "DIRECT";
+    }
+  '';
+  # Both browsers accept an embedded PAC, so no HTTP server is needed.
+  pacUrl = "data:application/x-ns-proxy-autoconfig,${lib.escapeURL pacScript}";
   mongodbCompass = pkgs.symlinkJoin {
     name = "mongodb-compass-${pkgs.mongodb-compass.version}";
     paths = [ pkgs.mongodb-compass ];
@@ -25,15 +36,21 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-
-    services.tinyproxy = {
-      enable = true;
-      settings = {
-        LogLevel = "Info";
-        Port = 2345;
-        Upstream = [
-          ''upstream http wsl.foyer.internal:2345 ".microsoftonline.com"''
-        ];
+    environment.etc = {
+      # Firefox reads this instead of package-level distribution policies.
+      "firefox/policies/policies.json".text = builtins.toJSON {
+        policies.Proxy = {
+          Mode = "autoConfig";
+          AutoConfigURL = pacUrl;
+          Locked = true;
+        };
+      };
+      "brave/policies/managed/work-proxy.json".text = builtins.toJSON {
+        ProxySettings = {
+          ProxyMode = "pac_script";
+          ProxyPacUrl = pacUrl;
+          ProxyPacMandatory = true;
+        };
       };
     };
 

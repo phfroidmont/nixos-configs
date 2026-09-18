@@ -65,6 +65,13 @@ let
   };
 
   browser = browsers.${cfg.browser};
+  browserPackages = map (name: browsers.${name}.package) (
+    lib.unique (
+      [ cfg.browser ]
+      ++ cfg.extraBrowsers
+      ++ lib.optional config.modules.services.belgian-eid.enable "firefox"
+    )
+  );
   terminal = terminals.${cfg.terminal};
   editor = editors.${cfg.editor};
   fileManager = fileManagers.${cfg.fileManager};
@@ -93,12 +100,14 @@ in
 {
   options.modules.applications = {
     browser = lib.mkOption {
-      type = lib.types.enum [
-        "firefox"
-        "brave"
-      ];
+      type = lib.types.enum (builtins.attrNames browsers);
       default = "firefox";
       description = "Application used for web links and browser launches.";
+    };
+    extraBrowsers = lib.mkOption {
+      type = lib.types.listOf (lib.types.enum (builtins.attrNames browsers));
+      default = [ ];
+      description = "Additional browsers to install on desktop systems.";
     };
     terminal = lib.mkOption {
       type = lib.types.enum [ "kitty" ];
@@ -132,13 +141,7 @@ in
         home.packages = [
           launchTerminal
         ]
-        ++ lib.optionals desktopEnabled [
-          browser.package
-          launchBrowser
-        ]
-        ++ lib.optionals (
-          desktopEnabled && config.modules.services.belgian-eid.enable && cfg.browser != "firefox"
-        ) [ firefox ]
+        ++ lib.optionals desktopEnabled (browserPackages ++ [ launchBrowser ])
         ++ lib.optionals editorEnabled [ launchEditor ]
         ++ lib.optionals fileManagerEnabled [ launchFileManager ];
 

@@ -9,7 +9,10 @@
   ];
 
   modules = {
-    applications.browser = "brave";
+    applications = {
+      browser = "firefox";
+      extraBrowsers = [ "brave" ];
+    };
     desktop = {
       wm.enable = true;
     };

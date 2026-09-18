@@ -111,6 +111,23 @@
 
       checks.${system} = {
         fos = pkgs.fos.tests;
+        work-proxy =
+          let
+            config = self.nixosConfigurations.stellaris.config;
+            policies = config.environment.etc;
+          in
+          assert !config.services.tinyproxy.enable;
+          assert !self.nixosConfigurations.nixos-desktop.config.services.tinyproxy.enable;
+          pkgs.runCommand "work-proxy-tests"
+            {
+              nativeBuildInputs = [ pkgs.nodejs ];
+            }
+            ''
+              node ${./tests/work-proxy.test.js} \
+                ${policies."firefox/policies/policies.json".source} \
+                ${policies."brave/policies/managed/work-proxy.json".source}
+              touch "$out"
+            '';
         mullvad-gateway =
           let
             gateway = import ./hosts/aegis/mullvad.nix { pkgs = stablePkgs; };
