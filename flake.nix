@@ -115,9 +115,20 @@
           let
             config = self.nixosConfigurations.stellaris.config;
             policies = config.environment.etc;
+            firefoxFor =
+              hostConfig:
+              lib.findSingle (package: lib.getName package == "firefox")
+                (throw "Expected Firefox in the host's packages")
+                (throw "Expected only one Firefox package")
+                hostConfig.home-manager.users.${hostConfig.user.name}.home.packages;
+            firefox = firefoxFor config;
+            withoutWorkProxy = self.nixosConfigurations.stellaris.extendModules {
+              modules = [ { modules.services.work-proxy.enable = lib.mkForce false; } ];
+            };
           in
           assert !config.services.tinyproxy.enable;
           assert !self.nixosConfigurations.nixos-desktop.config.services.tinyproxy.enable;
+          assert firefox == firefoxFor self.nixosConfigurations.nixos-desktop.config;
           pkgs.runCommand "work-proxy-tests"
             {
               nativeBuildInputs = [ pkgs.nodejs ];
@@ -126,6 +137,8 @@
               node ${./tests/work-proxy.test.js} \
                 ${policies."firefox/policies/policies.json".source} \
                 ${policies."brave/policies/managed/work-proxy.json".source}
+              node ${./tests/work-proxy-firefox.test.js} \
+                ${firefox} ${firefoxFor withoutWorkProxy.config}
               touch "$out"
             '';
         mullvad-gateway =

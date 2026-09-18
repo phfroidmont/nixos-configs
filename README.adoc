@@ -54,6 +54,21 @@ user `PATH`. Existing application-role launchers remain available for desktop
 integration. Upstream Omarchy source paths, configuration paths, and
 `omarchy.*` plugin IDs remain implementation details of the imported shell.
 
+=== Work proxy
+
+When `modules.services.work-proxy.enable` is enabled, the configured Firefox
+automatically loads Foyer Impersonation 2.0.2 from a hash-pinned local archive at
+each browser startup. The unsigned add-on uses Firefox's temporary-install API;
+there is no manual loading step after restarting, and normal extension-signature
+checks remain enabled. Existing installations of the same add-on are left alone,
+and the loader is skipped in Troubleshoot Mode.
+
+The loader requires privileged AutoConfig JavaScript, not a different Firefox
+edition or a disabled content-process sandbox. This uses internal Firefox APIs,
+so verify `about:debugging#/runtime/this-firefox` after Firefox upgrades; startup
+errors are logged in the Browser Console with the `[work-proxy-firefox]` prefix.
+Restored tabs may need reloading if they make requests before the add-on starts.
+
 === NixOS lifecycle
 
 FOS uses the configured NixOS checkout from `programs.nh.flake` and can be run

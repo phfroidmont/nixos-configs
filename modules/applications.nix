@@ -13,11 +13,14 @@ let
   rolesEnabled =
     desktopEnabled || editorEnabled || fileManagerEnabled || config.modules.desktop.terminal.enable;
 
-  firefox =
-    if config.modules.services.belgian-eid.enable then
-      pkgs.firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; }
-    else
-      pkgs.firefox;
+  firefox = pkgs.firefox.override (
+    lib.optionalAttrs config.modules.services.belgian-eid.enable {
+      pkcs11Modules = [ pkgs.eid-mw ];
+    }
+    // lib.optionalAttrs config.modules.services.work-proxy.enable (
+      import ./services/_work-proxy-firefox.nix { inherit pkgs; }
+    )
+  );
 
   # Brave GPU acceleration triggers AMDGPU page faults on stellaris under heavy
   # Chromium workloads, causing a GPU reset and Hyprland crash.
