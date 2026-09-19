@@ -2,6 +2,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgsStable.url = "github:nixos/nixpkgs/nixos-26.05";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgsStable";
+    };
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,6 +107,13 @@
         voyager-flash = pkgs.voyager-flash;
       };
 
+      devShells.${system}.default = stablePkgs.mkShellNoCC {
+        packages = [
+          stablePkgs.sops
+          stablePkgs.gnupg
+        ];
+      };
+
       apps.${system}.voyager-flash = {
         type = "app";
         program = lib.getExe pkgs.voyager-flash;
@@ -111,6 +122,30 @@
 
       checks.${system} = {
         fos = pkgs.fos.tests;
+        aegis-newt =
+          let
+            config = self.nixosConfigurations.aegis.config;
+            newt = config.services.newt;
+            resources = newt.blueprint.private-resources;
+            management = resources.aegis-management;
+          in
+          assert builtins.attrNames resources == [ "aegis-management" ];
+          assert newt.settings.endpoint == "https://pangolin.banditlair.com";
+          assert newt.settings.disable-ssh;
+          assert management.mode == "host";
+          assert management.destination == "aegis-target.home.internal";
+          assert builtins.elem management.destination (config.networking.hosts."192.168.1.1" or [ ]);
+          assert management.alias == "aegis.home.internal";
+          assert management.tcp-ports == "22,3000";
+          assert management.udp-ports == "";
+          assert management.disable-icmp;
+          assert management.roles == [ "Personal" ];
+          assert management.users == [ ];
+          assert !newt.enable || newt.environmentFile == config.sops.secrets.newtAegisEnvironment.path;
+          assert !newt.enable || config.sops.secrets.newtAegisEnvironment.restartUnits == [ "newt.service" ];
+          assert config.sops.age.sshKeyPaths == [ "/etc/ssh/ssh_host_ed25519_key" ];
+          assert config.sops.gnupg.sshKeyPaths == [ ];
+          newt.package;
         work-proxy =
           let
             config = self.nixosConfigurations.stellaris.config;

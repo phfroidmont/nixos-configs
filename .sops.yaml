@@ -1,0 +1,11 @@
+keys:
+  - &operator 3AC6F170F01133CE393BCD94BE948AFD7E7873BE
+  # Derived from Aegis's existing Ed25519 SSH host key over verified LAN SSH.
+  - &aegis age1eca3pd5z578r3j5a8avfqlmcxt9pmcnfy6xkqty068zwx9ta0yxqyeqhnw
+creation_rules:
+  - path_regex: ^secrets/aegis-newt\.enc\.yml$
+    key_groups:
+      - pgp:
+          - *operator
+        age:
+          - *aegis

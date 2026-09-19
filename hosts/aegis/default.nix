@@ -8,5 +8,6 @@
     ./dns-dhcp.nix
     ./wifi.nix
     ./mullvad.nix
+    ./newt.nix
   ];
 }

@@ -252,6 +252,8 @@ install-aegis
 The installer wipes `/dev/nvme0n1`, creates EFI + ext4 partitions, and installs `.#aegis`.
 You can target another disk with `install-aegis /dev/your-disk`.
 After first boot, connect with SSH as user `admin` using your configured SSH key.
+If Newt is enabled, read the SOPS host-identity recovery requirements in
+<<_aegis_pangolin_management,Aegis Pangolin management>> before reinstalling.
 
 == Aegis DNS and DHCP
 - `aegis` provides DNS filtering with AdGuard Home on `192.168.1.1:53`.
@@ -268,6 +270,107 @@ sudo install -d -m 0755 /etc/secrets
 sudo sh -c 'printf "%s\n" "$1" > /etc/secrets/aegis-adguard-admin-password-hash' _ "$HASH"
 sudo chmod 0644 /etc/secrets/aegis-adguard-admin-password-hash
 ----
+
+== Aegis Pangolin management
+
+The configuration enables a Newt 1.16.0 system service against
+`https://pangolin.banditlair.com`, using the enrolled `aegis` site's encrypted
+credentials.
+
+Credentials are managed by sops-nix, not a manually provisioned file on the
+router. `.sops.yaml` permits decryption by Aegis's existing Ed25519 SSH host
+identity or the operator's existing GPG recovery key
+(`3AC6F170F01133CE393BCD94BE948AFD7E7873BE`). No other host is a recipient.
+
+The project direnv environment provides SOPS and GnuPG from the pinned stable Nixpkgs.
+Run `direnv allow` once in this repository to enable it. Edit the existing site's
+credentials with:
+
+[source,bash]
+----
+sops edit secrets/aegis-newt.enc.yml
+----
+
+Without direnv, use `nix develop -c sops edit secrets/aegis-newt.enc.yml`.
+For a fresh enrollment, create a Newt site named `aegis` in the existing Pangolin
+organization. The encrypted file has the following structure in the SOPS editor,
+with real credentials from Pangolin instead of placeholders:
+
+[source,yaml]
+----
+newt:
+  environment: |
+    NEWT_ID=<site ID>
+    NEWT_SECRET=<site secret>
+----
+
+Use an editor with persistent swap, backup and undo files disabled. Only SOPS
+ciphertext belongs in `secrets/aegis-newt.enc.yml`; never write plaintext into
+the repository, command arguments, shell history or Nix expressions. The secrets
+directory ignores non-encrypted files, but this is not a substitute for checking
+what is staged. Keep the operator's private recovery key outside the repository.
+
+For a fresh enrollment, keep Newt disabled until the encrypted file exists, then
+set `services.newt.enable = true` in `hosts/aegis/newt.nix`.
+Run `git add secrets/aegis-newt.enc.yml` to include a new encrypted file in the
+Git-backed flake source before building. An enabled connector with a missing
+encrypted file fails evaluation rather than silently skipping the service.
+Deployment decrypts the environment block into root-owned mode `0400`
+`/run/secrets/newtAegisEnvironment`; no manual plaintext copy to Aegis is needed.
+Secret changes automatically restart `newt.service`.
+
+Build and deploy through the existing LAN connection, retaining rollback and
+console access:
+
+[source,bash]
+----
+nix build --no-link .#nixosConfigurations.aegis.config.system.build.toplevel
+nix build --no-link .#checks.x86_64-linux.aegis-newt
+NIX_SSHOPTS='-o StrictHostKeyChecking=yes' nixos-rebuild test --flake .#aegis --target-host admin@192.168.1.1 --sudo
+ssh -o StrictHostKeyChecking=yes admin@192.168.1.1 'sudo systemctl is-active newt.service; sudo stat -Lc "%U:%G %a %n" /run/secrets/newtAegisEnvironment'
+----
+
+Verify access below before persisting with `nixos-rebuild switch` using the same
+flake, target and SSH options. Rotate credentials through the same SOPS editor
+and deploy again. After changing recipients in `.sops.yaml`, run
+`sops updatekeys secrets/aegis-newt.enc.yml`. Removing a recipient does not revoke
+its access to historical ciphertext; rotate the actual Newt credential after a
+recipient compromise.
+
+A reinstall must preserve the existing SSH host identity or re-encrypt the secret
+to the replacement host's verified public key using the operator recovery key.
+The disk-wiping Aegis installer does not restore that identity. Keep Newt disabled
+during a fresh-identity bootstrap until the new recipient is enrolled; do not put
+private host keys in Git or the installer image.
+
+The sole private resource, `aegis-management` (`Aegis management`), targets host
+`aegis-target.home.internal`, resolved locally on Aegis to `192.168.1.1`, with
+client alias `aegis.home.internal`. Do not replace the hostname destination with
+the literal IP: Pangolin would advertise `192.168.1.1/32` to clients, capturing
+their normal LAN router traffic. The hostname destination exposes only the
+virtual alias. It grants the `Personal` role TCP ports `22,3000` only, with no
+individual user grants, UDP or ICMP. It is not a
+whole-LAN resource. Pangolin retains its automatic organization-wide `Admin`
+access. Newt's built-in SSH is disabled; ordinary OpenSSH and AdGuard authentication
+remain required.
+
+Connect an authorized Pangolin client, then use `http://aegis.home.internal:3000`
+or SSH as `admin`. First establish and verify the router's SSH host key for
+`192.168.1.1` over a trusted LAN connection; require that same identity via the
+alias, without accepting a separate alias key:
+
+[source,bash]
+----
+ssh -o StrictHostKeyChecking=yes -o HostKeyAlias=192.168.1.1 admin@aegis.home.internal
+----
+
+The router's hosts entry may also be served by its LAN DNS. This configuration
+leaves gateway routing, firewall rules and DNS listeners unchanged and adds no
+Mullvad bypass. Before relying on remote access, test SSH and AdGuard with the VPN
+down, up, switching servers and in a failed-tunnel/kill-switch state. Keep
+direct LAN SSH and local console recovery available: an active but broken Mullvad
+tunnel also prevents Newt from connecting until the tunnel recovers or is brought
+down locally.
 
 == Aegis Wi-Fi (WPA2)
 - SSID: `NSA honeypot`.

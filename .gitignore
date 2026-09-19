@@ -5,3 +5,4 @@ result
 .opencode/
 .playwright-mcp/
 .superpowers/
+.direnv/
