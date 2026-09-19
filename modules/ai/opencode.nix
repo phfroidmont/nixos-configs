@@ -325,7 +325,6 @@ in
           lib.recursiveUpdate
             (modelSet {
               top = "openai/gpt-6-astra";
-              review = fableReview;
               research = "openai/gpt-6-astra";
               writer = "openai/gpt-6-astra";
               small = "openai/gpt-6-astra";
