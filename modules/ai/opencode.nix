@@ -552,6 +552,8 @@ in
                   test-triage = "allow";
                   scan = "allow";
                   review = "allow";
+                  review-fable = "allow";
+                  review-opus = "allow";
                   review-sol = "allow";
                   implement = "allow";
                 };
@@ -570,6 +572,8 @@ in
                     test-triage = "allow";
                     scan = "allow";
                     review = "allow";
+                    review-fable = "allow";
+                    review-opus = "allow";
                     review-sol = "allow";
                   };
                 };
@@ -620,6 +624,14 @@ in
               review = reviewAgentSettings // {
                 description = "Reviews changes for defects, regressions, risks, and missing tests without editing. Use proactively after completing a non-trivial change and before committing. Returns findings ordered by severity with file and line references.";
                 disable = false;
+              };
+              review-fable = reviewAgentSettings // {
+                description = "Reviews changes with Fable when explicitly requested, regardless of the session's default reviewer. Returns defects, regressions, risks, and missing tests ordered by severity with file and line references; never edits.";
+                model = fableReview;
+              };
+              review-opus = reviewAgentSettings // {
+                description = "Reviews changes with Opus when explicitly requested, regardless of the session's default reviewer. Returns defects, regressions, risks, and missing tests ordered by severity with file and line references; never edits.";
+                model = opusReview;
               };
               review-sol = reviewAgentSettings // {
                 description = "Fallback reviewer for an explicitly exhausted Claude subscription quota. Reviews the same scope for defects, regressions, risks, and missing tests without editing.";
@@ -747,6 +759,47 @@ in
 
           opencode() {
             local arg restore_session=false has_auto=false herdr_agent=false
+            local review_model review_config
+            local -a args
+
+            # Wrapper options precede native arguments; aliases may inject --auto first.
+            while (( $# )); do
+              case "$1" in
+                --auto)
+                  args+=("$1")
+                  shift
+                  ;;
+                --review-model)
+                  case "''${2:-}" in
+                    fable) review_model=${lib.escapeShellArg fableReview} ;;
+                    opus) review_model=${lib.escapeShellArg opusReview} ;;
+                    *)
+                      print -u2 -- "Usage: opencode [--auto] --review-model fable|opus [opencode arguments...]"
+                      return 2
+                      ;;
+                  esac
+                  shift 2
+                  ;;
+                *) break ;;
+              esac
+            done
+            args+=("$@")
+            set -- "''${args[@]}"
+
+            if [[ -n "$review_model" ]]; then
+              if ! review_config="$(${lib.getExe pkgs.jq} -ces --arg model "$review_model" '
+                if length != 1 or (.[0] | type) != "object" then
+                  error("expected a single JSON object")
+                else
+                  .[0] | .agent.review.model = $model | del(.agent.review.variant)
+                end
+              ' <<<"''${OPENCODE_CONFIG_CONTENT:-"{}"}")"; then
+                print -u2 -- "Cannot set review model: OPENCODE_CONFIG_CONTENT must be a valid JSON object."
+                return 2
+              fi
+              # Keep the override local, including for the HERDR config preflight below.
+              local -x OPENCODE_CONFIG_CONTENT="$review_config"
+            fi
 
             for arg in "$@"; do
               case "$arg" in
@@ -805,8 +858,8 @@ in
           - If a scan lookup is inconclusive or requires tracing behavior, delegate the follow-up to explore.
           - Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
           - Delegate only bounded, independent work with an explicit expected report.
-          - For defect reviews, the primary agent must first call review.
-          - Only when review returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the original review task with task_id.
+          - For defect reviews, use review by default; it follows the selected session profile and any --review-model launch override. If the user explicitly requests Fable or Opus for a review, use review-fable or review-opus respectively, regardless of the session default. Both can also be invoked directly with @review-fable or @review-opus.
+          - Only when the selected reviewer (review, review-fable, or review-opus) returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the original review task with task_id.
           - Do not fall back for generic errors or transient rate limits. If review-sol fails, report the blocker; do not retry or enter another fallback loop.
           - Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
           - Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.

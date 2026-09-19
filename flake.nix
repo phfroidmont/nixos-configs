@@ -122,6 +122,30 @@
 
       checks.${system} = {
         fos = pkgs.fos.tests;
+        opencode-review =
+          let
+            home = self.nixosConfigurations.stellaris.config.home-manager.users.phfroidmont;
+            artifact = pkgs.writeText "opencode-review.json" (
+              builtins.toJSON {
+                agents = home.programs.opencode.settings.agent;
+                aliases = home.programs.zsh.shellAliases;
+                initContent = home.programs.zsh.initContent;
+                rules = home.xdg.configFile."opencode/AGENTS.md".text;
+              }
+            );
+          in
+          pkgs.runCommand "opencode-review-tests"
+            {
+              nativeBuildInputs = [
+                pkgs.nodejs
+                pkgs.zsh
+                pkgs.jq
+              ];
+            }
+            ''
+              node ${./tests/opencode-review.test.js} ${artifact}
+              touch "$out"
+            '';
         aegis-newt =
           let
             config = self.nixosConfigurations.aegis.config;
