@@ -14,6 +14,9 @@ const models = {
   fable: "anthropic/claude-fable-5-1",
   opus: "anthropic/claude-opus-5-5",
 };
+const gpt6Sol = "openai/gpt-6-sol";
+const gpt6Luna = "openai/gpt-6-luna";
+const gpt6Astra = "openai/gpt-6-astra";
 const profiles = ["oc", "oc-openai", "oc-premium", "oc-anthropic", "oc-foyer", "oc-power"];
 
 assert.equal(agents.review.model, models.fable);
@@ -34,6 +37,12 @@ for (const [choice, model] of Object.entries(models)) {
 assert.match(rules, /--review-model/);
 assert.match(rules, /review-sol/);
 assert.match(rules, /quota/);
+for (const name of ["implement", "review-sol", "scout", "test-triage", "compaction"]) {
+  assert.equal(agents[name].model, gpt6Sol, name);
+}
+for (const name of ["scan", "title", "summary"]) {
+  assert.equal(agents[name].model, gpt6Luna, name);
+}
 
 // Match the function's own indentation, not nested blocks or other startup code.
 // Accept either a brace body or a subshell body used for environment isolation.
@@ -146,8 +155,20 @@ process.exit(kind === "opencode" ? Number(process.env.OPENCODE_TEST_EXIT) : 0);
   assert.equal(profileConfigs["oc-anthropic"].agent.build.model, models.opus);
   assert.equal(profileConfigs["oc-anthropic"].agent.plan.model, models.opus);
   assert.equal(profileConfigs["oc-anthropic"].agent.review.model, models.opus);
+  assert.equal(profileConfigs["oc-openai"].small_model, gpt6Luna);
+  for (const name of ["implement", "scout", "test-triage", "compaction"]) {
+    assert.equal(profileConfigs["oc-openai"].agent[name].model, gpt6Sol, `oc-openai ${name}`);
+  }
+  for (const name of ["scan", "title", "summary"]) {
+    assert.equal(profileConfigs["oc-openai"].agent[name].model, gpt6Luna, `oc-openai ${name}`);
+  }
   assert.equal(profileConfigs["oc-premium"].agent.review.model, models.opus);
   assert.equal(profileConfigs["oc-premium"].agent.review.variant, undefined);
+  assert.equal(profileConfigs["oc-premium"].small_model, gpt6Astra);
+  for (const name of ["implement", "scan", "title", "summary", "review-sol", "scout", "test-triage", "compaction"]) {
+    assert.equal(profileConfigs["oc-premium"].agent[name].model, gpt6Astra, `oc-premium ${name}`);
+  }
+  assert.equal(profileConfigs["oc-premium"].agent["review-sol"].variant, "xhigh");
 
   // Preserve argument boundaries, quotes, globs, newlines, empty args, and --.
   const nativeArgs = ["--model", "openai/native", "./project's [one]*", "--",

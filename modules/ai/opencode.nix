@@ -305,10 +305,10 @@ in
           };
         openaiModels = modelSet {
           top = "openai/gpt-6-astra";
-          research = "openai/gpt-5.6-terra";
+          research = "openai/gpt-6-sol";
           explore = "openai/gpt-6-astra";
-          writer = "openai/gpt-5.6-sol";
-          small = "openai/gpt-5.6-luna";
+          writer = "openai/gpt-6-sol";
+          small = "openai/gpt-6-luna";
         };
         anthropicModels = modelSet {
           top = "anthropic/claude-opus-5-5";
@@ -635,7 +635,7 @@ in
               };
               review-sol = reviewAgentSettings // {
                 description = "Fallback reviewer for an explicitly exhausted Claude subscription quota. Reviews the same scope for defects, regressions, risks, and missing tests without editing.";
-                model = "openai/gpt-5.6-sol";
+                model = "openai/gpt-6-sol";
               };
               implement = {
                 description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent. Use proactively to parallelize independent edits once you can name each agent's exact file ownership up front. Does not commit, push, or delegate.";
