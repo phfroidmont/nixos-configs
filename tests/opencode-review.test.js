@@ -19,7 +19,7 @@ const gpt6Luna = "openai/gpt-6-luna";
 const gpt6Astra = "openai/gpt-6-astra";
 const profiles = ["oc", "oc-openai", "oc-premium", "oc-anthropic", "oc-foyer", "oc-power"];
 
-assert.equal(agents.review.model, models.fable);
+assert.equal(agents.review.model, models.opus);
 for (const [choice, model] of Object.entries(models)) {
   const name = `review-${choice}`;
   assert.equal(agents[name].model, model, name);

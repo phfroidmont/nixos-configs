@@ -317,9 +317,9 @@ in
           writer = "anthropic/claude-sonnet-5";
           small = "anthropic/claude-haiku-4-5";
         };
-        # Default: OpenAI does the work, Fable gives the second opinion on review.
+        # Default: OpenAI does the work, Opus gives the second opinion on review.
         balancedModels = lib.recursiveUpdate openaiModels {
-          agent.review.model = fableReview;
+          agent.review.model = opusReview;
         };
         premiumModels =
           lib.recursiveUpdate
