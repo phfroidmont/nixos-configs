@@ -273,7 +273,7 @@ in
             task = "deny";
           };
         };
-        opusReview = "anthropic/claude-opus-5";
+        opusReview = "anthropic/claude-opus-5-5";
         fableReview = "anthropic/claude-fable-5-1";
         modelSet =
           {
@@ -311,7 +311,7 @@ in
           small = "openai/gpt-5.6-luna";
         };
         anthropicModels = modelSet {
-          top = "anthropic/claude-opus-5";
+          top = "anthropic/claude-opus-5-5";
           review = opusReview;
           research = "anthropic/claude-sonnet-5";
           writer = "anthropic/claude-sonnet-5";
@@ -325,6 +325,7 @@ in
           lib.recursiveUpdate
             (modelSet {
               top = "openai/gpt-6-astra";
+              review = opusReview;
               research = "openai/gpt-6-astra";
               writer = "openai/gpt-6-astra";
               small = "openai/gpt-6-astra";
@@ -334,7 +335,6 @@ in
                 build.variant = "xhigh";
                 plan.variant = "xhigh";
                 implement.variant = "xhigh";
-                review.variant = "xhigh";
                 explore.variant = "xhigh";
                 test-triage.variant = "xhigh";
                 review-sol = {

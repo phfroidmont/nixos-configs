@@ -12,7 +12,7 @@ const { agents, aliases, initContent, rules } = JSON.parse(
 );
 const models = {
   fable: "anthropic/claude-fable-5-1",
-  opus: "anthropic/claude-opus-5",
+  opus: "anthropic/claude-opus-5-5",
 };
 const profiles = ["oc", "oc-openai", "oc-premium", "oc-anthropic", "oc-foyer", "oc-power"];
 
@@ -142,7 +142,12 @@ process.exit(kind === "opencode" ? Number(process.env.OPENCODE_TEST_EXIT) : 0);
       fixedNamedAgents(selected);
     }
   }
-  assert.equal(profileConfigs["oc-premium"].agent.review.variant, "xhigh");
+  assert.equal(profileConfigs["oc-anthropic"].model, models.opus);
+  assert.equal(profileConfigs["oc-anthropic"].agent.build.model, models.opus);
+  assert.equal(profileConfigs["oc-anthropic"].agent.plan.model, models.opus);
+  assert.equal(profileConfigs["oc-anthropic"].agent.review.model, models.opus);
+  assert.equal(profileConfigs["oc-premium"].agent.review.model, models.opus);
+  assert.equal(profileConfigs["oc-premium"].agent.review.variant, undefined);
 
   // Preserve argument boundaries, quotes, globs, newlines, empty args, and --.
   const nativeArgs = ["--model", "openai/native", "./project's [one]*", "--",
