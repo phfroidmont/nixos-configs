@@ -867,6 +867,7 @@ in
           - Subagents return concise findings, changed files, verification, and unresolved risks instead of raw output.
 
         '';
+        xdg.configFile."opencode/skills/scalive/SKILL.md".source = ./skills/scalive/SKILL.md;
         xdg.configFile."opencode/plugin/foyer-skills.ts".text = ''
           import type { Plugin } from "@opencode-ai/plugin"
 
