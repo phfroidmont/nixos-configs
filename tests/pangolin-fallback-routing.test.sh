@@ -103,6 +103,10 @@ bash "$script" setup
 dns_query_line=$(call_line 'rule show priority 9999')
 fallback_route_line=$(call_line 'route replace default dev pg-fallback')
 (( dns_query_line < fallback_route_line ))
+calls=$(<"$test_dir/calls")
+[[ $calls == *'-4 rule add priority 10000 fwmark 51871 table main'* ]]
+[[ $calls != *'-4 rule add priority 10000 to '* ]]
+[[ $calls == *'-4 rule del priority 10000 to 195.201.112.227/32 table main'* ]]
 
 # Read and kernel-query failures preserve the currently installed exceptions.
 mv "$NM_RESOLVCONF" "$NM_RESOLVCONF.saved"
@@ -165,6 +169,7 @@ calls=$(<"$test_dir/calls")
 [[ $calls == *'-4 rule del priority 9999 to 194.154.192.102/32 table main'* ]]
 [[ $calls == *'-4 rule del priority 10002 from 10.250.251.2/32 table 51871'* ]]
 [[ $calls == *'-4 rule del priority 10001 table main suppress_prefixlength 0'* ]]
+[[ $calls == *'-4 rule del priority 10000 fwmark 51871 table main'* ]]
 [[ $calls == *'-4 rule del priority 10000 to 195.201.112.227/32 table main'* ]]
 [[ $calls == *'-4 route flush table 51871'* ]]
 rm "$test_dir/delete-fails"

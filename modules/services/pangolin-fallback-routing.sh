@@ -100,6 +100,8 @@ cleanup() {
   cleanup_dns || status=1
   "$IP" -4 rule del priority 10002 from 10.250.251.2/32 table 51871 2>/dev/null || true
   "$IP" -4 rule del priority 10001 table main suppress_prefixlength 0 2>/dev/null || true
+  "$IP" -4 rule del priority 10000 fwmark 51871 table main 2>/dev/null || true
+  # Remove the pre-marking relay exception when upgrading an active setup.
   "$IP" -4 rule del priority 10000 to "$RELAY_IPV4/32" table main 2>/dev/null || true
   "$IP" -4 route flush table 51871 2>/dev/null || true
   return "$status"
@@ -110,8 +112,9 @@ case "${1:-}" in
     trap cleanup ERR
     refresh_dns
     "$IP" -4 route replace default dev pg-fallback table 51871
-    # An unmarked reverse lookup for WSS replies must also use the underlay.
-    "$IP" -4 rule add priority 10000 to "$RELAY_IPV4/32" table main
+    # Explicit priority beats the probe's source rule for marked WSS replies.
+    "$IP" -4 rule add priority 10000 fwmark 51871 table main
+    "$IP" -4 rule del priority 10000 to "$RELAY_IPV4/32" table main 2>/dev/null || true
     "$IP" -4 rule add priority 10001 table main suppress_prefixlength 0
     # Probe traffic and its reverse-path checks work before default takeover.
     "$IP" -4 rule add priority 10002 from 10.250.251.2/32 table 51871

@@ -63,6 +63,22 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    boot.kernel.sysctl."net.ipv4.conf.all.src_valid_mark" = 1;
+
+    networking.firewall =
+      let
+        relayReply = "! -i ${interface} -s ${lib.escapeShellArg cfg.relayIPv4} -p tcp --sport 443 -m addrtype --dst-type LOCAL -j MARK --set-mark 51871";
+      in
+      {
+        # Raw PREROUTING runs before NixOS's mangle-table rpfilter check.
+        extraCommands = ''
+          iptables -t raw -C PREROUTING ${relayReply} 2>/dev/null || iptables -t raw -I PREROUTING 1 ${relayReply}
+        '';
+        extraStopCommands = ''
+          iptables -t raw -D PREROUTING ${relayReply} 2>/dev/null || true
+        '';
+      };
+
     assertions = [
       {
         assertion = config.modules.services.pangolin.enable && config.networking.networkmanager.enable;
@@ -110,6 +126,9 @@ in
 
         wstunnel-pangolin-fallback = {
           description = "WireGuard fallback WebSocket transport";
+          # Strict reverse-path filtering needs the firewall's reply-marking rule.
+          bindsTo = [ "firewall.service" ];
+          after = [ "firewall.service" ];
           partOf = [ wgUnit ];
           serviceConfig = {
             ExecStart = lib.concatStringsSep " " [

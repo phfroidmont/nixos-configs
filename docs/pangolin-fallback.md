@@ -30,10 +30,16 @@ default when fallback is disabled or its key is missing.
 - IPv6 is not carried by this fallback and remains on the physical network.
 - Wstunnel connects to `195.201.112.227:443` without relying on tunneled DNS,
   while verifying the certificate for `ws.banditlair.com` and using that Host.
-- A relay-address rule uses the physical main table for both outgoing WSS and
-  unmarked reverse lookups of its replies. Socket marking alone is insufficient
-  with strict reverse-path filtering: wg-quick's automatic connection marking
-  handles UDP, not the outer TCP transport.
+- Priority `10000` sends mark `51871` to the physical main table, ahead of the
+  source-based probe rule. Wstunnel marks its outgoing WSS socket; a static raw
+  PREROUTING rule marks only TCP replies from the relay's port 443 to a local
+  address, excluding `pg-fallback`, before strict reverse-path filtering.
+  `net.ipv4.conf.all.src_valid_mark=1` makes those marked reverse lookups use
+  the physical table. Inner Pangolin UDP from the same relay IP remains free
+  to use the fallback route. The firewall installs this rule while running,
+  even if the transport is stopped. The transport depends on `firewall.service`
+  and stops if it stops. Firewall reloads briefly remove and restore the mark;
+  TCP retransmission handles replies dropped during that interval.
 - Source-address routing lets probes and their replies use WireGuard before
   default takeover. Only a successful probe installs the catch-all rule.
 - NetworkManager's current native IPv4 DNS servers stay on the main routing
@@ -124,16 +130,31 @@ only on a simulated network, with no packets sent to the Internet.
 
 ```sh
 export HOST_NETNS="$(readlink /proc/self/ns/net)"
+export CLIENT_FIREWALL_START="$(nix eval --no-write-lock-file --raw path:.#nixosConfigurations.stellaris.config.networking.firewall.extraCommands)"
+export CLIENT_FIREWALL_STOP="$(nix eval --no-write-lock-file --raw path:.#nixosConfigurations.stellaris.config.networking.firewall.extraStopCommands)"
 export FIREWALL_START="$(nix eval --no-write-lock-file --raw path:/home/phfroidmont/Projects/self-hosting#nixosConfigurations.relay1.config.networking.firewall.extraCommands)"
 export FIREWALL_STOP="$(nix eval --no-write-lock-file --raw path:/home/phfroidmont/Projects/self-hosting#nixosConfigurations.relay1.config.networking.firewall.extraStopCommands)"
 nix shell nixpkgs#bash nixpkgs#coreutils nixpkgs#gawk nixpkgs#gnused nixpkgs#gnugrep nixpkgs#wireguard-tools nixpkgs#iproute2 nixpkgs#iptables nixpkgs#nftables nixpkgs#iputils nixpkgs#util-linux nixpkgs#procps nixpkgs#python3 \
   -c unshare -Urnm bash tests/pangolin-fallback-network.sh
 ```
 
-This checks a real marked TCP exchange under strict reverse-path filtering,
+This checks simultaneous marked outer TCP and tunneled inner UDP/TCP exchanges
+to the same relay IP under strict reverse-path filtering, legacy-rule migration,
 a real source-bound probe through WireGuard before takeover, default-route
 promotion/withdrawal, more-specific Pangolin/LAN routes, teardown, NAT,
 private/metadata destination isolation, WSL-source isolation, unsolicited
 inbound filtering, and firewall reload. It also tests UDP DNS replies under
 strict reverse-path filtering against a simulated resolver that accepts only
 native-network clients, including DNS-server changes and exception cleanup.
+The relay namespace runs wildcard UDP listeners for Newt's port and blocked
+ports, with a simulated public address on `eth0` and INPUT default-deny rules.
+The evaluated relay firewall's scoped PREROUTING DNAT and reverse translation
+make connected Newt UDP requests receive replies from the public address. Fresh sockets verify
+this still works after deleting and re-adding that address, while WSL, other
+ports/destinations, and the public interface cannot reach Newt. The relay-local
+allowance is also checked after firewall stop and reload.
+
+To confirm the regression fails without the new relay INPUT exception, set
+`FIREWALL_START` to an externally evaluated baseline firewall command (leave
+the other exports unchanged) and rerun the isolated test. It should fail at
+the first permitted relay-local UDP probe; no relay deployment is needed.
