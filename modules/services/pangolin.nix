@@ -80,7 +80,12 @@ in
             "lefoyer.lu"
             "*.lefoyer.lu"
             "*.internal"
-            "*.banditlair.com"
+            # Keep control-server and WSS transport DNS independent of the tunnel.
+            # Add private application names explicitly instead of matching the whole zone.
+            "grafana.banditlair.com"
+            "monero.banditlair.com"
+            "uptime.banditlair.com"
+            "telemetry.banditlair.com"
           ];
         };
       };
