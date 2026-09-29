@@ -4,12 +4,13 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
-// Usage: node opencode-review.test.js ARTIFACT.json (or - for stdin).
 const filename = process.argv[2];
-assert.ok(filename, "usage: opencode-review.test.js ARTIFACT.json (or -)");
-const { agents, aliases, initContent, rules } = JSON.parse(
-  fs.readFileSync(filename === "-" ? 0 : filename, "utf8"),
-);
+assert.ok(filename, "usage: opencode-review.test.js ARTIFACT.json");
+const { launcher, native, presets: presetsPath, shared, aliases, rules, initContent } =
+  JSON.parse(fs.readFileSync(filename, "utf8"));
+const presets = JSON.parse(fs.readFileSync(presetsPath, "utf8"));
+const { custom, profiles, power, reviewModels } = presets;
+const agents = custom.agent;
 const models = {
   fable: "anthropic/claude-fable-5-1",
   opus: "anthropic/claude-opus-5-5",
@@ -17,9 +18,18 @@ const models = {
 const gpt6Sol = "openai/gpt-6-sol";
 const gpt6Luna = "openai/gpt-6-luna";
 const gpt6Astra = "openai/gpt-6-astra";
-const profiles = ["oc", "oc-openai", "oc-premium", "oc-anthropic", "oc-foyer", "oc-power"];
 
-assert.equal(agents.review.model, models.opus);
+assert.ok(shared.plugin.length > 0, "shared plugins remain in OpenCode settings");
+assert.ok(shared.permission && shared.mcp && shared.provider, "shared settings remain outside launcher overlays");
+assert.equal(shared.instructions, undefined, "shared settings do not impose custom delegation");
+assert.deepEqual(reviewModels, models);
+assert.equal(agents.review.model, models.opus, "default reviewer follows the balanced profile");
+assert.equal(agents.review.permission.edit, "deny");
+assert.equal(agents.review.permission.task, "deny");
+assert.equal(agents["review-sol"].model, gpt6Sol);
+assert.equal(agents["review-sol"].permission.edit, "deny");
+assert.equal(agents.plan.permission.edit, "deny");
+assert.equal(agents.build.permission.task["*"], "deny");
 for (const [choice, model] of Object.entries(models)) {
   const name = `review-${choice}`;
   assert.equal(agents[name].model, model, name);
@@ -28,238 +38,250 @@ for (const [choice, model] of Object.entries(models)) {
     assert.deepEqual(agents[name][field], agents.review[field], `${name}.${field}`);
   }
   for (const primary of ["build", "plan"]) {
-    assert.equal(agents[primary].permission.task[name], "allow", `${primary} allows ${name}`);
+    assert.equal(agents[primary].permission.task[name], "allow");
     assert.equal(agents[primary].permission.task.review, "allow");
     assert.equal(agents[primary].permission.task["review-sol"], "allow");
   }
-  assert.ok(rules.includes(name), `rules explain ${name}`);
 }
-assert.match(rules, /--review-model/);
-assert.match(rules, /review-sol/);
-assert.match(rules, /quota/);
-for (const name of ["implement", "review-sol", "scout", "test-triage", "compaction"]) {
-  assert.equal(agents[name].model, gpt6Sol, name);
+for (const name of ["implement", "review-sol"]) assert.equal(agents[name].model, gpt6Sol);
+for (const name of ["scout", "test-triage", "compaction", "scan", "title", "summary"]) {
+  assert.ok(agents[name], name);
 }
-for (const name of ["scan", "title", "summary"]) {
-  assert.equal(agents[name].model, gpt6Luna, name);
+const delegation = custom.instructions.map((file) => fs.readFileSync(file, "utf8")).join("\n");
+for (const phrase of ["review-fable", "review-opus", "review-sol", "quota", "--review-model"]) {
+  assert.ok(delegation.includes(phrase), `custom instructions mention ${phrase}`);
 }
+assert.ok(!rules.includes("review-sol"), "global AGENTS does not impose custom delegation");
+assert.ok(!rules.includes("--review-model"));
 
-// Match the function's own indentation, not nested blocks or other startup code.
-// Accept either a brace body or a subshell body used for environment isolation.
-const wrappers = [...initContent.matchAll(/^([\t ]*)opencode\(\)[\t ]*[({]\n[\s\S]*?^\1[})][\t ]*$/gm)];
-assert.equal(wrappers.length, 1, "extract only the opencode() function");
-const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
-const aliasDefinitions = profiles.map((name) => {
-  assert.equal(typeof aliases[name], "string", `generated alias ${name}`);
-  return `alias ${quote(`${name}=${aliases[name]}`)}`;
-}).join("\n");
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), "opencode-review-"));
-const log = path.join(temp, "calls.jsonl");
-
-function launch(name, args = [], options = {}) {
-  fs.writeFileSync(log, "");
-  const env = {
-    PATH: `${temp}:${process.env.PATH}`,
-    HOME: temp,
-    ZDOTDIR: temp,
-    OPENCODE_TEST_LOG: log,
-    OPENCODE_TEST_EXIT: String(options.exitStatus ?? 0),
-  };
-  if (options.config !== undefined) env.OPENCODE_CONFIG_CONTENT = options.config;
-  if (options.herdr !== undefined) env.HERDR_ENV = options.herdr;
-  const command = [name, ...args.map(quote)].join(" ");
-  const result = spawnSync("zsh", ["-f", "-c", `
-    export PATH=${quote(env.PATH)}
-    ${wrappers[0][0]}
-    wait_for_metals_mcp() {
-      OPENCODE_TEST_KIND=preflight command opencode "$@"
+function merge(left, right) {
+  const result = structuredClone(left);
+  for (const [key, value] of Object.entries(right)) {
+    if (value && typeof value === "object" && !Array.isArray(value) &&
+        result[key] && typeof result[key] === "object" && !Array.isArray(result[key])) {
+      result[key] = merge(result[key], value);
+    } else if (["plugin", "instructions"].includes(key) && Array.isArray(value) && Array.isArray(result[key])) {
+      result[key] = [...new Set([...result[key], ...value])];
+    } else {
+      result[key] = structuredClone(value);
     }
-    ${aliasDefinitions}
-    eval ${quote(command)}
-    launch_status=$?
-    OPENCODE_TEST_KIND=parent command opencode
-    ${options.followOn ? "opencode --version" : ""}
-    exit "$launch_status"
-  `], { cwd: temp, env, encoding: "utf8", timeout: 10000 });
+  }
+  return result;
+}
+
+function expected({ agentsMode = "custom", profile, inherited = {}, usePower = false, reviewer } = {}) {
+  let config = merge(agentsMode === "custom" ? custom : {}, inherited);
+  if (profile) {
+    let selected = profiles[profile];
+    if (agentsMode === "stock") {
+      selected = structuredClone(selected);
+      selected.agent = Object.fromEntries(Object.entries(selected.agent).filter(([name]) =>
+        ["build", "plan", "general", "explore", "compaction", "title", "summary"].includes(name)));
+    }
+    config = merge(config, selected);
+  }
+  if (usePower) config = merge(config, power);
+  if (reviewer) {
+    config.agent ??= {};
+    config.agent.review ??= {};
+    config.agent.review.model = models[reviewer];
+    delete config.agent.review.variant;
+  }
+  return config;
+}
+
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), "oc-review-"));
+const log = path.join(temp, "calls.jsonl");
+const fake = path.join(temp, "fake-opencode");
+const executable = path.join(temp, "oc");
+function launch(args = [], options = {}) {
+  fs.writeFileSync(log, "");
+  const env = { ...process.env, HOME: temp, OPENCODE_TEST_LOG: log,
+    OPENCODE_TEST_EXIT: String(options.exitStatus ?? 0) };
+  delete env.OPENCODE_CONFIG_CONTENT;
+  delete env.OC_CONFIG_INPUT;
+  delete env.OC_CONFIG_OUTPUT;
+  delete env.HERDR_ENV;
+  if (options.inherited !== undefined) env.OPENCODE_CONFIG_CONTENT = options.inherited;
+  if (options.herdr !== undefined) env.HERDR_ENV = options.herdr;
+  if (options.parent) {
+    env.OPENCODE_CONFIG_CONTENT = options.parent.config;
+    env.OC_CONFIG_INPUT = options.parent.input;
+    env.OC_CONFIG_OUTPUT = options.parent.output;
+  }
+  const result = spawnSync(executable, args, { env, cwd: temp, encoding: "utf8", timeout: 10000 });
   assert.ifError(result.error);
   assert.equal(result.signal, null, result.stderr);
   const events = fs.readFileSync(log, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse);
-  const parent = events.find((event) => event.kind === "parent");
-  assert.ok(parent, `shell completed: ${command}\n${result.stderr}`);
-  assert.equal(parent.config, options.config ?? null, `no parent config leak: ${command}`);
-  return { ...result, events: events.filter((event) => event.kind !== "parent") };
+  return { ...result, events };
 }
-
-function successful(result, args, preflight = false) {
-  assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(result.events.map((event) => event.kind),
-    preflight ? ["preflight", "opencode"] : ["opencode"]);
+function successful(args, config, forwarded = ["--auto"], options = {}) {
+  const result = launch(args, options);
+  assert.equal(result.status, 0, `${JSON.stringify(args)}: ${result.stderr}`);
+  assert.deepEqual(result.events.map((event) => event.kind), options.preflight ? ["debug", "native"] : ["native"]);
   const call = result.events.at(-1);
-  assert.deepEqual(call.args, args);
-  if (preflight) assert.equal(result.events[0].config, call.config, "preflight sees selected config");
+  assert.deepEqual(call.args, forwarded);
+  assert.deepEqual(JSON.parse(call.config), config);
+  if (options.preflight) assert.equal(result.events[0].config, call.config, "debug config sees identical overlay");
   return call;
 }
 
-function selectedConfig(config, model) {
-  const expected = structuredClone(config);
-  expected.agent ??= {};
-  expected.agent.review ??= {};
-  expected.agent.review.model = model;
-  delete expected.agent.review.variant;
-  return expected;
-}
-
-function fixedNamedAgents(config) {
-  for (const choice of Object.keys(models)) {
-    const name = `review-${choice}`;
-    assert.deepEqual({ ...agents[name], ...config.agent?.[name] }, agents[name],
-      `profile leaves ${name} fixed`);
-  }
-}
-
 try {
-  // This executable is the only external opencode; neither models nor MCPs run.
-  fs.writeFileSync(path.join(temp, "opencode"), `#!${process.execPath}
+  // Exercise the installed launcher, replacing only the absolute native binary path
+  // in a temporary copy. Neither OpenCode, models, nor MCPs are started.
+  const script = fs.readFileSync(launcher, "utf8");
+  assert.equal(script.split(native).length, 2, "packaged launcher embeds native exactly once");
+  fs.writeFileSync(executable, script.replace(native, fake), { mode: 0o755 });
+  fs.writeFileSync(fake, `#!${process.execPath}
 const fs = require("node:fs");
-const kind = process.env.OPENCODE_TEST_KIND || "opencode";
-fs.appendFileSync(process.env.OPENCODE_TEST_LOG, JSON.stringify({
-  kind,
-  args: process.argv.slice(2),
-  config: process.env.OPENCODE_CONFIG_CONTENT ?? null,
-}) + "\\n");
-process.exit(kind === "opencode" ? Number(process.env.OPENCODE_TEST_EXIT) : 0);
+const kind = process.argv[2] === "debug" && process.argv[3] === "config" ? "debug" : "native";
+fs.appendFileSync(process.env.OPENCODE_TEST_LOG, JSON.stringify({ kind,
+  args: process.argv.slice(2), config: process.env.OPENCODE_CONFIG_CONTENT ?? null,
+  input: process.env.OC_CONFIG_INPUT, output: process.env.OC_CONFIG_OUTPUT }) + "\\n");
+process.exit(kind === "native" ? Number(process.env.OPENCODE_TEST_EXIT) : 0);
 `, { mode: 0o755 });
 
-  // No selector means no JSON parsing or reserialization, even for invalid JSON.
-  for (const config of [undefined, "", ' { "model": "keep/me" } ', "{broken-json"]) {
-    const call = successful(launch("opencode", [], { config }), []);
-    assert.equal(call.config, config ?? null);
-  }
-
-  // Exercise real generated aliases via eval, including their leading --auto.
-  const profileConfigs = {};
-  for (const name of profiles) {
-    const baseline = successful(launch(name), ["--auto"]);
-    const config = JSON.parse(baseline.config || "{}");
-    profileConfigs[name] = config;
-    fixedNamedAgents(config);
-    for (const [choice, model] of Object.entries(models)) {
-      const call = successful(launch(name, ["--review-model", choice, "run", "review this"]),
-        ["--auto", "run", "review this"]);
-      const selected = JSON.parse(call.config);
-      assert.deepEqual(selected, selectedConfig(config, model), `${name} + ${choice}`);
-      fixedNamedAgents(selected);
+  assert.equal(aliases.oc, undefined, "old oc shell alias must not shadow packaged launcher");
+  successful([], expected());
+  for (const [profile, config] of Object.entries(profiles)) {
+    for (const mode of ["custom", "stock"]) {
+      for (const usePower of [false, true]) {
+        const args = ["--profile", profile, "--agents", mode, ...(usePower ? ["--power"] : [])];
+        const selected = expected({ profile, agentsMode: mode, usePower });
+        successful(args, selected);
+        if (mode === "stock") {
+          for (const name of ["review", "review-fable", "review-opus", "review-sol", "implement", "scout", "scan"]) {
+            assert.equal(selected.agent?.[name], undefined, `stock ${profile} omits ${name}`);
+          }
+          assert.equal(selected.instructions, undefined, "stock has no custom delegation instructions");
+        } else {
+          for (const [choice, model] of Object.entries(models)) {
+            const reviewed = expected({ profile, usePower, reviewer: choice });
+            successful([...args, `--review-model=${choice}`], reviewed);
+            assert.equal(reviewed.agent.review.model, model);
+            assert.equal(reviewed.agent.review.variant, undefined);
+            assert.equal(reviewed.agent[`review-${choice}`].model, model);
+          }
+        }
+      }
     }
   }
-  assert.equal(profileConfigs["oc-anthropic"].model, models.opus);
-  assert.equal(profileConfigs["oc-anthropic"].agent.build.model, models.opus);
-  assert.equal(profileConfigs["oc-anthropic"].agent.plan.model, models.opus);
-  assert.equal(profileConfigs["oc-anthropic"].agent.review.model, models.opus);
-  assert.equal(profileConfigs["oc-openai"].small_model, gpt6Luna);
+  assert.equal(profiles.anthropic.model, models.opus);
+  assert.equal(profiles.anthropic.agent.review.model, models.opus);
+  assert.equal(profiles.openai.small_model, gpt6Luna);
   for (const name of ["implement", "scout", "test-triage", "compaction"]) {
-    assert.equal(profileConfigs["oc-openai"].agent[name].model, gpt6Sol, `oc-openai ${name}`);
+    assert.equal(profiles.openai.agent[name].model, gpt6Sol);
   }
   for (const name of ["scan", "title", "summary"]) {
-    assert.equal(profileConfigs["oc-openai"].agent[name].model, gpt6Luna, `oc-openai ${name}`);
+    assert.equal(profiles.openai.agent[name].model, gpt6Luna);
   }
-  assert.equal(profileConfigs["oc-premium"].agent.review.model, models.opus);
-  assert.equal(profileConfigs["oc-premium"].agent.review.variant, undefined);
-  assert.equal(profileConfigs["oc-premium"].small_model, gpt6Astra);
-  for (const name of ["implement", "scan", "title", "summary", "review-sol", "scout", "test-triage", "compaction"]) {
-    assert.equal(profileConfigs["oc-premium"].agent[name].model, gpt6Astra, `oc-premium ${name}`);
-  }
-  assert.equal(profileConfigs["oc-premium"].agent["review-sol"].variant, "xhigh");
+  assert.equal(profiles.premium.small_model, gpt6Astra);
+  assert.equal(profiles.premium.agent["review-sol"].variant, "xhigh");
+  assert.equal(profiles.premium.agent.review.model, models.opus);
 
-  // Preserve argument boundaries, quotes, globs, newlines, empty args, and --.
-  const nativeArgs = ["--model", "openai/native", "./project's [one]*", "--",
-    'prompt with "quotes", $HOME\nand a newline', "--review-model", "not-a-selector", ""];
-  for (const [choice, model] of Object.entries(models)) {
-    const call = successful(launch("opencode", ["--review-model", choice, ...nativeArgs]), nativeArgs);
-    assert.deepEqual(JSON.parse(call.config), selectedConfig({}, model));
-  }
-  for (const args of [
-    ["run", "--review-model", "invalid"],
-    ["./project path", "--review-model", "opus"],
-    ["--", "--review-model", "fable"],
-    ["--model", "openai/native", "--review-model", "invalid"],
-  ]) {
-    const call = successful(launch("opencode", args), args);
-    assert.equal(call.config, null, "stop parsing at the first non-wrapper argument");
-  }
-
-  for (const args of [
-    ["--review-model"],
-    ["--review-model", ""],
-    ["--review-model", "invalid"],
-    ["--review-model", "--session", "session-id"],
-  ]) {
-    const result = launch("oc", args, { herdr: "1" });
-    assert.notEqual(result.status, 0, `reject ${JSON.stringify(args)}`);
-    assert.deepEqual(result.events, [], "invalid selector fails before preflight or external command");
-  }
-  const malformed = launch("opencode", ["--review-model", "opus", "--session", "session-id"],
-    { config: "{broken-json", herdr: "1" });
-  assert.notEqual(malformed.status, 0);
-  assert.deepEqual(malformed.events, [], "malformed JSON fails before preflight or external command");
-
-  const customConfig = {
-    model: "openai/keep-top-level",
-    small_model: "openai/keep-small",
-    plugin: ["keep-plugin"],
+  const inherited = {
+    plugin: ["keep-plugin", power.plugin[0]],
+    instructions: ["keep-instructions", custom.instructions[0]],
     mcp: { local: { enabled: true, environment: { KEEP: "value" } } },
     provider: { local: { options: { baseURL: "http://localhost:9999" } } },
-    permission: { edit: "ask" },
-    agent: {
-      review: { model: "old/model", variant: "xhigh", temperature: 0.2, prompt: "keep prompt",
-        permission: { edit: "deny" }, steps: 42 },
-      build: { model: "keep/build", variant: "xhigh" },
-      "review-fable": { model: models.fable },
-      "review-opus": { model: models.opus },
-    },
+    agent: { review: { model: "old/model", variant: "xhigh", temperature: 0.2,
+      permission: { edit: "deny" }, steps: 42 }, build: { model: "keep/build" } },
   };
-  const customRaw = ` ${JSON.stringify(customConfig, null, 2)}\n`;
-  for (const config of [undefined, "", customRaw]) {
-    const result = launch("opencode", ["--review-model", "opus"], { config, followOn: true });
-    assert.equal(result.status, 0, result.stderr);
-    assert.deepEqual(result.events.map((event) => event.kind), ["opencode", "opencode"]);
-    assert.deepEqual(JSON.parse(result.events[0].config),
-      selectedConfig(config ? customConfig : {}, models.opus));
-    assert.deepEqual(result.events[1].args, ["--version"]);
-    assert.equal(result.events[1].config, config ?? null, "no config leak to a follow-on launch");
+  const raw = ` ${JSON.stringify(inherited, null, 2)}\n`;
+  for (const mode of ["custom", "stock"]) {
+    for (const profile of Object.keys(profiles)) {
+      const args = ["--agents", mode, `--profile=${profile}`, "--power"];
+      successful(args, expected({ agentsMode: mode, profile, inherited, usePower: true }),
+        ["--auto"], { inherited: raw });
+    }
   }
-  const premium = launch("oc-premium", ["--review-model", "fable"],
-    { config: customRaw, followOn: true });
-  assert.equal(premium.status, 0, premium.stderr);
-  assert.deepEqual(JSON.parse(premium.events[0].config),
-    selectedConfig(profileConfigs["oc-premium"], models.fable));
-  assert.equal(premium.events[1].config, customRaw, "alias assignment does not leak either");
+  successful(["--profile", "premium", "--review-model", "fable", "--power"],
+    expected({ profile: "premium", inherited, usePower: true, reviewer: "fable" }),
+    ["--auto"], { inherited: raw });
+  successful(["--agents", "stock"], expected({ agentsMode: "stock", inherited }),
+    ["--auto"], { inherited: raw });
+  successful([], expected(), ["--auto"], { inherited: undefined });
 
-  // Session restoration adds --auto once; ports alone do not imply --auto.
-  for (const [name, args, expected, herdr, preflight] of [
-    ["opencode", ["--session", "s"], ["--auto", "--session", "s"], undefined, false],
-    ["opencode", ["--session=s"], ["--auto", "--session=s"], "0", false],
-    ["opencode", ["--session=s"], ["--auto", "--session=s"], "1", true],
-    ["oc", ["--session", "s"], ["--auto", "--session", "s"], "1", true],
-    ["opencode", ["--auto", "--session", "s"], ["--auto", "--session", "s"], "1", true],
-    ["opencode", ["--port", "4321"], ["--port", "4321"], "1", true],
-    ["opencode", ["--port=4321"], ["--port=4321"], "1", true],
-    ["opencode", [], [], "1", false],
+  // Child launches must not mistake a parent's generated preset for user input.
+  const parentInput = { plugin: ["keep-plugin"], instructions: ["keep-rules"] };
+  const parent = successful(["--profile=premium", "--power"],
+    expected({ profile: "premium", usePower: true, inherited: parentInput }),
+    ["--auto"], { inherited: JSON.stringify(parentInput) });
+  successful(["--agents=stock"], parentInput, ["--auto"], { parent });
+  successful(["--profile=anthropic"], expected({ profile: "anthropic", inherited: parentInput }),
+    ["--auto"], { parent });
+  successful(["--agents=stock"], { model: "explicit/override" }, ["--auto"],
+    { parent: { ...parent, config: '{"model":"explicit/override"}' } });
+
+  const nativeArgs = ["--model", "openai/native", "./project's [one]*", "--",
+    'prompt with "quotes", $HOME\nand a newline', "--review-model", "not-a-selector", ""];
+  successful(["--review-model", "opus", ...nativeArgs], expected({ reviewer: "opus" }),
+    ["--auto", ...nativeArgs]);
+  for (const args of [["run", "--profile", "invalid"], ["--", "--profile", "invalid"],
+    ["--model", "openai/native", "--review-model", "invalid"], ["--profilex=invalid"]]) {
+    successful(args, expected(), ["--auto", ...args.filter((arg) => arg !== "--")]);
+  }
+  successful(["--no-auto", "run", "hello"], expected(), ["run", "hello"]);
+  successful(["--no-auto", "--auto", "run"], expected(), ["--auto", "run"]);
+  successful(["--auto", "--auto"], expected(), ["--auto", "--auto"]);
+  successful(["--no-auto", "--", "--auto"], expected(), ["--auto"]);
+
+  for (const args of [["--profile"], ["--profile="], ["--profile", "invalid"],
+    ["--agents", "invalid"], ["--review-model", "invalid"], ["--review-model"],
+    ["--agents", "stock", "--review-model", "opus"],
+    ["--profile", "openai", "--profile=premium"],
+    ["--agents=custom", "--agents=stock"],
+    ["--review-model=opus", "--review-model", "fable"]]) {
+    const result = launch(args, { herdr: "1" });
+    assert.notEqual(result.status, 0, JSON.stringify(args));
+    assert.deepEqual(result.events, [], "invalid selector fails before native or debug config");
+  }
+  for (const inheritedBad of ["{broken-json", "[]", "null", "{} {}", ""]) {
+    const result = launch(["--profile", "openai"], { inherited: inheritedBad, herdr: "1" });
+    if (inheritedBad === "") {
+      assert.equal(result.status, 0, result.stderr);
+    } else {
+      assert.notEqual(result.status, 0, inheritedBad);
+      assert.deepEqual(result.events, []);
+    }
+  }
+
+  fs.writeFileSync(path.join(temp, "opencode.json"), '{"mcp":{"metals-lsp":{"type":"remote","url":"http://localhost:1234"}}}');
+  for (const [args, preflight] of [
+    [["--session", "s"], true], [["--session=s"], true], [["--port", "4321"], true],
+    [["--port=4321"], true], [[], false], [["--", "--session", "s"], true],
   ]) {
-    const call = successful(launch(name, ["--review-model", "opus", ...args], { herdr }),
-      expected, preflight);
-    assert.deepEqual(JSON.parse(call.config), selectedConfig({}, models.opus));
+    successful(args, expected(), ["--auto", ...args.filter((arg) => arg !== "--")],
+      { herdr: "1", preflight });
   }
-  const restored = successful(launch("opencode", ["--session", "s"],
-    { config: "{still-not-parsed", herdr: "1" }), ["--auto", "--session", "s"], true);
-  assert.equal(restored.config, "{still-not-parsed");
+  successful(["--session=s"], expected(), ["--auto", "--session=s"], { herdr: "0" });
+  successful(["--profile", "premium", "--review-model", "fable", "--session", "s"],
+    expected({ profile: "premium", inherited, reviewer: "fable" }), ["--auto", "--session", "s"],
+    { inherited: raw, herdr: "1", preflight: true });
 
-  for (const args of [[], ["--review-model", "fable"], ["--review-model", "opus", "--session", "s"]]) {
-    const result = launch("opencode", args, { exitStatus: 37, herdr: "1" });
-    assert.equal(result.status, 37, "propagate the external command's exit status");
-    assert.equal(result.events.at(-1).kind, "opencode");
+  // Herdr restores fixed native argv through Zsh, bypassing its launch command.
+  const wrappers = [...initContent.matchAll(/^([\t ]*)opencode\(\)[\t ]*\{\n[\s\S]*?^\1\}[\t ]*$/gm)];
+  assert.equal(wrappers.length, 1);
+  const wrapper = wrappers[0][0].replace(launcher, executable);
+  fs.writeFileSync(log, "");
+  const restored = spawnSync("zsh", ["-f", "-c", `${wrapper}\nopencode --session restored`], {
+    cwd: temp, encoding: "utf8", timeout: 10000,
+    env: { PATH: process.env.PATH, HOME: temp, HERDR_ENV: "1", OPENCODE_TEST_LOG: log, OPENCODE_TEST_EXIT: "0" },
+  });
+  assert.ifError(restored.error);
+  assert.equal(restored.status, 0, restored.stderr);
+  const restoredCalls = fs.readFileSync(log, "utf8").trim().split("\n").map(JSON.parse);
+  assert.deepEqual(restoredCalls.map((call) => call.kind), ["debug", "native"]);
+  assert.deepEqual(restoredCalls.at(-1).args, ["--auto", "--session", "restored"]);
+  assert.deepEqual(JSON.parse(restoredCalls.at(-1).config), expected());
+
+  for (const args of [[], ["--review-model", "opus"], ["--session", "s"]]) {
+    const result = launch(args, { exitStatus: 37, herdr: "1" });
+    assert.equal(result.status, 37, "propagate native exit status");
+    assert.equal(result.events.at(-1).kind, "native");
   }
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
 
-console.log("Passed generated OpenCode reviewer, alias, and isolated zsh wrapper checks.");
+console.log("Passed packaged oc reviewer, profile, isolation, and forwarding checks.");

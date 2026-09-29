@@ -343,14 +343,155 @@ in
                 };
               };
             };
-        openaiConfig = builtins.toJSON openaiModels;
-        premiumConfig = builtins.toJSON premiumModels;
-        anthropicConfig = builtins.toJSON anthropicModels;
-        foyerConfig = builtins.toJSON {
-          mcp.jira.enabled = true;
+        customOverlay = {
+          subagent_depth = 1;
+          instructions = [ "${./prompts/delegation-rules.md}" ];
+          agent = lib.recursiveUpdate {
+            build = {
+              description = "Primary implementation agent and orchestrator for coding work.";
+              mode = "primary";
+              permission.task = {
+                "*" = "deny";
+                explore = "allow";
+                scout = "allow";
+                test-triage = "allow";
+                scan = "allow";
+                review = "allow";
+                review-fable = "allow";
+                review-opus = "allow";
+                review-sol = "allow";
+                implement = "allow";
+              };
+            };
+            plan = {
+              description = "Read-only planning and architectural analysis.";
+              mode = "primary";
+              permission = {
+                edit = "deny";
+                bash = planBash;
+                task = {
+                  "*" = "deny";
+                  explore = "allow";
+                  scout = "allow";
+                  test-triage = "allow";
+                  scan = "allow";
+                  review = "allow";
+                  review-fable = "allow";
+                  review-opus = "allow";
+                  review-sol = "allow";
+                };
+              };
+            };
+            explore = {
+              description = ''Read-only codebase exploration and reasoning. Use proactively to understand behavior, trace interactions, or synthesize findings across files. Use scan instead for bounded lookups and mechanical inventories. Specify thoroughness: "quick" for focused questions, "medium" for moderate exploration, or "very thorough" for comprehensive analysis. Returns concise evidence with file and line references; never edits.'';
+              mode = "subagent";
+              steps = 100;
+              permission = {
+                edit = "deny";
+                bash = readOnlyBash;
+                task = "deny";
+              };
+            };
+            scout = {
+              description = "Read-only dependency and external documentation research. Use proactively before adopting or upgrading a library, when you need a package's actual API surface, or when a question is answered by upstream docs, changelogs, or dependency source rather than by this repository. Returns the answer with its exact source and any version caveats.";
+              mode = "subagent";
+              steps = 100;
+              prompt = "{file:${./prompts/scout-rules.txt}}";
+              permission = {
+                edit = "deny";
+                bash = readOnlyBash;
+                task = "deny";
+              };
+            };
+            test-triage = {
+              description = "Reproduces and analyzes test or build failures without modifying source. Use proactively whenever a test suite, compile, or check fails and the root cause is not already obvious. Returns the failing command, the first causal error, likely ownership, and the smallest next diagnostic.";
+              mode = "subagent";
+              steps = 100;
+              prompt = "{file:${./prompts/test-triage-rules.txt}}";
+              permission = {
+                edit = "deny";
+                bash = reviewBash;
+                task = "deny";
+              };
+            };
+            scan = {
+              description = "Performs narrow mechanical searches, inventories, and consistency checks. Use proactively for counting occurrences, listing every call site, or verifying that a pattern holds repo-wide. Returns terse counts, paths, and line references; no bash, no edits.";
+              mode = "subagent";
+              steps = 100;
+              prompt = "{file:${./prompts/scan-rules.txt}}";
+              permission = {
+                edit = "deny";
+                bash = "deny";
+                task = "deny";
+              };
+            };
+            review = reviewAgentSettings // {
+              description = "Reviews changes for defects, regressions, risks, and missing tests without editing. Use proactively after completing a non-trivial change and before committing. Returns findings ordered by severity with file and line references.";
+              disable = false;
+            };
+            review-fable = reviewAgentSettings // {
+              description = "Reviews changes with Fable when explicitly requested, regardless of the session's default reviewer. Returns defects, regressions, risks, and missing tests ordered by severity with file and line references; never edits.";
+              model = fableReview;
+            };
+            review-opus = reviewAgentSettings // {
+              description = "Reviews changes with Opus when explicitly requested, regardless of the session's default reviewer. Returns defects, regressions, risks, and missing tests ordered by severity with file and line references; never edits.";
+              model = opusReview;
+            };
+            review-sol = reviewAgentSettings // {
+              description = "Fallback reviewer for an explicitly exhausted Claude subscription quota. Reviews the same scope for defects, regressions, risks, and missing tests without editing.";
+              model = "openai/gpt-6-sol";
+            };
+            implement = {
+              description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent. Use proactively to parallelize independent edits once you can name each agent's exact file ownership up front. Does not commit, push, or delegate.";
+              mode = "subagent";
+              steps = 100;
+              prompt = "{file:${./prompts/implement-rules.txt}}";
+              permission = {
+                edit = "allow";
+                task = "deny";
+                bash = {
+                  "git commit*" = "deny";
+                  "git push*" = "deny";
+                };
+              };
+            };
+            general.disable = true;
+          } balancedModels.agent;
         };
-        superpowersConfig = builtins.toJSON {
-          plugin = [ "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3" ];
+        presets = pkgs.writeText "oc-presets.json" (
+          builtins.toJSON {
+            custom = customOverlay;
+            profiles = {
+              balanced = balancedModels;
+              openai = openaiModels;
+              premium = premiumModels;
+              anthropic = anthropicModels;
+            };
+            power.plugin = [ "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3" ];
+            reviewModels = {
+              fable = fableReview;
+              opus = opusReview;
+            };
+          }
+        );
+        oc = pkgs.writeShellApplication {
+          name = "oc";
+          text = ''
+            readonly native=${lib.escapeShellArg (lib.getExe config.programs.opencode.package)}
+            readonly presets=${lib.escapeShellArg (toString presets)}
+            readonly jq=${lib.getExe pkgs.jq}
+            readonly curl=${lib.getExe pkgs.curl}
+            readonly timeout=${pkgs.coreutils}/bin/timeout
+            readonly sleep=${pkgs.coreutils}/bin/sleep
+          ''
+          + builtins.readFile ./oc.sh;
+          derivationArgs = {
+            passthru.presets = presets;
+            # writeShellApplication uses writeTextFile, which has no install phase.
+            postCheck = ''
+              install -Dm644 ${./oc.zsh} "$out/share/zsh/site-functions/_oc"
+            '';
+          };
         };
         foyerSkillPaths = [
           "${foyerKitDir}/plugins/angular-dev/skills"
@@ -380,7 +521,6 @@ in
           settings = {
             inherit (balancedModels) model small_model;
             default_agent = "build";
-            subagent_depth = 1;
             compaction = {
               auto = true;
               prune = true;
@@ -540,119 +680,17 @@ in
                 };
               };
             };
-            agent = lib.recursiveUpdate {
-              build = {
-                color = "secondary";
-                description = "Primary implementation agent and orchestrator for coding work.";
-                mode = "primary";
-                permission.task = {
-                  "*" = "deny";
-                  explore = "allow";
-                  scout = "allow";
-                  test-triage = "allow";
-                  scan = "allow";
-                  review = "allow";
-                  review-fable = "allow";
-                  review-opus = "allow";
-                  review-sol = "allow";
-                  implement = "allow";
-                };
-              };
+            agent = {
+              build.color = "secondary";
               plan = {
                 color = "primary";
-                description = "Read-only planning and architectural analysis.";
-                mode = "primary";
                 permission = {
                   edit = "deny";
                   bash = planBash;
-                  task = {
-                    "*" = "deny";
-                    explore = "allow";
-                    scout = "allow";
-                    test-triage = "allow";
-                    scan = "allow";
-                    review = "allow";
-                    review-fable = "allow";
-                    review-opus = "allow";
-                    review-sol = "allow";
-                  };
                 };
               };
-              explore = {
-                description = ''Read-only codebase exploration and reasoning. Use proactively to understand behavior, trace interactions, or synthesize findings across files. Use scan instead for bounded lookups and mechanical inventories. Specify thoroughness: "quick" for focused questions, "medium" for moderate exploration, or "very thorough" for comprehensive analysis. Returns concise evidence with file and line references; never edits.'';
-                mode = "subagent";
-                steps = 100;
-                permission = {
-                  edit = "deny";
-                  bash = readOnlyBash;
-                  task = "deny";
-                };
-              };
-              scout = {
-                description = "Read-only dependency and external documentation research. Use proactively before adopting or upgrading a library, when you need a package's actual API surface, or when a question is answered by upstream docs, changelogs, or dependency source rather than by this repository. Returns the answer with its exact source and any version caveats.";
-                mode = "subagent";
-                steps = 100;
-                prompt = "{file:${./prompts/scout-rules.txt}}";
-                permission = {
-                  edit = "deny";
-                  bash = readOnlyBash;
-                  task = "deny";
-                };
-              };
-              test-triage = {
-                description = "Reproduces and analyzes test or build failures without modifying source. Use proactively whenever a test suite, compile, or check fails and the root cause is not already obvious. Returns the failing command, the first causal error, likely ownership, and the smallest next diagnostic.";
-                mode = "subagent";
-                steps = 100;
-                prompt = "{file:${./prompts/test-triage-rules.txt}}";
-                permission = {
-                  edit = "deny";
-                  bash = reviewBash;
-                  task = "deny";
-                };
-              };
-              scan = {
-                description = "Performs narrow mechanical searches, inventories, and consistency checks. Use proactively for counting occurrences, listing every call site, or verifying that a pattern holds repo-wide. Returns terse counts, paths, and line references; no bash, no edits.";
-                mode = "subagent";
-                steps = 100;
-                prompt = "{file:${./prompts/scan-rules.txt}}";
-                permission = {
-                  edit = "deny";
-                  bash = "deny";
-                  task = "deny";
-                };
-              };
-              review = reviewAgentSettings // {
-                description = "Reviews changes for defects, regressions, risks, and missing tests without editing. Use proactively after completing a non-trivial change and before committing. Returns findings ordered by severity with file and line references.";
-                disable = false;
-              };
-              review-fable = reviewAgentSettings // {
-                description = "Reviews changes with Fable when explicitly requested, regardless of the session's default reviewer. Returns defects, regressions, risks, and missing tests ordered by severity with file and line references; never edits.";
-                model = fableReview;
-              };
-              review-opus = reviewAgentSettings // {
-                description = "Reviews changes with Opus when explicitly requested, regardless of the session's default reviewer. Returns defects, regressions, risks, and missing tests ordered by severity with file and line references; never edits.";
-                model = opusReview;
-              };
-              review-sol = reviewAgentSettings // {
-                description = "Fallback reviewer for an explicitly exhausted Claude subscription quota. Reviews the same scope for defects, regressions, risks, and missing tests without editing.";
-                model = "openai/gpt-6-sol";
-              };
-              implement = {
-                description = "Implements one explicitly bounded, disjoint file scope assigned by the primary agent. Use proactively to parallelize independent edits once you can name each agent's exact file ownership up front. Does not commit, push, or delegate.";
-                mode = "subagent";
-                steps = 100;
-                prompt = "{file:${./prompts/implement-rules.txt}}";
-                permission = {
-                  edit = "allow";
-                  task = "deny";
-                  bash = {
-                    "git commit*" = "deny";
-                    "git push*" = "deny";
-                  };
-                };
-              };
-              general.disable = true;
-            } balancedModels.agent;
+              inherit (balancedModels.agent) compaction title summary;
+            };
             mcp = {
               metals = {
                 type = "local";
@@ -717,110 +755,15 @@ in
             };
           };
         };
-        programs.zsh.shellAliases = {
-          oc = "opencode --auto";
-          oc-openai = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg openaiConfig} opencode --auto";
-          oc-premium = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg premiumConfig} opencode --auto";
-          oc-anthropic = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg anthropicConfig} opencode --auto";
-          oc-foyer = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg foyerConfig} opencode --auto";
-          oc-power = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg superpowersConfig} opencode --auto";
-        };
+        # Herdr restores agents using fixed `opencode --session ...` argv.
+        # Route that path through the launcher too; ordinary native calls stay native.
         programs.zsh.initContent = lib.mkAfter ''
-          wait_for_metals_mcp() {
-            local config http_status url
-            local -i deadline
-
-            [[ -f opencode.json || -f opencode.jsonc ]] || return 0
-            config="$(${pkgs.coreutils}/bin/timeout --kill-after=1s 10s opencode debug config 2>/dev/null)" || return 0
-            url="$(${lib.getExe pkgs.jq} -r '
-              .mcp["metals-lsp"]
-              | select(.type == "remote" and .enabled != false)
-              | .url // empty
-            ' <<<"$config" 2>/dev/null)" || return 0
-            [[ "$url" == http://localhost:* || "$url" == http://127.0.0.1:* ]] || return 0
-
-            deadline=$(( SECONDS + 60 ))
-            while (( SECONDS < deadline )); do
-              http_status="$(${lib.getExe pkgs.curl} \
-                --silent \
-                --output /dev/null \
-                --write-out '%{http_code}' \
-                --connect-timeout 1 \
-                --max-time 1 \
-                "$url")" || http_status=
-              if [[ "$http_status" == [234][0-9][0-9] ]]; then
-                return 0
-              fi
-              sleep 0.25
-            done
-
-            print -u2 -- "Timed out waiting for Metals MCP at $url; starting OpenCode anyway"
-          }
-
           opencode() {
-            local arg restore_session=false has_auto=false herdr_agent=false
-            local review_model review_config
-            local -a args
-
-            # Wrapper options precede native arguments; aliases may inject --auto first.
-            while (( $# )); do
-              case "$1" in
-                --auto)
-                  args+=("$1")
-                  shift
-                  ;;
-                --review-model)
-                  case "''${2:-}" in
-                    fable) review_model=${lib.escapeShellArg fableReview} ;;
-                    opus) review_model=${lib.escapeShellArg opusReview} ;;
-                    *)
-                      print -u2 -- "Usage: opencode [--auto] --review-model fable|opus [opencode arguments...]"
-                      return 2
-                      ;;
-                  esac
-                  shift 2
-                  ;;
-                *) break ;;
-              esac
-            done
-            args+=("$@")
-            set -- "''${args[@]}"
-
-            if [[ -n "$review_model" ]]; then
-              if ! review_config="$(${lib.getExe pkgs.jq} -ces --arg model "$review_model" '
-                if length != 1 or (.[0] | type) != "object" then
-                  error("expected a single JSON object")
-                else
-                  .[0] | .agent.review.model = $model | del(.agent.review.variant)
-                end
-              ' <<<"''${OPENCODE_CONFIG_CONTENT:-"{}"}")"; then
-                print -u2 -- "Cannot set review model: OPENCODE_CONFIG_CONTENT must be a valid JSON object."
-                return 2
-              fi
-              # Keep the override local, including for the HERDR config preflight below.
-              local -x OPENCODE_CONFIG_CONTENT="$review_config"
+            if [[ "''${HERDR_ENV:-}" == 1 && "''${1:-}" == --session ]]; then
+              ${lib.getExe oc} "$@"
+            else
+              command opencode "$@"
             fi
-
-            for arg in "$@"; do
-              case "$arg" in
-                --session|--session=*)
-                  restore_session=true
-                  herdr_agent=true
-                  ;;
-                --port|--port=*) herdr_agent=true ;;
-                --auto) has_auto=true ;;
-              esac
-            done
-
-            if [[ "''${HERDR_ENV:-}" == 1 && "$herdr_agent" == true ]]; then
-              wait_for_metals_mcp
-            fi
-
-            if [[ "$restore_session" == true && "$has_auto" == false ]]; then
-              command opencode --auto "$@"
-              return
-            fi
-            command opencode "$@"
           }
         '';
         xdg.configFile."opencode/AGENTS.md".text = ''
@@ -845,26 +788,6 @@ in
 
           ## Filesystem
           - Search known dependency caches directly; never glob or search all of `~/.cache`.
-
-          ## Delegation
-          - This file explicitly instructs you to use the Task tool. Delegating is the expected default, not an exception.
-          - Delegate proactively, without being asked:
-            - understanding codebase behavior, tracing interactions, or synthesizing findings across files -> explore
-            - dependency, library, or external documentation research -> scout
-            - failing tests or build errors you have not yet diagnosed -> test-triage
-            - bounded lookups ("where is X"), inventories, counts, and mechanical consistency checks across many files -> scan
-            - defect review of a completed change -> review
-            - bounded implementation work in a file scope you can name up front -> implement
-          - If a scan lookup is inconclusive or requires tracing behavior, delegate the follow-up to explore.
-          - Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
-          - Delegate only bounded, independent work with an explicit expected report.
-          - For defect reviews, use review by default; it follows the selected session profile and any --review-model launch override. If the user explicitly requests Fable or Opus for a review, use review-fable or review-opus respectively, regardless of the session default. Both can also be invoked directly with @review-fable or @review-opus.
-          - Only when the selected reviewer (review, review-fable, or review-opus) returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the original review task with task_id.
-          - Do not fall back for generic errors or transient rate limits. If review-sol fails, report the blocker; do not retry or enter another fallback loop.
-          - Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
-          - Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.
-          - The primary agent reviews and integrates writer results. Subagents do not commit, push, or delegate further.
-          - Subagents return concise findings, changed files, verification, and unresolved risks instead of raw output.
 
         '';
         xdg.configFile."opencode/skills/scalive/SKILL.md".source = ./skills/scalive/SKILL.md;
@@ -895,6 +818,7 @@ in
           }) satisfies Plugin
         '';
         home.packages = with pkgs; [
+          oc
           claudeCode
           meridian
           metals

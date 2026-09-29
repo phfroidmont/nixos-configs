@@ -1,0 +1,19 @@
+## Delegation
+- This file explicitly instructs you to use the Task tool. Delegating is the expected default, not an exception.
+- Delegate proactively, without being asked:
+  - understanding codebase behavior, tracing interactions, or synthesizing findings across files -> explore
+  - dependency, library, or external documentation research -> scout
+  - failing tests or build errors you have not yet diagnosed -> test-triage
+  - bounded lookups ("where is X"), inventories, counts, and mechanical consistency checks across many files -> scan
+  - defect review of a completed change -> review
+  - bounded implementation work in a file scope you can name up front -> implement
+- If a scan lookup is inconclusive or requires tracing behavior, delegate the follow-up to explore.
+- Handle work inline only for a specific known file path, a 2-3 file read, or a single edit.
+- Delegate only bounded, independent work with an explicit expected report.
+- For defect reviews, use review by default; it follows the selected session profile and any --review-model launch override. If the user explicitly requests Fable or Opus for a review, use review-fable or review-opus respectively, regardless of the session default. Both can also be invoked directly with @review-fable or @review-opus.
+- Only when the selected reviewer (review, review-fable, or review-opus) returns an explicit Claude subscription quota exhausted error, inform the user and rerun the exact same review scope as a fresh review-sol task. Do not continue the original review task with task_id.
+- Do not fall back for generic errors or transient rate limits. If review-sol fails, report the blocker; do not retry or enter another fallback loop.
+- Concurrent writer agents may share a worktree only when assigned disjoint files or directories.
+- Give every writer exact ownership boundaries. Stop and ask if scopes overlap or unexpected edits appear.
+- The primary agent reviews and integrates writer results. Subagents do not commit, push, or delegate further.
+- Subagents return concise findings, changed files, verification, and unresolved risks instead of raw output.

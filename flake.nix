@@ -125,9 +125,15 @@
         opencode-review =
           let
             home = self.nixosConfigurations.stellaris.config.home-manager.users.phfroidmont;
+            oc = lib.findSingle (
+              package: lib.getName package == "oc"
+            ) (throw "oc package missing") (throw "multiple oc packages") home.home.packages;
             artifact = pkgs.writeText "opencode-review.json" (
               builtins.toJSON {
-                agents = home.programs.opencode.settings.agent;
+                launcher = "${oc}/bin/oc";
+                native = lib.getExe home.programs.opencode.package;
+                presets = oc.presets;
+                shared = home.programs.opencode.settings;
                 aliases = home.programs.zsh.shellAliases;
                 initContent = home.programs.zsh.initContent;
                 rules = home.xdg.configFile."opencode/AGENTS.md".text;
@@ -138,12 +144,15 @@
             {
               nativeBuildInputs = [
                 pkgs.nodejs
+                pkgs.bash
                 pkgs.zsh
+                pkgs.coreutils
                 pkgs.jq
               ];
             }
             ''
               node ${./tests/opencode-review.test.js} ${artifact}
+              zsh -f ${./tests/oc-completion.test.zsh} ${oc}/share/zsh/site-functions/_oc
               touch "$out"
             '';
         aegis-newt =

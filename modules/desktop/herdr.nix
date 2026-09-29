@@ -191,7 +191,7 @@ let
       if [[ -z "$agent_tab_id" ]]; then
         agent_json="$(herdr tab create --workspace "$workspace_id" --cwd "$project" --label agent --no-focus)"
         agent_pane_id="$(jq -r '.result.root_pane.pane_id' <<<"$agent_json")"
-        herdr pane run "$agent_pane_id" 'opencode --auto --port' >/dev/null
+        herdr pane run "$agent_pane_id" 'oc --auto --port' >/dev/null
         agent_created=true
       fi
 
@@ -219,7 +219,7 @@ let
         run_if_idle "$edit_tab_id" 'nvim'
       fi
       if [[ "$agent_created" == false ]]; then
-        run_if_idle "$agent_tab_id" 'opencode --auto --port'
+        run_if_idle "$agent_tab_id" 'oc --auto --port'
       fi
       if [[ "$edit_created" == true ]]; then
         wait_until_busy "$edit_pane_id"

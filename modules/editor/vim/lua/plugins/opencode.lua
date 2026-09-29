@@ -8,7 +8,7 @@ return {
         vim.fn.getcwd(),
         "sh",
         "-lc",
-        "opencode --port",
+        "oc --no-auto -- --port",
       }, { detach = true })
     end
 
