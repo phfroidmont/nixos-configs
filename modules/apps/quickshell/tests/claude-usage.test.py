@@ -42,7 +42,7 @@ def transcript_message(identifier, model, when, tokens, entrypoint):
 
 
 class ClaudeUsageTest(unittest.TestCase):
-    def collect(self, *transcript_entries):
+    def collect(self, *transcript_entries, v2=False):
         """One collector run against a fresh home, so no cache outlives a case."""
         with tempfile.TemporaryDirectory() as raw:
             home = Path(raw)
@@ -56,7 +56,9 @@ class ClaudeUsageTest(unittest.TestCase):
             database = home / ".local" / "share" / "opencode" / "opencode.db"
             database.parent.mkdir(parents=True)
             connection = sqlite3.connect(database)
-            connection.execute("CREATE TABLE message (session_id TEXT, data TEXT)")
+            connection.execute(
+                "CREATE TABLE message (id TEXT PRIMARY KEY, session_id TEXT, data TEXT)"
+            )
             connection.execute(
                 "INSERT INTO message (session_id, data) VALUES (?, ?)",
                 (
@@ -77,6 +79,34 @@ class ClaudeUsageTest(unittest.TestCase):
                     ),
                 ),
             )
+            if v2:
+                connection.execute("UPDATE message SET id='migrated'")
+                connection.execute(
+                    "CREATE TABLE session_message (id TEXT PRIMARY KEY, session_id TEXT, type TEXT, time_created INTEGER, data TEXT)"
+                )
+                for identifier in ("migrated", "new"):
+                    connection.execute(
+                        "INSERT INTO session_message VALUES (?, ?, 'assistant', ?, ?)",
+                        (
+                            identifier,
+                            "opencode-session",
+                            int(TODAY.timestamp() * 1000),
+                            json.dumps(
+                                {
+                                    "model": {
+                                        "providerID": "anthropic",
+                                        "id": "claude-v2",
+                                    },
+                                    "tokens": {
+                                        "input": 3,
+                                        "output": 3,
+                                        "reasoning": 2,
+                                        "cache": {"read": 3, "write": 3},
+                                    },
+                                }
+                            ),
+                        ),
+                    )
             connection.commit()
             connection.close()
 
@@ -141,6 +171,14 @@ class ClaudeUsageTest(unittest.TestCase):
         )
         self.assertEqual(record["todayTotalTokens"], 107 * TOKEN_FIELDS)
         self.assertEqual(record["recentDays"][-1]["messageCount"], 107 * TOKEN_FIELDS)
+
+    def test_v2_usage_includes_new_messages_without_recounting_migrated_history(self):
+        record = self.collect(v2=True)
+        self.assertEqual(record["totalPrompts"], 2)
+        self.assertEqual(
+            record["todayTotalTokens"], 7 * TOKEN_FIELDS + 3 * TOKEN_FIELDS + 2
+        )
+        self.assertEqual(sorted(record["modelUsage"]), ["claude-opencode", "claude-v2"])
 
 
 unittest.main()

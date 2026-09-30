@@ -12,13 +12,6 @@ let
   homeDirectory = config.home-manager.users.${user}.home.homeDirectory;
   projectsDirectory = "${homeDirectory}/Projects";
   herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  # Keep child prompt transitions scoped to the root session until herdrdev/herdr#3052 is fixed.
-  herdrAgentState = pkgs.runCommand "herdr-agent-state.js" { } ''
-    substitute ${inputs.herdr}/src/integration/assets/opencode/herdr-agent-state.js "$out" \
-      --replace-fail \
-      'await reportState(state);' \
-      'await reportState(state, reportedRootSessionID);'
-  '';
   toml = pkgs.formats.toml { };
 
   herdrProject = pkgs.writeShellApplication {
@@ -191,7 +184,7 @@ let
       if [[ -z "$agent_tab_id" ]]; then
         agent_json="$(herdr tab create --workspace "$workspace_id" --cwd "$project" --label agent --no-focus)"
         agent_pane_id="$(jq -r '.result.root_pane.pane_id' <<<"$agent_json")"
-        herdr pane run "$agent_pane_id" 'oc --auto --port' >/dev/null
+        herdr pane run "$agent_pane_id" 'oc --auto' >/dev/null
         agent_created=true
       fi
 
@@ -219,7 +212,7 @@ let
         run_if_idle "$edit_tab_id" 'nvim'
       fi
       if [[ "$agent_created" == false ]]; then
-        run_if_idle "$agent_tab_id" 'oc --auto --port'
+        run_if_idle "$agent_tab_id" 'oc --auto'
       fi
       if [[ "$edit_created" == true ]]; then
         wait_until_busy "$edit_pane_id"
@@ -862,12 +855,25 @@ in
           };
         };
 
-        "opencode/plugins/herdr-agent-state.js".source = herdrAgentState;
         "opencode/skills/herdr-processes/SKILL.md".source = ../ai/skills/herdr-processes/SKILL.md;
-        "opencode/herdr-tui-session.js".source =
+        # Use the dependency-free implementation directly: upstream's small
+        # re-export relies on a relative sibling path, unlike Nix store symlinks.
+        "opencode/herdr-opencode/tui.js".source =
           "${inputs.herdr}/src/integration/assets/opencode/herdr-tui-session.js";
-        "opencode/tui.jsonc".text = builtins.toJSON {
-          plugin = [ "./herdr-tui-session.js" ];
+        "opencode/herdr-opencode/package.json".text = builtins.toJSON {
+          name = "herdr-opencode";
+          type = "module";
+        };
+        "opencode/cli.json" = {
+          # The TUI can replace this symlink when saving preferences. Nix is
+          # authoritative: restore the declared settings on every activation.
+          force = true;
+          text = builtins.toJSON {
+            "$schema" = "https://opencode.ai/v2/cli.json";
+            plugins = [ "./herdr-opencode" ];
+            tabs.mode = "auto";
+            theme.name = "gruvbox";
+          };
         };
       };
     };

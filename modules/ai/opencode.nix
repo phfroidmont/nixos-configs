@@ -17,13 +17,49 @@ in
     home-manager.users.${config.user.name} =
       { config, ... }:
       let
-        claudeCode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
-        meridian = inputs.meridian.packages.${pkgs.stdenv.hostPlatform.system}.meridian.override {
-          claude-code = claudeCode;
+        v2 = import ./v2-config.lib { inherit lib; };
+        # models.dev/api.json, audited 2026-09-30 against every enabled ChatGPT
+        # model. Fast service-tier aliases use the same underlying model limits.
+        openaiLimits = builtins.fromJSON (builtins.readFile ./openai-model-limits.json);
+        openaiModelLimits = builtins.listToAttrs (
+          lib.concatLists (
+            lib.mapAttrsToList (
+              id: limit:
+              map
+                (name: {
+                  inherit name;
+                  value = { inherit limit; };
+                })
+                (
+                  [ id ]
+                  ++ lib.optional (id != "gpt-5.3-codex-spark") "${id}-fast"
+                  ++ lib.optional (id == "gpt-6-astra") "${id}-ultrafast"
+                )
+            ) openaiLimits
+          )
+        );
+        opencode2 = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2;
+        native = pkgs.writeShellApplication {
+          name = "opencode";
+          text = ''
+            # V2's native clipboard dlopens these libraries instead of using wl-paste.
+            export LD_LIBRARY_PATH=${
+              lib.makeLibraryPath [
+                pkgs.wayland
+                pkgs.libxcb
+              ]
+            }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+            exec ${lib.getExe opencode2} "$@"
+          '';
+          derivationArgs.postCheck = ''
+            mkdir -p "$out/share/zsh/site-functions"
+            HOME="$TMPDIR" ${lib.getExe opencode2} --completions zsh > "$out/share/zsh/site-functions/_opencode"
+          '';
         };
+        claudeCode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
+        meridian = inputs.meridian.packages.${pkgs.stdenv.hostPlatform.system}.meridian;
         foyerProjectsDir = "${config.home.homeDirectory}/Projects/foyer";
         foyerKitDir = "${foyerProjectsDir}/platform/context-engineering-kit";
-        foyerSkillsPlugin = "${config.xdg.configHome}/opencode/plugin/foyer-skills.ts";
         sonarMcpJar = pkgs.fetchurl {
           url = "https://binaries.sonarsource.com/Distribution/sonarqube-mcp-server/sonarqube-mcp-server-1.26.0.4269.jar";
           sha256 = "f5cb214b948a1e2a7b2f8c64eb5da4185ab58c864cf3d7afb4a8bbb67fb76650";
@@ -283,24 +319,19 @@ in
             explore ? research,
             writer,
             small,
-            # Compaction is repeated large-input summarization, not reasoning.
-            compaction ? research,
           }:
           {
             model = top;
-            small_model = small;
             agent = {
               build.model = top;
               plan.model = top;
               review.model = review;
-              compaction.model = compaction;
               explore.model = explore;
               scout.model = research;
               test-triage.model = research;
               implement.model = writer;
               scan.model = small;
               title.model = small;
-              summary.model = small;
             };
           };
         openaiModels = modelSet {
@@ -344,8 +375,6 @@ in
               };
             };
         customOverlay = {
-          subagent_depth = 1;
-          instructions = [ "${./prompts/delegation-rules.md}" ];
           agent = lib.recursiveUpdate {
             build = {
               description = "Primary implementation agent and orchestrator for coding work.";
@@ -458,33 +487,79 @@ in
             general.disable = true;
           } balancedModels.agent;
         };
-        presets = pkgs.writeText "oc-presets.json" (
-          builtins.toJSON {
-            custom = customOverlay;
-            profiles = {
-              balanced = balancedModels;
-              openai = openaiModels;
-              premium = premiumModels;
-              anthropic = anthropicModels;
-            };
-            power.plugin = [ "superpowers@git+https://github.com/obra/superpowers.git#v6.0.3" ];
-            reviewModels = {
-              fable = fableReview;
-              opus = opusReview;
-            };
-          }
+        presetData = {
+          custom = v2.agents customOverlay.agent;
+          delegation = builtins.readFile ./prompts/delegation-rules.md;
+          profiles = {
+            balanced = v2.agents balancedModels.agent;
+            openai = v2.agents openaiModels.agent;
+            premium = v2.agents premiumModels.agent;
+            anthropic = v2.agents anthropicModels.agent;
+          };
+          reviewModels = {
+            fable = fableReview;
+            opus = opusReview;
+          };
+        };
+        presets = pkgs.writeText "oc-presets.json" (builtins.toJSON presetData);
+        suiteAgents = builtins.listToAttrs (
+          lib.concatMap (
+            profile:
+            lib.concatMap
+              (
+                reviewer:
+                let
+                  prefix = "oc-custom-${profile}-${reviewer}-";
+                  definitions = presetData.custom;
+                  models = presetData.profiles.${profile};
+                in
+                lib.mapAttrsToList (name: definition: {
+                  name = prefix + name;
+                  value =
+                    definition
+                    // (models.${name} or { })
+                    // {
+                      hidden =
+                        !(
+                          profile == "balanced"
+                          && reviewer == "default"
+                          && builtins.elem name [
+                            "build"
+                            "plan"
+                          ]
+                        );
+                      permissions = [
+                        {
+                          action = "subagent";
+                          resource = "oc-*";
+                          effect = "deny";
+                        }
+                      ]
+                      ++ map (
+                        rule:
+                        if rule.action == "subagent" && definitions ? ${rule.resource} then
+                          rule // { resource = prefix + rule.resource; }
+                        else
+                          rule
+                      ) (definition.permissions or [ ]);
+                    }
+                    // lib.optionalAttrs (name == "review" && reviewer != "default") {
+                      model = presetData.reviewModels.${reviewer};
+                    };
+                }) definitions
+              )
+              [
+                "default"
+                "fable"
+                "opus"
+              ]
+          ) (builtins.attrNames presetData.profiles)
         );
         oc = pkgs.writeShellApplication {
           name = "oc";
           text = ''
-            readonly native=${lib.escapeShellArg (lib.getExe config.programs.opencode.package)}
-            readonly presets=${lib.escapeShellArg (toString presets)}
-            readonly jq=${lib.getExe pkgs.jq}
-            readonly curl=${lib.getExe pkgs.curl}
-            readonly timeout=${pkgs.coreutils}/bin/timeout
-            readonly sleep=${pkgs.coreutils}/bin/sleep
-          ''
-          + builtins.readFile ./oc.sh;
+            exec ${lib.getExe pkgs.python3} ${./oc.py} ${lib.getExe native} ${presets} "$@"
+          '';
           derivationArgs = {
             passthru.presets = presets;
             # writeShellApplication uses writeTextFile, which has no install phase.
@@ -492,6 +567,18 @@ in
               install -Dm644 ${./oc.zsh} "$out/share/zsh/site-functions/_oc"
             '';
           };
+        };
+        migrateHistory = pkgs.writeShellApplication {
+          name = "oc-migrate-v2";
+          text = ''
+            exec ${lib.getExe pkgs.python3} ${./migrate-history.py} "$@"
+          '';
+        };
+        checkModelLimits = pkgs.writeShellApplication {
+          name = "oc-check-model-limits";
+          text = ''
+            exec ${lib.getExe pkgs.python3} ${./check-model-limits.py} ${lib.getExe native} "$@"
+          '';
         };
         foyerSkillPaths = [
           "${foyerKitDir}/plugins/angular-dev/skills"
@@ -517,26 +604,28 @@ in
 
         programs.opencode = {
           enable = true;
-          package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+          package = native;
           settings = {
-            inherit (balancedModels) model small_model;
-            default_agent = "build";
+            inherit (balancedModels) model;
+            update = "disable";
+            default_agent = "oc-custom-balanced-default-build";
             compaction = {
               auto = true;
-              prune = true;
-              reserved = 32000;
-              tail_turns = 4;
-              preserve_recent_tokens = 12000;
+              buffer = 32000;
+              keep.tokens = 12000;
             };
             tool_output = {
               max_lines = 400;
               max_bytes = 24576;
             };
-            plugin = [
-              foyerSkillsPlugin
-              config.services.meridian.opencode.pluginPath
+            plugins = [
+              "${meridian}/lib/meridian/dist/meridian-v2"
+              {
+                package = "${config.xdg.configHome}/opencode/oc-profiles";
+                options.presets = toString presets;
+              }
             ];
-            permission = {
+            permissions = v2.permissions {
               external_directory = {
                 "*" = "ask";
                 "/nix/store/**" = "allow";
@@ -658,16 +747,21 @@ in
               "grafana-staging_alerting_manage_routing" = "ask";
               "grafana-staging_alerting_manage_rules" = "ask";
             };
-            provider = {
-              anthropic.options = {
+            providers = {
+              # 2.0.17's ChatGPT plugin applies a legacy 400k/272k cap to all
+              # models. Restore each model's catalog limits after that transform.
+              openai.models = openaiModelLimits;
+              # Meridian discovers subscription-specific context limits. Do not
+              # replace those with models.dev's direct-API context windows.
+              anthropic.settings = {
                 apiKey = "x";
                 baseURL = "http://127.0.0.1:3456";
               };
               vllm = {
-                npm = "@ai-sdk/openai-compatible";
+                package = "@opencode/ai/providers/openai-compatible";
                 name = "vLLM";
 
-                options = {
+                settings = {
                   baseURL = "http://model1.lefoyer.lu:8030/v1";
                   apiKey = "dummy";
                 };
@@ -675,23 +769,22 @@ in
                 models = {
                   minimax_m2_1 = {
                     name = "MiniMax M2.1 (local)";
-                    temperature = true;
                   };
                 };
               };
             };
-            agent = {
-              build.color = "secondary";
+            agents = suiteAgents // {
+              build.color = "#a6e3a1";
               plan = {
-                color = "primary";
-                permission = {
+                color = "#89b4fa";
+                permissions = v2.permissions {
                   edit = "deny";
                   bash = planBash;
                 };
               };
-              inherit (balancedModels.agent) compaction title summary;
+              inherit (balancedModels.agent) title;
             };
-            mcp = {
+            mcp.servers = {
               metals = {
                 type = "local";
                 command = [
@@ -701,13 +794,16 @@ in
                   "--transport"
                   "stdio"
                 ];
-                enabled = false;
+                disabled = true;
               };
               dstudiodoc = {
                 type = "remote";
                 url = "http://iavideotranslation.lefoyer.lu:7860/mcp/";
-                enabled = false;
-                timeout = 10000;
+                disabled = true;
+                timeout = {
+                  catalog = 10000;
+                  execution = 10000;
+                };
               };
               chrome-devtools = {
                 type = "local";
@@ -717,8 +813,11 @@ in
                   "chrome-devtools-mcp@latest"
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
                 ];
-                enabled = false;
-                timeout = 60000;
+                disabled = true;
+                timeout = {
+                  catalog = 60000;
+                  execution = 60000;
+                };
               };
               playwright = {
                 type = "local";
@@ -729,8 +828,11 @@ in
                   "--executable-path=${lib.getExe pkgs.ungoogled-chromium}"
                   "--isolated"
                 ];
-                enabled = true;
-                timeout = 60000;
+                disabled = false;
+                timeout = {
+                  catalog = 60000;
+                  execution = 60000;
+                };
               };
               jira = {
                 type = "local";
@@ -739,8 +841,11 @@ in
                   JIRA_URL = "https://jira.foyer.lu/";
                   TOOLSETS = lib.concatStringsSep "," jiraToolsets;
                 };
-                enabled = false;
-                timeout = 60000;
+                disabled = true;
+                timeout = {
+                  catalog = 60000;
+                  execution = 60000;
+                };
               };
               sonar-foyer = {
                 type = "local";
@@ -749,8 +854,11 @@ in
                   SONARQUBE_URL = "https://sonarqube.foyer.lu/";
                   TELEMETRY_DISABLED = "true";
                 };
-                enabled = false;
-                timeout = 60000;
+                disabled = true;
+                timeout = {
+                  catalog = 60000;
+                  execution = 60000;
+                };
               };
             };
           };
@@ -791,34 +899,20 @@ in
 
         '';
         xdg.configFile."opencode/skills/scalive/SKILL.md".source = ./skills/scalive/SKILL.md;
-        xdg.configFile."opencode/plugin/foyer-skills.ts".text = ''
-          import type { Plugin } from "@opencode-ai/plugin"
-
-          const foyerProjectsDir = ${builtins.toJSON foyerProjectsDir}
-          const foyerSkillPaths = ${builtins.toJSON foyerSkillPaths}
-
-          const isFoyerProject = (directory: string) =>
-            directory === foyerProjectsDir || directory.startsWith(foyerProjectsDir + "/")
-
-          export default (async ({ directory }) => {
-            return {
-              config: (cfg) => {
-                if (!isFoyerProject(directory)) return
-
-                cfg.skills ??= {}
-                cfg.skills.paths ??= []
-
-                for (const skillPath of foyerSkillPaths) {
-                  if (!cfg.skills.paths.includes(skillPath)) {
-                    cfg.skills.paths.push(skillPath)
-                  }
-                }
-              },
-            }
-          }) satisfies Plugin
-        '';
+        xdg.configFile."opencode/oc-profiles/index.js".source = ./oc-profiles.mjs;
+        xdg.configFile."opencode/oc-profiles/package.json".text = builtins.toJSON {
+          name = "oc-profiles";
+          type = "module";
+          exports = "./index.js";
+        };
+        home.file."Projects/foyer/opencode.json".text = builtins.toJSON {
+          "$schema" = "https://opencode.ai/config.json";
+          skills = foyerSkillPaths;
+        };
         home.packages = with pkgs; [
           oc
+          migrateHistory
+          checkModelLimits
           claudeCode
           meridian
           metals

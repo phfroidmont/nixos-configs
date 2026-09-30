@@ -454,6 +454,9 @@ let
         patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-credits.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-recent-models.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-sdk-transcripts.patch}
+        install -m644 ${./omarchy/opencode_usage.py} "$out/bin/fos_opencode_usage.py"
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-opencode-v2.patch}
+        python3 ${./tests/opencode-usage.test.py} "$out/bin/fos_opencode_usage.py"
         patch -d "$out" -p1 < ${./omarchy/agent-usage-all-provider-alarm.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-pace.patch}
         rm -f "$out/bin/"*.orig

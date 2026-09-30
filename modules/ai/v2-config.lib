@@ -1,0 +1,19 @@
+{ lib }:
+let
+  # Keep permission declarations readable as maps; emit V2's ordered rules.
+  permissions = rules: lib.concatLists (lib.mapAttrsToList (name: value:
+    let action = { bash = "shell"; task = "subagent"; }.${name} or name;
+    in if builtins.isString value then [{ inherit action; resource = "*"; effect = value; }]
+    else lib.mapAttrsToList (resource: effect: { inherit action resource effect; }) value
+  ) rules);
+  agent = value:
+    builtins.removeAttrs value [ "permission" "prompt" "disable" "variant" ]
+    // lib.optionalAttrs (value ? permission) { permissions = permissions value.permission; }
+    // lib.optionalAttrs (value ? prompt) {
+      system = let match = builtins.match "[{]file:(.*)[}]" value.prompt;
+        in if match == null then value.prompt else builtins.readFile (builtins.head match);
+    }
+    // lib.optionalAttrs (value ? disable) { disabled = value.disable; }
+    // lib.optionalAttrs (value ? variant && value ? model) { model = "${value.model}#${value.variant}"; };
+  agents = values: lib.mapAttrs (_: agent) (builtins.removeAttrs values [ "compaction" "summary" ]);
+in { inherit permissions agent agents; }

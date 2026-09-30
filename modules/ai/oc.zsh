@@ -6,11 +6,11 @@ _oc() {
   local -i index=2 native_start=0 end_options=0
 
   wrapper_options=(
-    --profile --agents --review-model --power --auto --no-auto --help
+    --profile --agents --review-model --auto --no-auto --help
   )
   native_commands=(
-    completion acp mcp attach run debug providers auth agent upgrade uninstall
-    serve web models stats export import github pr session plugin plug db
+    acp api mcp run mini debug auth upgrade uninstall serve models stats
+    session plugin service reload pair
   )
 
   # Only completed arguments can determine whether the cursor is still in the
@@ -22,7 +22,7 @@ _oc() {
       --profile|--agents|--review-model)
         (( index++ ))
         ;;
-      --profile=*|--agents=*|--review-model=*|--power|--auto|--no-auto|--help)
+      --profile=*|--agents=*|--review-model=*|--auto|--no-auto|--help)
         ;;
       *) native_start=$index; break ;;
     esac
@@ -109,7 +109,7 @@ _oc() {
     fi
   done
 
-  native_options=(--help -h --version -v --print-logs --log-level --pure)
+  native_options=(--help -h --version -v --print-logs --log-level --server --completions)
   case $command in
     ''|acp|serve|web)
       native_options+=(--port --hostname --mdns --mdns-domain --cors)
@@ -184,15 +184,17 @@ _oc() {
   subcommands=()
   case $command in
     mcp) subcommands=(add list ls auth logout debug) ;;
-    providers|auth) subcommands=(list ls login logout) ;;
+    auth) subcommands=(list login logout switch import export) ;;
     agent) subcommands=(create list) ;;
     debug)
       case $subcommand in
-        '') subcommands=(config lsp rg file scrap skill snapshot startup agent v2 info paths wait) ;;
+        '') subcommands=(config agents paths) ;;
         file) [[ -z $third_command ]] && subcommands=(read list search) ;;
       esac ;;
     github) subcommands=(install run) ;;
-    session) subcommands=(list delete) ;;
+    session) subcommands=(list delete export import) ;;
+    service) subcommands=(start stop restart status get set unset) ;;
+    plugin) subcommands=(list add remove check update) ;;
     db) subcommands=(path) ;;
   esac
   if (( ${#subcommands} )) && (( ! end_options )); then

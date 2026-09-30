@@ -43,7 +43,7 @@ is() {
 }
 
 complete oc ''
-has run; has mcp; has completion; has acp; has providers; has plugin; has db
+has run; has mcp; has acp; has auth; has plugin; has service; has mini
 not_has agents; not_has sessions
 is "$files_called" 1
 complete oc --profile ''
@@ -68,18 +68,14 @@ complete oc serve --port ''
 has 4096
 complete oc --profile openai mcp ''
 has add; has list; has auth; not_has run
-complete oc providers ''
+complete oc auth ''
 has login; has logout
 complete oc debug ''
-has file; has snapshot
-complete oc debug file ''
-has read; has search
-complete oc github ''
-has install; has run
+has config; has agents; has paths
 complete oc session ''
 has delete; has list
-complete oc db ''
-has path
+complete oc service ''
+has status; has restart
 complete oc upgrade --method ''
 has brew; has scoop
 complete oc upgrade -m ''

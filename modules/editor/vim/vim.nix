@@ -139,7 +139,6 @@ in
             yazi-nvim
             zk-nvim
 
-            opencode-nvim
           ];
 
           extraPackages = with pkgs; [

@@ -1,0 +1,31 @@
+--- a/bin/fos-internal-agent-usage-codex
++++ b/bin/fos-internal-agent-usage-codex
+@@ -18,1 +18,2 @@
+ import sqlite3
++from fos_opencode_usage import prepare as prepare_opencode_usage
+@@ -228,1 +229,2 @@
++    prepare_opencode_usage(conn)
+     conn.execute("PRAGMA query_only = ON")
+@@ -252,1 +254,1 @@
+-      "SELECT session_id, data FROM message"
++      "SELECT session_id, data FROM opencode_usage"
+@@ -391,1 +393,1 @@
+-  if not isinstance(cached, dict) or cached.get("schemaVersion") != 2:
++  if not isinstance(cached, dict) or cached.get("schemaVersion") != 3:
+@@ -409,1 +411,1 @@
+-    write_json(cache_file, {"schemaVersion": 2, "scanDate": today, "stats": stats})
++    write_json(cache_file, {"schemaVersion": 3, "scanDate": today, "stats": stats})
+--- a/bin/fos-internal-agent-usage-claude
++++ b/bin/fos-internal-agent-usage-claude
+@@ -23,1 +23,2 @@
+ import sqlite3
++from fos_opencode_usage import prepare as prepare_opencode_usage
+@@ -452,1 +453,1 @@
+-  cache_file = cache_root() / f"claude-opencode-{hashlib.sha1(str(db).encode('utf-8')).hexdigest()[:16]}.json"
++  cache_file = cache_root() / f"claude-opencode-v2-{hashlib.sha1(str(db).encode('utf-8')).hexdigest()[:16]}.json"
+@@ -461,1 +462,2 @@
++    prepare_opencode_usage(conn)
+     conn.execute("PRAGMA query_only = ON")
+@@ -466,1 +468,1 @@
+-    for session_id, raw in conn.execute("SELECT session_id, data FROM message"):
++    for session_id, raw in conn.execute("SELECT session_id, data FROM opencode_usage"):

@@ -21,7 +21,7 @@
     llm-agents.url = "github:numtide/llm-agents.nix";
     meridian.url = "github:rynfar/meridian";
     herdr = {
-      url = "github:herdrdev/herdr/v0.8.2";
+      url = "github:herdrdev/herdr/v0.9.3";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     omarchy = {
@@ -137,6 +137,7 @@
                 aliases = home.programs.zsh.shellAliases;
                 initContent = home.programs.zsh.initContent;
                 rules = home.xdg.configFile."opencode/AGENTS.md".text;
+                plugin = ./modules/ai/oc-profiles.mjs;
               }
             );
           in
@@ -148,10 +149,14 @@
                 pkgs.zsh
                 pkgs.coreutils
                 pkgs.jq
+                pkgs.python3
               ];
             }
             ''
               node ${./tests/opencode-review.test.js} ${artifact}
+              python3 ${./tests/oc-launcher.test.py} ${./modules/ai/oc.py} ${oc.presets}
+              python3 ${./tests/opencode-history.test.py} ${./modules/ai/migrate-history.py}
+              python3 ${./tests/opencode-model-limits.test.py} ${./modules/ai/check-model-limits.py}
               zsh -f ${./tests/oc-completion.test.zsh} ${oc}/share/zsh/site-functions/_oc
               touch "$out"
             '';
