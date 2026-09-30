@@ -855,7 +855,10 @@ in
           };
         };
 
-        "opencode/skills/herdr-processes/SKILL.md".source = ../ai/skills/herdr-processes/SKILL.md;
+        "opencode/skills/herdr-processes" = {
+          source = ../ai/skills/herdr-processes;
+          recursive = true;
+        };
         # Use the dependency-free implementation directly: upstream's small
         # re-export relies on a relative sibling path, unlike Nix store symlinks.
         "opencode/herdr-opencode/tui.js".source =

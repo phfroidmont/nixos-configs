@@ -1,8 +1,16 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const path = require("node:path");
 
 async function main() {
   const artifact = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+  for (const skill of artifact.skills) {
+    assert.notEqual(
+      path.dirname(fs.realpathSync(skill)),
+      "/nix/store",
+      "V2 watches a skill's resolved parent recursively; it must not be the entire Nix store",
+    );
+  }
   const { shared, presets: file } = artifact;
   const presets = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.deepEqual(

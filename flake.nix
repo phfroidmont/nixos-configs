@@ -138,6 +138,10 @@
                 initContent = home.programs.zsh.initContent;
                 rules = home.xdg.configFile."opencode/AGENTS.md".text;
                 plugin = ./modules/ai/oc-profiles.mjs;
+                skills = [
+                  "${home.xdg.configFile."opencode/skills/scalive".source}/SKILL.md"
+                  "${home.xdg.configFile."opencode/skills/herdr-processes".source}/SKILL.md"
+                ];
               }
             );
           in

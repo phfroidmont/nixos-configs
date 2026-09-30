@@ -898,7 +898,12 @@ in
           - Search known dependency caches directly; never glob or search all of `~/.cache`.
 
         '';
-        xdg.configFile."opencode/skills/scalive/SKILL.md".source = ./skills/scalive/SKILL.md;
+        # V2 watches the resolved skill's parent. A standalone store file would
+        # make it recursively watch /nix/store and exhaust inotify watches.
+        xdg.configFile."opencode/skills/scalive" = {
+          source = ./skills/scalive;
+          recursive = true;
+        };
         xdg.configFile."opencode/oc-profiles/index.js".source = ./oc-profiles.mjs;
         xdg.configFile."opencode/oc-profiles/package.json".text = builtins.toJSON {
           name = "oc-profiles";
