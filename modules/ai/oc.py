@@ -20,7 +20,8 @@ HELP = """Usage: oc [launcher options] [--] [opencode arguments...]
 
 Selections are stored on the session, not on the shared daemon. Resuming without
 selectors preserves the session's profile and model. New sessions default to the
-balanced custom suite. --power has been removed.
+balanced model profile with stock agents. Use --agents custom for the custom
+suite. --power has been removed.
 """
 
 
@@ -199,8 +200,6 @@ def main(native, presets_path, args):
         index += 1
     if command not in ("run", "mini", "") and not command.startswith("-"):
         directory = str(Path(command).resolve())
-    if selectors.get("--agents") == "stock" and "--review-model" in selectors:
-        fail("--review-model requires --agents custom")
     wait_for_metals(directory)
 
     def api(method, path, body=None):
@@ -250,7 +249,9 @@ def main(native, presets_path, args):
     metadata = (session or {}).get("metadata") or {}
     had_profile = "ocProfile" in metadata
     previous = metadata.get("ocSelection", {})
-    mode = selectors.get("--agents", previous.get("mode", "custom"))
+    mode = selectors.get("--agents", previous.get("mode", "stock"))
+    if mode == "stock" and "--review-model" in selectors:
+        fail("--review-model requires --agents custom")
     profile = selectors.get("--profile", previous.get("profile", "balanced"))
     reviewer = (
         selectors.get("--review-model", previous.get("reviewer", "default"))

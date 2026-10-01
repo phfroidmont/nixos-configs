@@ -32,7 +32,15 @@ def launch(args, session=None):
         return calls, execute.call_args.args[1]
 
 
-calls, argv = launch(["--profile", "premium", "--review-model=fable"])
+calls, argv = launch([])
+assert calls[0][1]["agent"] == "build", "new sessions must use the stock agent"
+assert calls[0][1]["metadata"]["ocSelection"]["mode"] == "stock"
+assert argv == ["/native/opencode", "--session", "ses_new", "--auto"]
+calls, argv = launch(["--profile", "premium"])
+assert calls[0][1]["agent"] == "build", "model profiles must not enable custom agents"
+calls, argv = launch(
+    ["--agents", "custom", "--profile", "premium", "--review-model=fable"]
+)
 assert calls[0][1]["agent"] == "oc-custom-premium-fable-build"
 assert calls[0][1]["model"]["variant"] == "xhigh"
 assert argv == ["/native/opencode", "--session", "ses_new", "--auto"]
@@ -59,6 +67,7 @@ for args in (
     ["--profile"],
     ["--profile=x"],
     ["--agents=stock", "--review-model=opus"],
+    ["--review-model=opus"],
     ["--profile=balanced", "--profile=premium"],
 ):
     try:
