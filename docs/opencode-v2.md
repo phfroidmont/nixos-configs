@@ -128,6 +128,26 @@ in `cli.json`; V1's server-state plugin and TUI registration are removed. Herdr
 restores `opencode --session ...` through `oc`, retaining the session metadata.
 Tabs use `auto`, so V2 hides its tab bar inside Herdr.
 
+### Split-diff memory exhaustion workaround
+
+OpenCode 2.0.17 bundles the OpenTUI 0.5.12 split-diff rebuild bug
+([OpenTUI #1543](https://github.com/anomalyco/opentui/issues/1543),
+[OpenCode #51761](https://github.com/anomalyco/opencode/issues/51761)). Layout
+changes can leave a pane width as `NaN`, repeatedly queueing diff rebuilds
+without yielding to the event loop. Replacing text also retains old native rope
+allocations, so the client can exhaust RAM and swap while the shared service
+remains healthy. It is not specific to a project or model.
+
+`modules/desktop/herdr.nix` forces `diffs.view = "unified"` in `cli.json`,
+including inline edit/patch diffs, to bypass the affected split-view path.
+Keep this workaround until the installed OpenCode bundles both upstream fixes:
+[OpenTUI #1544](https://github.com/anomalyco/opentui/pull/1544) and
+[OpenTUI #1545](https://github.com/anomalyco/opentui/pull/1545).
+
+The CLI reloads this setting without restarting the shared service. A client
+already frozen in the rebuild loop still needs to be killed and reopened;
+its event loop cannot process configuration changes or profiling signals.
+
 Meridian is updated to its V2-capable release and loads the explicit
 `dist/meridian-v2` package. Meridian uses its own compatible Claude Code runtime.
 Foyer skill directories are configured at `~/Projects/foyer/opencode.json` and

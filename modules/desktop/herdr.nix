@@ -876,6 +876,10 @@ in
             plugins = [ "./herdr-opencode" ];
             tabs.mode = "auto";
             theme.name = "gruvbox";
+            # OpenTUI 0.5.12 can rebuild split diffs indefinitely after layout
+            # changes, exhausting RAM (anomalyco/opentui#1543). This also applies
+            # to inline tool diffs, not just the diff review screen.
+            diffs.view = "unified";
           };
         };
       };
