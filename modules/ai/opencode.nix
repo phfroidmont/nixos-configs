@@ -41,7 +41,14 @@ in
         opencode2 = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2;
         native = pkgs.writeShellApplication {
           name = "opencode";
+          runtimeInputs = [ pkgs.libsecret ];
           text = ''
+            # The background service inherits this and substitutes it into the gateway header.
+            # A missing secret leaves the header empty instead of blocking startup.
+            if gatewayKey="$(secret-tool lookup application opencode service ai-gateway.foyer.lu 2>/dev/null)"; then
+              export FOYER_AI_GATEWAY_API_KEY="$gatewayKey"
+            fi
+
             # V2's native clipboard dlopens these libraries instead of using wl-paste.
             export LD_LIBRARY_PATH=${
               lib.makeLibraryPath [
@@ -757,18 +764,22 @@ in
                 apiKey = "x";
                 baseURL = "http://127.0.0.1:3456";
               };
-              vllm = {
+              foyer = {
                 package = "@opencode/ai/providers/openai-compatible";
-                name = "vLLM";
+                name = "Foyer AI Gateway";
 
-                settings = {
-                  baseURL = "http://model1.lefoyer.lu:8030/v1";
-                  apiKey = "dummy";
-                };
+                settings.baseURL = "https://ai-gateway.foyer.lu/v1";
+                headers."x-portkey-api-key" = "{env:FOYER_AI_GATEWAY_API_KEY}";
 
                 models = {
-                  minimax_m2_1 = {
-                    name = "MiniMax M2.1 (local)";
+                  # The vLLM backend still serves Qwen3.8-27B under its legacy MiniMax alias.
+                  "qwen3.8-27b" = {
+                    modelID = "@mia/minimax_m2_1";
+                    name = "Qwen3.8 27B (MIA)";
+                    limit = {
+                      context = 262144;
+                      output = 98000;
+                    };
                   };
                 };
               };
