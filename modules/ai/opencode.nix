@@ -608,7 +608,7 @@ in
           settings = {
             inherit (balancedModels) model;
             update = "disable";
-            default_agent = "oc-custom-balanced-default-build";
+            default_agent = "build";
             compaction = {
               auto = true;
               buffer = 32000;

@@ -12,6 +12,7 @@ async function main() {
     );
   }
   const { shared, presets: file } = artifact;
+  assert.equal(shared.default_agent, "build", "default to the stock agent");
   const presets = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.deepEqual(
     shared.providers.openai.models["gpt-6-astra"].limit,
