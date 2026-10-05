@@ -786,6 +786,17 @@ in
               odoo_list_models = "allow";
               odoo_list_resource_templates = "allow";
               odoo_search_records = "allow";
+
+              # Same shape as Odoo: Stripe's tool names repeat the server's "stripe_" prefix.
+              "stripe_*" = "ask";
+              stripe_list_available_accounts_or_orgs = "allow";
+              stripe_manage_stripe_accounts = "allow";
+              stripe_search_stripe_documentation = "allow";
+              stripe_stripe_analytics = "allow";
+              stripe_stripe_api_details = "allow";
+              stripe_stripe_api_read = "allow";
+              stripe_stripe_api_search = "allow";
+              stripe_stripe_implementation_planner = "allow";
             };
             providers = {
               # 2.0.17's ChatGPT plugin applies a legacy 400k/272k cap to all
@@ -920,6 +931,11 @@ in
                   catalog = 60000;
                   execution = 60000;
                 };
+              };
+              stripe = {
+                type = "remote";
+                url = "https://mcp.stripe.com";
+                disabled = true;
               };
             };
           };
