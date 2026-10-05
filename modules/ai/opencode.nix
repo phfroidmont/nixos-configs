@@ -116,6 +116,28 @@ in
             exec uvx --python ${lib.getExe pkgs.python3} --no-python-downloads mcp-atlassian==0.23.0
           '';
         };
+        odooMcp = pkgs.writeShellApplication {
+          name = "mcp-odoo-froidmont";
+          runtimeInputs = [
+            pkgs.libsecret
+            pkgs.python3
+            pkgs.uv
+          ];
+          text = ''
+            if ! odooApiKey="$(secret-tool lookup application opencode service froidmont-solutions-srl.odoo.com)"; then
+              echo "Unable to retrieve the Odoo API key from Secret Service" >&2
+              exit 1
+            fi
+
+            if [[ -z "$odooApiKey" ]]; then
+              echo "The Odoo API key retrieved from Secret Service is empty" >&2
+              exit 1
+            fi
+
+            export ODOO_API_KEY="$odooApiKey"
+            exec uvx --python ${lib.getExe pkgs.python3} --no-python-downloads mcp-server-odoo==0.8.0
+          '';
+        };
         jiraToolsets = [
           "jira_issues"
           "jira_fields"
@@ -753,6 +775,17 @@ in
               "grafana-production_alerting_manage_rules" = "ask";
               "grafana-staging_alerting_manage_routing" = "ask";
               "grafana-staging_alerting_manage_rules" = "ask";
+
+              # Odoo has no MCP model whitelist on 19.0 Online; confirm every non-read tool.
+              # "odoo_*" sorts before the read tools, so their allows win.
+              "odoo_*" = "ask";
+              odoo_aggregate_records = "allow";
+              odoo_get_current_context = "allow";
+              odoo_get_fields = "allow";
+              odoo_get_record = "allow";
+              odoo_list_models = "allow";
+              odoo_list_resource_templates = "allow";
+              odoo_search_records = "allow";
             };
             providers = {
               # 2.0.17's ChatGPT plugin applies a legacy 400k/272k cap to all
@@ -864,6 +897,23 @@ in
                 environment = {
                   SONARQUBE_URL = "https://sonarqube.foyer.lu/";
                   TELEMETRY_DISABLED = "true";
+                };
+                disabled = true;
+                timeout = {
+                  catalog = 60000;
+                  execution = 60000;
+                };
+              };
+              odoo = {
+                type = "local";
+                command = [ "${odooMcp}/bin/mcp-odoo-froidmont" ];
+                environment = {
+                  ODOO_URL = "https://froidmont-solutions-srl.odoo.com";
+                  ODOO_DB = "froidmont-solutions-srl";
+                  ODOO_USER = "paul-henri@froidmont.solutions";
+                  # Odoo Online can't install the server's module, so writes need full YOLO mode.
+                  ODOO_YOLO = "true";
+                  ODOO_MCP_ENABLE_METHOD_CALLS = "true";
                 };
                 disabled = true;
                 timeout = {
