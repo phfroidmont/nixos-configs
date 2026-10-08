@@ -139,6 +139,10 @@
     ../../modules/services/certs/Foyer-Sub-CA.crt
   ];
 
+  # The proxy re-signs TLS for some hosts (e.g. codeberg.org). Nixpkgs fetchers inherit this
+  # from the daemon, and Nix mounts the system bundle at this path in fixed-output builds.
+  systemd.services.nix-daemon.environment.NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
+
   environment.variables = {
     JAVAX_NET_SSL_TRUSTSTORE = ../../modules/services/certs/cacerts;
     JAVA_OPTS = "-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128 -Djavax.net.ssl.trustStore=${../../modules/services/certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
