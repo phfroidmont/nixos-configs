@@ -20,7 +20,6 @@
     wslConf = {
       network.generateHosts = false;
       network.generateResolvConf = false;
-      wsl2.memory = "24GB";
       interop.appendWindowsPath = false;
     };
   };
@@ -141,8 +140,8 @@
   ];
 
   environment.variables = {
-    JAVAX_NET_SSL_TRUSTSTORE = "/mnt/c/Users/RDO/scoop/apps/java21/current/lib/security/cacerts";
-    JAVA_OPTS = "-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128 -Djavax.net.ssl.trustStore=/mnt/c/Users/RDO/scoop/apps/java21/current/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=changeit";
+    JAVAX_NET_SSL_TRUSTSTORE = ../../modules/services/certs/cacerts;
+    JAVA_OPTS = "-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128 -Djavax.net.ssl.trustStore=${../../modules/services/certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
   };
 
   home-manager.users.${config.user.name} = {
