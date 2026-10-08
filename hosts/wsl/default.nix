@@ -109,29 +109,7 @@
     };
   };
 
-  modules = {
-    editor = {
-      vim.enable = true;
-    };
-    desktop.file-manager.enable = true;
-    desktop.zsh.enable = true;
-    ai.opencode.enable = true;
-  };
-
-  environment.systemPackages = with pkgs; [
-    scala-cli
-    jdk17
-    httpie
-    zsh-syntax-highlighting
-    tldr
-    nil
-    coursier
-    nodejs
-    imagemagick
-    (sbt.override { jre = jdk17; })
-    mill
-    kafkactl
-  ];
+  modules.desktop.zsh.enable = true;
 
   security.pki.certificateFiles = [
     "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
@@ -143,21 +121,7 @@
   # from the daemon, and Nix mounts the system bundle at this path in fixed-output builds.
   systemd.services.nix-daemon.environment.NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
 
-  environment.variables = {
-    JAVAX_NET_SSL_TRUSTSTORE = ../../modules/services/certs/cacerts;
-    JAVA_OPTS = "-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128 -Djavax.net.ssl.trustStore=${../../modules/services/certs/cacerts} -Djavax.net.ssl.trustStorePassword=changeit";
-  };
-
   home-manager.users.${config.user.name} = {
-    home.file.".sbt/repositories".text = ''
-      [repositories]
-        local
-        maven-local
-        nexus-maven: https://nexus.foyer.lu/repository/mvn-all/
-        nexus-ivy: https://nexus.foyer.lu/repository/ivy-all/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
-        nexus-ivy-sbt: https://nexus.foyer.lu/repository/ivy-all/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[artifact](-[classifier])-[type].[ext]
-    '';
-
     programs = {
       git = {
         enable = true;
