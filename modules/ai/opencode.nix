@@ -377,9 +377,14 @@ in
           writer = "anthropic/claude-sonnet-5";
           small = "anthropic/claude-haiku-4-5";
         };
-        # Default: OpenAI does the work, Opus gives the second opinion on review.
-        balancedModels = lib.recursiveUpdate openaiModels {
-          agent.review.model = opusReview;
+        # Default: Opus does the work, OpenAI gives the second opinion on review.
+        balancedModels = modelSet {
+          top = "anthropic/claude-opus-5-5";
+          review = "openai/gpt-6-astra";
+          research = "openai/gpt-6.1-sol";
+          explore = "openai/gpt-6-astra";
+          writer = "openai/gpt-6.1-sol";
+          small = "openai/gpt-6-luna";
         };
         premiumModels =
           lib.recursiveUpdate
