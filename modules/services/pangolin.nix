@@ -86,6 +86,7 @@ in
             "monero.banditlair.com"
             "uptime.banditlair.com"
             "telemetry.banditlair.com"
+            "plainsight.banditlair.com"
           ];
         };
       };
