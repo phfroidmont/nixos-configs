@@ -116,6 +116,15 @@
 
   services.logind.settings.Login.HandleLidSwitch = "ignore";
 
+  # Allow the native Linux firmware tool to access the MSI monitor's USB
+  # control interface. uaccess must be tagged before
+  # 73-seat-late.rules, so this cannot live in services.udev.extraRules.
+  services.udev.packages = [
+    (pkgs.writeTextDir "lib/udev/rules.d/70-msi-monitor.rules" ''
+      SUBSYSTEM=="usb", ATTR{idVendor}=="1462", ATTR{idProduct}=="3fa4", TAG+="uaccess"
+    '')
+  ];
+
   user.name = "phfroidmont";
 
   home-manager.users.${config.user.name} =
