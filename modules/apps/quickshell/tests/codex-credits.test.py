@@ -20,30 +20,62 @@ functions = ast.Module(
 )
 
 
-class CodexCreditsTest(unittest.TestCase):
-    def fetch(self, credits):
-        window = {"usedPercent": 100, "windowDurationMins": 10080}
-        rpc = Mock(
-            side_effect=[
+def run_fetch(responses):
+    rpc = Mock(side_effect=responses)
+    namespace = {
+        "AUTH_HELP": "Log in",
+        "ENV": {},
+        "find_command": lambda name: name,
+        "subprocess": Mock(),
+        "rpc_request": rpc,
+        "json": json,
+        "number": lambda value: int(value or 0),
+        "datetime": datetime,
+        "timezone": timezone,
+    }
+    # Load only the trusted collector functions, avoiding its filesystem setup.
+    exec(compile(functions, "collector", "exec"), namespace)  # noqa: S102
+    return namespace["fetch_codex_rpc"](), rpc
+
+
+WINDOW = {"usedPercent": 100, "windowDurationMins": 10080}
+ACCOUNT = {"result": {"account": {"planType": "pro"}}}
+EXPIRED = {"error": {"code": -32603, "message": "token_expired"}}
+
+
+class CodexTokenRefreshTest(unittest.TestCase):
+    def test_refreshes_token_and_retries(self):
+        result, rpc = run_fetch(
+            [
                 {},
-                {"result": {"account": {"planType": "pro"}}},
-                {"result": {"rateLimits": {"secondary": window, "credits": credits}}},
+                ACCOUNT,
+                EXPIRED,
+                ACCOUNT,
+                {"result": {"rateLimits": {"primary": WINDOW}}},
             ]
         )
-        namespace = {
-            "AUTH_HELP": "Log in",
-            "ENV": {},
-            "find_command": lambda name: name,
-            "subprocess": Mock(),
-            "rpc_request": rpc,
-            "json": json,
-            "number": lambda value: int(value or 0),
-            "datetime": datetime,
-            "timezone": timezone,
-        }
-        # Load only the trusted collector functions, avoiding its filesystem setup.
-        exec(compile(functions, "collector", "exec"), namespace)  # noqa: S102
-        result = namespace["fetch_codex_rpc"]()
+        self.assertEqual(rpc.call_count, 5)
+        self.assertEqual(rpc.call_args_list[3].args[3], {"refreshToken": True})
+        self.assertEqual(result["limits"][0]["percent"], 1.0)
+        self.assertEqual(result["usageStatusText"], "")
+
+    def test_reports_persistent_error(self):
+        result, rpc = run_fetch([{}, ACCOUNT, EXPIRED, ACCOUNT, EXPIRED])
+        self.assertEqual(rpc.call_count, 5)
+        self.assertEqual(result["limits"], [])
+        self.assertEqual(result["usageStatusText"], "Codex limits unavailable")
+        self.assertEqual(result["authHelpText"], "token_expired")
+
+
+class CodexCreditsTest(unittest.TestCase):
+    def fetch(self, credits):
+        result, rpc = run_fetch(
+            [
+                {},
+                ACCOUNT,
+                {"result": {"rateLimits": {"secondary": WINDOW, "credits": credits}}},
+            ]
+        )
         self.assertEqual(result["tierLabel"], "pro")
         self.assertEqual(result["limits"][0]["percent"], 1.0)
         self.assertEqual(result["usageStatusText"], "")

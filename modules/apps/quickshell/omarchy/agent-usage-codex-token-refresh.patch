@@ -1,0 +1,15 @@
+--- a/bin/fos-internal-agent-usage-codex
++++ b/bin/fos-internal-agent-usage-codex
+@@ -549,2 +549,11 @@
+     account_msg = rpc_request(proc, 2, "account/read", timeout=4)
+     limits_msg = rpc_request(proc, 3, "account/rateLimits/read", timeout=4)
++    # The app-server does not refresh a rejected ChatGPT token on its own, so
++    # a failed limits read forces one token refresh and retries.
++    if limits_msg.get("error"):
++      account_msg = rpc_request(proc, 4, "account/read", {"refreshToken": True}, timeout=8)
++      limits_msg = rpc_request(proc, 5, "account/rateLimits/read", timeout=4)
++    error = limits_msg.get("error")
++    if error:
++      message = error.get("message") if isinstance(error, dict) else None
++      raise RuntimeError(message or str(error))
+ 

@@ -452,6 +452,7 @@ let
         PYTHON
         patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-recent-models.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-credits.patch}
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-token-refresh.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-recent-models.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-claude-sdk-transcripts.patch}
         install -m644 ${./omarchy/opencode_usage.py} "$out/bin/fos_opencode_usage.py"
