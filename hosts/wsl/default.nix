@@ -35,18 +35,12 @@
       httpsProxy = "http://127.0.0.1:3128";
       noProxy = ".lefoyer.lu,.foyer.lu,.foyer.cloud,localhost,127.0.0.1";
     };
-    nat = {
-      enable = true;
-      internalInterfaces = [ "wg0" ];
-      externalInterface = "eth0";
-    };
   };
 
   boot.kernel.sysctl = {
     "net.ipv4.ip_forward" = 1;
     "net.ipv4.conf.all.rp_filter" = lib.mkForce 0;
     "net.ipv4.conf.wg0.rp_filter" = lib.mkForce 0;
-    "net.ipv4.conf.eth0.rp_filter" = lib.mkForce 0;
   };
 
   services.tinyproxy = {
@@ -106,8 +100,8 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -C FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT; ${pkgs.iptables}/bin/iptables -C FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ${pkgs.iptables}/bin/iptables -t nat -C POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE; ${pkgs.iptables}/bin/iptables -t mangle -C FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260 2>/dev/null || ${pkgs.iptables}/bin/iptables -t mangle -A FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260'";
-      ExecStop = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -t mangle -D FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || true'";
+      ExecStart = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -C FORWARD -i wg0 ! -o wg0 -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 ! -o wg0 -j ACCEPT; ${pkgs.iptables}/bin/iptables -C FORWARD ! -i wg0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD ! -i wg0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ${pkgs.iptables}/bin/iptables -t nat -C POSTROUTING -s 10.250.250.0/30 ! -o wg0 -j MASQUERADE 2>/dev/null || ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.250.250.0/30 ! -o wg0 -j MASQUERADE; ${pkgs.iptables}/bin/iptables -t mangle -C FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260 2>/dev/null || ${pkgs.iptables}/bin/iptables -t mangle -A FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260'";
+      ExecStop = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -t mangle -D FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 ! -o wg0 -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD ! -i wg0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.250.250.0/30 ! -o wg0 -j MASQUERADE 2>/dev/null || true'";
     };
   };
 
