@@ -95,6 +95,8 @@
     wants = [ "wstunnel-wg.service" ];
   };
 
+  # Clamp forwarded TCP to wg0's MTU (1300 - 40): some Foyer ranges (e.g. 10.161.0.0/16) never
+  # receive our ICMP frag-needed, so oversized replies stall until the server's PMTU probing kicks in.
   systemd.services.wg-wsl-nat = {
     description = "NAT and forwarding rules for wg0";
     wantedBy = [ "wg-quick-wg0.service" ];
@@ -104,8 +106,8 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -C FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT; ${pkgs.iptables}/bin/iptables -C FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ${pkgs.iptables}/bin/iptables -t nat -C POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE'";
-      ExecStop = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || true'";
+      ExecStart = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -C FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT; ${pkgs.iptables}/bin/iptables -C FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || ${pkgs.iptables}/bin/iptables -A FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ${pkgs.iptables}/bin/iptables -t nat -C POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE; ${pkgs.iptables}/bin/iptables -t mangle -C FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260 2>/dev/null || ${pkgs.iptables}/bin/iptables -t mangle -A FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260'";
+      ExecStop = "${pkgs.bash}/bin/bash -euc '${pkgs.iptables}/bin/iptables -t mangle -D FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1260 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -D FORWARD -i eth0 -o wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true; ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.250.250.0/30 -o eth0 -j MASQUERADE 2>/dev/null || true'";
     };
   };
 
