@@ -93,7 +93,9 @@ in
     networking.wg-quick.interfaces.${interface} = {
       autostart = false;
       address = [ "10.250.251.2/32" ];
-      mtu = 1280;
+      # Fit Pangolin's 1280-byte packets plus WireGuard overhead without fragmenting.
+      # The wstunnel transport is TCP, so there is no path MTU to respect here.
+      mtu = 1420;
       inherit (cfg) privateKeyFile;
       # Do not capture normal traffic before the controller proves egress works.
       table = "off";

@@ -23,8 +23,10 @@ default when fallback is disabled or its key is missing.
 
 ## Routing
 
-- `pg-fallback` uses `10.250.251.2/32`, MTU 1280, and table `51871`, not the
-  physical main table. WireGuard's automatic route capture is disabled.
+- `pg-fallback` uses `10.250.251.2/32`, MTU 1420, and table `51871`, not the
+  physical main table. WireGuard's automatic route capture is disabled. The MTU
+  must exceed Pangolin's 1280 plus WireGuard overhead, or every full-size
+  Pangolin packet is fragmented in two.
 - More-specific main-table routes, including LAN and Pangolin resource routes,
   remain in use. Other IPv4 traffic exits through `relay1` while fallback runs.
 - IPv6 is not carried by this fallback and remains on the physical network.

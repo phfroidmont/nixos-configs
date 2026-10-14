@@ -92,7 +92,7 @@ ip -n underlay link add wg-test type wireguard
 ip netns exec underlay wg set wg-test private-key "$work/server.key" listen-port 51820 peer "$client_public_key" allowed-ips 10.250.251.2/32
 ip -n underlay address add 10.250.251.1/24 dev wg-test
 ip -n underlay link set wg-test up
-printf '[Interface]\nPrivateKey = %s\nAddress = 10.250.251.2/32\nFwMark = 51871\nMTU = 1280\nTable = off\n[Peer]\nPublicKey = %s\nEndpoint = 198.19.0.2:51820\nAllowedIPs = 0.0.0.0/0\n' "$private_key" "$public_key" > "$work/pg-fallback.conf"
+printf '[Interface]\nPrivateKey = %s\nAddress = 10.250.251.2/32\nFwMark = 51871\nMTU = 1420\nTable = off\n[Peer]\nPublicKey = %s\nEndpoint = 198.19.0.2:51820\nAllowedIPs = 0.0.0.0/0\n' "$private_key" "$public_key" > "$work/pg-fallback.conf"
 wg-quick up "$work/pg-fallback.conf"
 routing_script=${ROUTING_SCRIPT:-$(realpath "$(dirname "${BASH_SOURCE[0]}")/../modules/services/pangolin-fallback-routing.sh")}
 # Simulate upgrading the old destination-wide exception.
