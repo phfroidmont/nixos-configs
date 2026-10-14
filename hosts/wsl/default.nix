@@ -62,7 +62,7 @@
     wants = [ "network-online.target" ];
     serviceConfig = {
       ExecStart = "${pkgs.wstunnel}/bin/wstunnel client --http-proxy http://127.0.0.1:3128 --tls-verify-certificate --log-lvl INFO -L udp://51820:127.0.0.1:51820?timeout_sec=0 wss://ws.banditlair.com:443";
-      Restart = "on-failure";
+      Restart = "always";
       RestartSec = 2;
     };
   };
