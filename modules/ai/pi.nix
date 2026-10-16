@@ -9,6 +9,24 @@
 let
   cfg = config.modules.ai.pi;
   system = pkgs.stdenv.hostPlatform.system;
+
+  # Headless Metals over stdio for one worktree, started by pi-metals.ts.
+  metalsMcpWorktree = pkgs.writeShellApplication {
+    name = "metals-mcp-worktree";
+    runtimeInputs = [ pkgs.direnv ];
+    text = ''
+      workspace="''${1:-$PWD}"
+      # In the worktree's dev shell, so Metals drives the project's own Mill:
+      # without --mill-script it downloads a generic Mill that NixOS cannot run,
+      # and without --default-bsp-to-build-tool it starts Bloop next to Mill.
+      # shellcheck disable=SC2016
+      exec direnv exec "$workspace" sh -c '
+        mill="$(command -v mill)" || { echo "metals-mcp-worktree: no mill in the dev shell of $1" >&2; exit 1; }
+        exec ${lib.getExe' pkgs.metals "metals-mcp"} --workspace "$1" --transport stdio \
+          --default-bsp-to-build-tool --mill-script "$mill"
+      ' metals-mcp-worktree "$workspace"
+    '';
+  };
 in
 {
   options.modules.ai.pi = {
@@ -58,8 +76,11 @@ in
         { path = inputs.meridian.legacyPackages.${system}.meridianPlugins.pi-scrub.path; }
       ];
 
+      home.packages = [ metalsMcpWorktree ];
+
       home.file = {
         ".pi/agent/extensions/meridian-session-affinity.ts".source = ./pi-meridian-session-affinity.ts;
+        ".pi/agent/extensions/metals.ts".source = ./pi-metals.ts;
         ".pi/agent/skills/scalive" = {
           source = ./skills/scalive;
           recursive = true;
