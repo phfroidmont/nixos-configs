@@ -934,13 +934,14 @@ in
         };
 
         # The plugin itself is installed with `herdr plugin install persiyanov/herdr-reviewr`.
-        # Opened on demand: auto-open would split the agent tab of every task space the board makes.
+        # It opens as a tab in every new worktree space, the board's task spaces included.
         "herdr/plugins/config/persiyanov.reviewr/config.toml".source =
           toml.generate "herdr-reviewr-config.toml"
             {
               theme = "gruvbox";
               default_scope = "branch";
-              auto_open = false;
+              toggle_placement = "tab";
+              auto_open = true;
             };
 
         "opencode/skills/herdr-processes" = {
