@@ -184,7 +184,7 @@ let
       if [[ -z "$agent_tab_id" ]]; then
         agent_json="$(herdr tab create --workspace "$workspace_id" --cwd "$project" --label agent --no-focus)"
         agent_pane_id="$(jq -r '.result.root_pane.pane_id' <<<"$agent_json")"
-        herdr pane run "$agent_pane_id" 'oc --auto' >/dev/null
+        herdr pane run "$agent_pane_id" 'pi' >/dev/null
         agent_created=true
       fi
 
@@ -212,7 +212,7 @@ let
         run_if_idle "$edit_tab_id" 'nvim'
       fi
       if [[ "$agent_created" == false ]]; then
-        run_if_idle "$agent_tab_id" 'oc --auto'
+        run_if_idle "$agent_tab_id" 'pi'
       fi
       if [[ "$edit_created" == true ]]; then
         wait_until_busy "$edit_pane_id"
@@ -733,6 +733,8 @@ in
         herdrProject
         launchHerdr
       ];
+      # The herdr-projects plugin writes its launcher here when its board first opens.
+      home.sessionPath = [ "$HOME/.herdr-projects/data/bin" ];
 
       xdg.configFile = {
         "herdr/config.toml".source = toml.generate "herdr-config.toml" {
@@ -757,6 +759,55 @@ in
             toast = {
               delivery = "system";
               delay_seconds = 1;
+            };
+            # herdr-projects' rows: a task's number, title, state, and progress.
+            # With these and its board key declared, its first run offers no config edits.
+            sidebar = {
+              agents.rows = [
+                [
+                  "state_icon"
+                  "machine"
+                  "workspace"
+                  {
+                    token = "tab";
+                    rules = [
+                      {
+                        equals = "Agent";
+                        hide = true;
+                      }
+                      {
+                        starts_with = "Reviewer #";
+                        hide = true;
+                      }
+                    ];
+                  }
+                ]
+                [ "agent" ]
+                [
+                  {
+                    token = "$summary";
+                    dim = true;
+                  }
+                  "$progress"
+                ]
+              ];
+              spaces.rows = [
+                [
+                  "state_icon"
+                  "workspace"
+                ]
+                [
+                  "branch"
+                  "git_status"
+                ]
+                [
+                  {
+                    token = "$summary";
+                    dim = true;
+                  }
+                  "$progress"
+                ]
+              ];
             };
           };
 
@@ -851,6 +902,12 @@ in
                 width = "80%";
                 height = "80%";
               }
+              {
+                key = "prefix+a";
+                type = "plugin_action";
+                command = "herdr-projects.open";
+                description = "work board";
+              }
             ];
           };
         };
@@ -882,6 +939,15 @@ in
             diffs.view = "unified";
           };
         };
+      };
+
+      home.file = lib.mkIf config.modules.ai.pi.enable {
+        ".pi/agent/skills/herdr-processes" = {
+          source = ../ai/skills/herdr-processes;
+          recursive = true;
+        };
+        ".pi/agent/extensions/herdr-agent-state.ts".source =
+          "${inputs.herdr}/src/integration/assets/pi/herdr-agent-state.ts";
       };
     };
   };
