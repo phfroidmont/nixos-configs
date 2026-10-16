@@ -909,14 +909,39 @@ in
                 height = "80%";
               }
               {
-                key = "prefix+a";
+                key = [
+                  "prefix+a"
+                  "alt+a"
+                ];
                 type = "plugin_action";
                 command = "herdr-projects.open";
                 description = "work board";
               }
+              {
+                key = "alt+shift+a";
+                type = "plugin_action";
+                command = "herdr-projects.approve-current";
+                description = "approve the focused task";
+              }
+              {
+                key = "alt+shift+d";
+                type = "plugin_action";
+                command = "persiyanov.reviewr.toggle";
+                description = "review diff";
+              }
             ];
           };
         };
+
+        # The plugin itself is installed with `herdr plugin install persiyanov/herdr-reviewr`.
+        # Opened on demand: auto-open would split the agent tab of every task space the board makes.
+        "herdr/plugins/config/persiyanov.reviewr/config.toml".source =
+          toml.generate "herdr-reviewr-config.toml"
+            {
+              theme = "gruvbox";
+              default_scope = "branch";
+              auto_open = false;
+            };
 
         "opencode/skills/herdr-processes" = {
           source = ../ai/skills/herdr-processes;
