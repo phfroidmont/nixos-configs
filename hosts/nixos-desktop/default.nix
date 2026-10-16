@@ -23,6 +23,7 @@
       lutris.enable = true;
     };
     ai.opencode.enable = true;
+    ai.pi.enable = true;
   };
 
   user.name = "froidmpa";

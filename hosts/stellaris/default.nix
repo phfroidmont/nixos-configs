@@ -39,6 +39,7 @@
       lutris.enable = false;
     };
     ai.opencode.enable = true;
+    ai.pi.enable = true;
   };
 
   programs.nh = {
