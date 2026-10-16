@@ -909,9 +909,10 @@ in
                 height = "80%";
               }
               {
+                # Not alt+a: the board shows its archive with it.
                 key = [
                   "prefix+a"
-                  "alt+a"
+                  "alt+w"
                 ];
                 type = "plugin_action";
                 command = "herdr-projects.open";
