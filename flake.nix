@@ -21,7 +21,7 @@
     llm-agents.url = "github:numtide/llm-agents.nix";
     meridian.url = "github:rynfar/meridian";
     herdr = {
-      url = "github:herdrdev/herdr/v0.9.3";
+      url = "github:herdrdev/herdr/v0.9.5";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     omarchy = {
@@ -29,7 +29,7 @@
       flake = false;
     };
     quickshell = {
-      url = "github:quickshell-mirror/quickshell/v0.3.1";
+      url = "github:quickshell-mirror/quickshell/v0.3.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     dankcalendar = {
@@ -67,7 +67,7 @@
               "mongodb-compass"
               "nvidia-x11"
               "nvidia-settings"
-              "idea"
+              "intellij-idea"
             ];
           overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
         };

@@ -182,7 +182,7 @@ in
             mpv
             jellyfin-tui
             mumble
-            libreoffice-fresh
+            libreoffice
             signal-desktop
             onlyoffice-desktopeditors
             thunderbird
@@ -193,7 +193,7 @@ in
             scala-cli
             beamMinimal27Packages.elixir
             jdk
-            jetbrains.idea
+            intellij-idea
             httpie
 
             zsh-syntax-highlighting
