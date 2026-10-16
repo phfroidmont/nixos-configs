@@ -48,6 +48,10 @@ in
         settings = {
           defaultProvider = "anthropic";
           defaultModel = "claude-opus-5-5";
+          # Each bash call is a fresh `bash -c` that never runs the direnv hook.
+          # Loads the folder's .envrc (and later .envrc/flake.nix changes) per
+          # command; cheap when the env is already inherited, a no-op without .envrc.
+          shellCommandPrefix = ''eval "$(direnv export bash 2>/dev/null)"'';
         };
         models.providers = {
           # Meridian serves the Claude subscription. For Opus 5.5 and Haiku 5.5,

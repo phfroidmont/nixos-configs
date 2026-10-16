@@ -11,6 +11,7 @@ let
   user = config.user.name;
   homeDirectory = config.home-manager.users.${user}.home.homeDirectory;
   projectsDirectory = "${homeDirectory}/Projects";
+  worktreesDirectory = "${projectsDirectory}/.worktrees";
   herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   toml = pkgs.formats.toml { };
 
@@ -736,6 +737,11 @@ in
       # The herdr-projects plugin writes its launcher here when its board first opens.
       home.sessionPath = [ "$HOME/.herdr-projects/data/bin" ];
 
+      # A new task worktree's .envrc is not allowed yet, so the pane's zsh would
+      # skip the dev shell and the agent started in it would inherit none.
+      # Trade-off: any .envrc under this folder runs without `direnv allow`.
+      programs.direnv.config.whitelist.prefix = [ worktreesDirectory ];
+
       xdg.configFile = {
         "herdr/config.toml".source = toml.generate "herdr-config.toml" {
           onboarding = false;
@@ -746,7 +752,7 @@ in
             new_cwd = "follow";
           };
 
-          worktrees.directory = "${projectsDirectory}/.worktrees";
+          worktrees.directory = worktreesDirectory;
 
           theme.name = "gruvbox";
 
