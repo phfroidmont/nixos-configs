@@ -87,6 +87,7 @@ in
             "uptime.banditlair.com"
             "telemetry.banditlair.com"
             "plainsight.banditlair.com"
+            "plainsight-marie.banditlair.com"
           ];
         };
       };
