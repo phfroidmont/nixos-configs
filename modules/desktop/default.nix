@@ -100,6 +100,11 @@ in
             ControlPath = "~/.ssh/master-%r@%n:%p";
             ControlPersist = "no";
           };
+          # The PMS dev env runs commands on the WSL over SSH; reuse one connection
+          settings."wsl.foyer.internal" = {
+            ControlMaster = "auto";
+            ControlPersist = "10m";
+          };
           extraConfig = ''
             # Force IPv4 otherwise git will try to use IPv6 which doesn't play well through a VPN
             AddressFamily inet
