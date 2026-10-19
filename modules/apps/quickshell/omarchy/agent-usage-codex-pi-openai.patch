@@ -1,0 +1,32 @@
+--- a/bin/fos-internal-agent-usage-codex
++++ b/bin/fos-internal-agent-usage-codex
+@@ -5,7 +5,7 @@
+ """Collect Codex usage into one display-ready JSON record.
+ 
+ Local stats come from native Codex CLI session files, pi/omp sessions that
+-ran through openai-codex, and opencode sessions that ran on an OpenAI
++ran through openai-codex or the openai provider, and opencode sessions that ran on an OpenAI
+ provider; rate limits and the plan come from the Codex app-server RPC. The agents
+ panel only ever reads the JSON this prints.
+ """
+@@ -146,7 +146,7 @@
+       continue
+     try:
+       proc = subprocess.Popen(
+-        [rg, "--json", "-e", r'"provider"\s*:\s*"openai-codex"', "-e", r'"api"\s*:\s*"openai-codex', str(root)],
++        [rg, "--json", "-e", r'"provider"\s*:\s*"openai(-codex)?"', "-e", r'"api"\s*:\s*"openai-codex', str(root)],
+         stdout=subprocess.PIPE,
+         stderr=subprocess.DEVNULL,
+         text=True,
+@@ -179,7 +179,10 @@
+         continue
+       provider = str(message.get("provider") or "")
+       api = str(message.get("api") or "")
+-      if provider != "openai-codex" and not api.startswith("openai-codex"):
++      # pi 0.99 moved the ChatGPT subscription from openai-codex to Sign in
++      # with ChatGPT on the openai provider. Its messages do not say whether
++      # an API key or the login paid for them; here openai means the login.
++      if provider not in ("openai", "openai-codex") and not api.startswith("openai-codex"):
+         continue
+ 
+       usage = message.get("usage") or {}

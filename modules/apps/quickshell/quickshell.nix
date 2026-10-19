@@ -331,6 +331,7 @@ let
           pkgs.jq
           pkgs.patch
           pkgs.python3
+          pkgs.ripgrep
         ];
       }
       ''
@@ -461,10 +462,12 @@ let
         patch -d "$out" -p1 < ${./omarchy/agent-usage-all-provider-alarm.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-pace.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-rpc-buffering.patch}
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-pi-openai.patch}
         rm -f "$out/bin/"*.orig
         patchShebangs "$out/bin"
 
         python3 ${./tests/codex-credits.test.py} "$out/bin/fos-internal-agent-usage-codex"
+        python3 ${./tests/codex-usage.test.py} "$out/bin/fos-internal-agent-usage-codex"
         python3 ${./tests/claude-usage.test.py} "$out/bin/fos-internal-agent-usage-claude"
         ${lib.getExe pkgs.nodejs} ${./tests/agent-usage-pace.test.cjs} "$out/shell/plugins/agents/Panel.qml"
         QUICKSHELL_MODULE_ROOT=${./.} \
