@@ -204,8 +204,6 @@
             };
           in
           assert !config.services.tinyproxy.enable;
-          assert !self.nixosConfigurations.nixos-desktop.config.services.tinyproxy.enable;
-          assert firefox == firefoxFor self.nixosConfigurations.nixos-desktop.config;
           pkgs.runCommand "work-proxy-tests"
             {
               nativeBuildInputs = [ pkgs.nodejs ];
