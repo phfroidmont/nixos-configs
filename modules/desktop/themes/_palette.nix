@@ -15,6 +15,7 @@ let
     fg1 = "ebdbb2";
     fg2 = "d5c4a1";
     fg4 = "a89984";
+    gray = "928374";
 
     redDark = "cc241d";
     red = "fb4934";
