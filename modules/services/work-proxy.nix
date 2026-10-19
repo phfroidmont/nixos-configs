@@ -32,7 +32,7 @@ let
 in
 {
   options.modules.services.work-proxy = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the work proxy";
   };
 
   config = lib.mkIf cfg.enable {

@@ -5,7 +5,7 @@ let
 in
 {
   options.modules.services.languagetool = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "LanguageTool";
   };
 
   config = lib.mkIf cfg.enable {

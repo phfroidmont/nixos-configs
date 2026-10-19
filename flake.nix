@@ -47,17 +47,15 @@
       ...
     }:
     let
-      inherit (lib.my) mapHosts;
-
       system = "x86_64-linux";
 
       mkPkgs =
-        pkgs: extraOverlays:
-        import pkgs {
+        nixpkgs:
+        import nixpkgs {
           inherit system;
           config.allowUnfreePredicate =
             pkg:
-            builtins.elem (pkgs.lib.getName pkg) [
+            builtins.elem (nixpkgs.lib.getName pkg) [
               "steam"
               "steam-original"
               "steam-run"
@@ -69,34 +67,37 @@
               "nvidia-settings"
               "intellij-idea"
             ];
-          overlays = extraOverlays ++ (pkgs.lib.attrValues self.overlays);
+          overlays = [ self.overlays.my ];
         };
 
-      pkgs = mkPkgs nixpkgs [ ];
-      stablePkgs = mkPkgs nixpkgsStable [ ];
+      pkgs = mkPkgs nixpkgs;
+      stablePkgs = mkPkgs nixpkgsStable;
+      inherit (nixpkgs) lib;
 
-      lib = nixpkgs.lib.extend (
-        self: super: {
-          my = import ./lib {
-            inherit pkgs inputs;
-            lib = self;
-          };
-        }
-      );
+      unstable = {
+        inherit nixpkgs pkgs;
+      };
+      stable = {
+        nixpkgs = nixpkgsStable;
+        pkgs = stablePkgs;
+      };
 
-      stableLib = nixpkgsStable.lib.extend (
-        self: super: {
-          my = import ./lib {
-            pkgs = stablePkgs;
-            inherit inputs;
-            lib = self;
-          };
-        }
-      );
+      mkHost =
+        channel: path:
+        channel.nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs; };
+          modules = [
+            {
+              nixpkgs.pkgs = channel.pkgs;
+              nix.registry.nixpkgs.flake = channel.nixpkgs;
+              networking.hostName = channel.nixpkgs.lib.mkDefault (baseNameOf path);
+            }
+            ./common.nix
+            path
+          ];
+        };
     in
     {
-      lib = lib.my;
-
       overlays = {
         my = import ./overlay.nix { inherit inputs; };
       };
@@ -303,14 +304,11 @@
         voyager-flash = pkgs.voyager-flash;
       };
 
-      nixosConfigurations = (mapHosts ./hosts { }) // {
-        aegis = stableLib.my.mkHost ./hosts/aegis/default.nix {
-          nix.registry.nixpkgs.flake = stableLib.mkForce nixpkgsStable;
-        };
-
-        aegis-installer = stableLib.my.mkHost ./hosts/aegis-installer/default.nix {
-          nix.registry.nixpkgs.flake = stableLib.mkForce nixpkgsStable;
-        };
+      nixosConfigurations = {
+        stellaris = mkHost unstable ./hosts/stellaris;
+        wsl = mkHost unstable ./hosts/wsl;
+        aegis = mkHost stable ./hosts/aegis;
+        aegis-installer = mkHost stable ./hosts/aegis-installer;
       };
     };
 }

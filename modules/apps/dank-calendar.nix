@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.apps.dank-calendar = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "DankCalendar";
   };
 
   config = lib.mkIf cfg.enable {

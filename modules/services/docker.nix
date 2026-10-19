@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.services.docker = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Docker";
   };
 
   config = lib.mkIf cfg.enable {

@@ -10,8 +10,8 @@ let
 in
 {
   options.modules.media = {
-    steam.enable = lib.my.mkBoolOpt false;
-    lutris.enable = lib.my.mkBoolOpt false;
+    steam.enable = lib.mkEnableOption "Steam";
+    lutris.enable = lib.mkEnableOption "Lutris";
   };
 
   config = lib.mkMerge [

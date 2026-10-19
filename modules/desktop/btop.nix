@@ -19,7 +19,7 @@ let
 in
 {
   options.modules.desktop.btop = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "btop";
   };
   config = lib.mkIf cfg.enable {
     users.users.${config.user.name}.extraGroups = [

@@ -40,7 +40,7 @@ let
 in
 {
   options.modules.desktop.themes.gtk = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the GTK theme";
   };
 
   config = lib.mkIf cfg.enable {

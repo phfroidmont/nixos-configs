@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.services.nix-auth = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Nix access tokens for GitLab";
   };
 
   config = lib.mkIf cfg.enable {

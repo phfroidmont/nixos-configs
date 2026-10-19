@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.services.libvirt = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "libvirt";
   };
 
   config = lib.mkIf cfg.enable {

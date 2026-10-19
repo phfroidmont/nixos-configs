@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.media.emulators = {
-    gc.enable = lib.my.mkBoolOpt false; # GameCube
+    gc.enable = lib.mkEnableOption "the GameCube emulator";
   };
 
   config = {

@@ -598,7 +598,7 @@ let
 in
 {
   options.modules.apps.quickshell = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the Quickshell desktop shell";
     commands.keybindings = lib.mkOption {
       type = lib.types.str;
       readOnly = true;

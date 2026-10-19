@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.services.belgian-eid = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Belgian eID support";
   };
 
   config = lib.mkIf cfg.enable {

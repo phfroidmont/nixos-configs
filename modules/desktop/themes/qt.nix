@@ -11,7 +11,7 @@ let
 in
 {
   options.modules.desktop.themes.qt = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the Qt theme";
   };
 
   config = lib.mkIf cfg.enable {

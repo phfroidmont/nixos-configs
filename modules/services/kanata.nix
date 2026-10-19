@@ -9,7 +9,7 @@ let
 in
 {
   options.modules.services.kanata = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Kanata";
   };
 
   config = lib.mkIf cfg.enable {

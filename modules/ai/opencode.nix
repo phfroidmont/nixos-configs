@@ -11,7 +11,7 @@ let
 in
 {
   options.modules.ai.opencode = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "OpenCode";
   };
   config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} =

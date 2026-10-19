@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.apps.newsboat = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Newsboat";
   };
 
   config = lib.mkIf cfg.enable {

@@ -5,12 +5,29 @@
   ...
 }:
 
+let
+  # Every .nix file under dir, skipping names that start with "_". A directory's
+  # default.nix is listed with the directory's siblings, before its other files.
+  findModules =
+    dir:
+    let
+      entries = lib.filterAttrs (name: _: !lib.hasPrefix "_" name) (builtins.readDir dir);
+      isModule =
+        name: type:
+        (type == "regular" && name != "default.nix" && lib.hasSuffix ".nix" name)
+        || (type == "directory" && builtins.pathExists (dir + "/${name}/default.nix"));
+      modules = lib.attrNames (lib.filterAttrs isModule entries);
+      directories = lib.attrNames (lib.filterAttrs (_: type: type == "directory") entries);
+    in
+    map (name: dir + "/${name}") modules
+    ++ lib.concatMap (name: findModules (dir + "/${name}")) directories;
+in
 {
   imports = [
     inputs.home-manager.nixosModules.home-manager
     inputs.nix-index-database.nixosModules.nix-index
   ]
-  ++ (lib.my.mapModulesRec' (toString ./modules) import);
+  ++ findModules ./modules;
 
   programs.command-not-found.enable = false;
   programs.nix-index-database.comma.enable = true;

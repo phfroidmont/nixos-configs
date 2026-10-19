@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.desktop.zsh = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Zsh";
   };
   config = lib.mkIf cfg.enable {
 

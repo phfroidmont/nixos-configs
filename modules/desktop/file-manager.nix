@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.desktop.file-manager = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the Yazi file manager";
   };
   config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {

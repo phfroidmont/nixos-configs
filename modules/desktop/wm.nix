@@ -119,7 +119,7 @@ let
 in
 {
   options.modules.desktop.wm = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the Hyprland desktop";
   };
 
   config = lib.mkIf cfg.enable {

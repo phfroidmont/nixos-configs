@@ -43,7 +43,7 @@ let
 in
 {
   options.modules.hardware.audio = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "audio";
   };
 
   config = lib.mkIf cfg.enable {

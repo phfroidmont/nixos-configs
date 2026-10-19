@@ -62,7 +62,7 @@ let
   };
 in
 {
-  options.modules.desktop.sddm.enable = lib.my.mkBoolOpt false;
+  options.modules.desktop.sddm.enable = lib.mkEnableOption "the SDDM display manager";
 
   config = lib.mkIf cfg.enable {
     services.displayManager.autoLogin.enable = false;

@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.editor.vim = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Neovim";
   };
 
   config = lib.mkIf cfg.enable {

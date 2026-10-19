@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.services.flatpak = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Flatpak";
   };
 
   config = lib.mkIf cfg.enable {

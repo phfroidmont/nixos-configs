@@ -102,7 +102,7 @@ let
 in
 {
   options.modules.ai.pi = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the pi coding agent";
   };
   config = lib.mkIf cfg.enable {
     assertions = [

@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.services.pangolin = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the Pangolin client";
   };
 
   config = lib.mkIf cfg.enable {

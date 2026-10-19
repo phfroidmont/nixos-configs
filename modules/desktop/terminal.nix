@@ -5,7 +5,7 @@ let
 in
 {
   options.modules.desktop.terminal = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "the Kitty terminal";
   };
   config = lib.mkIf cfg.enable {
     home-manager.users.${config.user.name} = {

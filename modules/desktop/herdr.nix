@@ -693,7 +693,7 @@ let
 in
 {
   options.modules.desktop.herdr = {
-    enable = lib.my.mkBoolOpt false;
+    enable = lib.mkEnableOption "Herdr";
     commands = {
       launch = lib.mkOption {
         type = lib.types.str;
