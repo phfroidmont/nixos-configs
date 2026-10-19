@@ -107,6 +107,8 @@
         voyager-flash = pkgs.voyager-flash;
       };
 
+      formatter.${system} = pkgs.nixfmt-tree;
+
       devShells.${system}.default = stablePkgs.mkShellNoCC {
         packages = [
           stablePkgs.sops
