@@ -3,7 +3,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 // OpenCode asks before these MCP tools run; pi has no permission rules of its own.
 // Odoo has no model whitelist on 19.0 Online and runs in YOLO mode, and Stripe
 // moves money: every tool but the read-only ones waits for approval.
-const gated = [/^mcp__odoo__/, /^mcp__stripe__/, /^mcp__playwright__browser_run_code_unsafe$/];
+// Playwright's run_code_unsafe is not gated: pi's bash tool already runs arbitrary code unasked.
+const gated = [/^mcp__odoo__/, /^mcp__stripe__/];
 const readOnly = new Set([
 	"mcp__odoo__aggregate_records",
 	"mcp__odoo__get_current_context",
