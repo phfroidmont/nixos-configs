@@ -31,6 +31,7 @@ cat >"$fake_bin/file" <<'EOF'
 printf '%s\n' "${FILE_MIME_TYPE:-image/webp}"
 EOF
 chmod +x "$fake_bin/wl-paste" "$fake_bin/file"
+sed -i "1s|.*|#!$BASH|" "$fake_bin"/*
 export PATH="$fake_bin:$PATH"
 
 captured=$(printf 'watched text' | bash "$capture" text)

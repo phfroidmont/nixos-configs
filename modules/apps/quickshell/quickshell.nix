@@ -488,6 +488,20 @@ let
             )
           }:$PATH \
           ${pkgs.bash}/bin/bash ${./tests/clipboard-action.test.sh}
+        PATH=${
+          lib.makeBinPath (
+            with pkgs;
+            [
+              coreutils
+              findutils
+              gnused
+              jq
+              perl
+            ]
+          )
+        }:$PATH \
+          ${pkgs.bash}/bin/bash ${./.}/tests/clipboard-capture.test.sh
+        ${lib.getExe pkgs.nodejs} ${./.}/tests/clipboard-history.test.js
         ${lib.getExe pkgs.fos} commands --json > fos-commands.json
         ${lib.getExe pkgs.python3} ${./tests/command-menu.test.py} \
           "$out/default/omarchy/omarchy-menu.jsonc" fos-commands.json "$out/shell"
