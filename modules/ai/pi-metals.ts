@@ -9,19 +9,23 @@ import { join } from "node:path";
 const worktrees = join(homedir(), "Projects", ".worktrees") + "/";
 
 // Elsewhere Neovim runs Metals with startMcpServer and mcpClient = "opencode",
-// so Metals writes its MCP endpoint into the project's opencode.json.
+// so Metals writes its MCP endpoint into the project's opencode.json,
+// or opencode.jsonc when the project already has one.
 // A second Metals on the same workspace would fight Neovim's over .metals/,
 // so pi joins Neovim's instead.
 function neovimMetalsUrl(cwd: string): string | undefined {
-  const file = join(cwd, "opencode.json");
-  if (!existsSync(file)) return undefined;
-  try {
-    const config = JSON.parse(readFileSync(file, "utf8"));
-    const url = config?.mcp?.["metals-lsp"]?.url;
-    return typeof url === "string" ? url : undefined;
-  } catch {
-    return undefined;
+  for (const name of ["opencode.json", "opencode.jsonc"]) {
+    const file = join(cwd, name);
+    if (!existsSync(file)) continue;
+    try {
+      const config = JSON.parse(readFileSync(file, "utf8"));
+      const url = config?.mcp?.["metals-lsp"]?.url;
+      if (typeof url === "string") return url;
+    } catch {
+      continue;
+    }
   }
+  return undefined;
 }
 
 export default function (pi: ExtensionAPI) {
