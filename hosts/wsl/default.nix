@@ -108,6 +108,9 @@
 
   modules.desktop.zsh.enable = true;
 
+  # Local Redis for foyer-pms (Tomcat and workers expect localhost:6379)
+  services.redis.servers."".enable = true;
+
   security.pki.certificateFiles = [
     "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
     ../../modules/services/certs/Foyer-Group-Root-CA.crt
