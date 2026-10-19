@@ -1,0 +1,87 @@
+--- a/bin/fos-internal-agent-usage-codex
++++ b/bin/fos-internal-agent-usage-codex
+@@ -15,13 +15,14 @@
+ import hashlib
+ import json
+ import os
+-import select
++import queue
+ from fos_opencode_usage import prepare as prepare_opencode_usage
+ import shutil
+ import sqlite3
+ import subprocess
+ import sys
+ import tempfile
++import threading
+ import time
+ from datetime import datetime, timedelta, timezone
+ from pathlib import Path
+@@ -476,17 +477,35 @@
+     return stats
+ 
+ 
+-def rpc_request(proc, request_id, method, params=None, timeout=8):
++def read_lines(stream):
++  # select() only sees the pipe, not lines already pulled into Python's read
++  # buffer, so a response sharing a chunk with a notification would be missed.
++  # A reader thread hands over whole lines instead; None marks end of output.
++  lines = queue.Queue()
++
++  def pump():
++    for line in stream:
++      lines.put(line)
++    lines.put(None)
++
++  threading.Thread(target=pump, daemon=True).start()
++  return lines
++
++
++def rpc_request(proc, lines, request_id, method, params=None, timeout=8):
+   payload = {"id": request_id, "method": method, "params": params or {}}
+   proc.stdin.write(json.dumps(payload) + "\n")
+   proc.stdin.flush()
+   deadline = time.time() + timeout
+-  while time.time() < deadline:
+-    ready, _, _ = select.select([proc.stdout], [], [], 0.25)
+-    if not ready:
+-      continue
+-    line = proc.stdout.readline()
+-    if not line:
++  while True:
++    remaining = deadline - time.time()
++    if remaining <= 0:
++      break
++    try:
++      line = lines.get(timeout=remaining)
++    except queue.Empty:
++      break
++    if line is None:
+       break
+     try:
+       message = json.loads(line)
+@@ -542,19 +561,20 @@
+     result["authHelpText"] = str(exc)
+     return result
+ 
++  lines = read_lines(proc.stdout)
+   try:
+-    rpc_request(proc, 1, "initialize", {"clientInfo": {"name": "omarchy-agent-usage", "version": "1"}}, timeout=8)
++    rpc_request(proc, lines, 1, "initialize", {"clientInfo": {"name": "omarchy-agent-usage", "version": "1"}}, timeout=8)
+     proc.stdin.write(json.dumps({"method": "initialized", "params": {}}) + "\n")
+     proc.stdin.flush()
+-    account_msg = rpc_request(proc, 2, "account/read", timeout=4)
+-    limits_msg = rpc_request(proc, 3, "account/rateLimits/read", timeout=4)
++    account_msg = rpc_request(proc, lines, 2, "account/read", timeout=4)
++    limits_msg = rpc_request(proc, lines, 3, "account/rateLimits/read", timeout=4)
+ 
+     account = (account_msg.get("result") or {}).get("account") or {}
+     # The app-server does not refresh a rejected ChatGPT token on its own, so
+     # a failed limits read forces one token refresh and retries.
+     if limits_msg.get("error"):
+-      account_msg = rpc_request(proc, 4, "account/read", {"refreshToken": True}, timeout=8)
+-      limits_msg = rpc_request(proc, 5, "account/rateLimits/read", timeout=4)
++      account_msg = rpc_request(proc, lines, 4, "account/read", {"refreshToken": True}, timeout=8)
++      limits_msg = rpc_request(proc, lines, 5, "account/rateLimits/read", timeout=4)
+     error = limits_msg.get("error")
+     if error:
+       message = error.get("message") if isinstance(error, dict) else None

@@ -2,7 +2,11 @@
 
 import ast
 import json
+import queue
+import subprocess
 import sys
+import threading
+import time
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,7 +18,8 @@ functions = ast.Module(
         node
         for node in source.body
         if isinstance(node, ast.FunctionDef)
-        and node.name in ("fetch_codex_rpc", "limit_window")
+        and node.name
+        in ("fetch_codex_rpc", "limit_window", "read_lines", "rpc_request")
     ],
     type_ignores=[],
 )
@@ -27,7 +32,6 @@ def run_fetch(responses):
         "ENV": {},
         "find_command": lambda name: name,
         "subprocess": Mock(),
-        "rpc_request": rpc,
         "json": json,
         "number": lambda value: int(value or 0),
         "datetime": datetime,
@@ -35,7 +39,21 @@ def run_fetch(responses):
     }
     # Load only the trusted collector functions, avoiding its filesystem setup.
     exec(compile(functions, "collector", "exec"), namespace)  # noqa: S102
+    # Replace the pipe plumbing loaded above with the scripted responses.
+    namespace["read_lines"] = Mock()
+    namespace["rpc_request"] = rpc
     return namespace["fetch_codex_rpc"](), rpc
+
+
+def load_rpc_request():
+    namespace = {
+        "json": json,
+        "queue": queue,
+        "threading": threading,
+        "time": time,
+    }
+    exec(compile(functions, "collector", "exec"), namespace)  # noqa: S102
+    return namespace["read_lines"], namespace["rpc_request"]
 
 
 WINDOW = {"usedPercent": 100, "windowDurationMins": 10080}
@@ -55,7 +73,7 @@ class CodexTokenRefreshTest(unittest.TestCase):
             ]
         )
         self.assertEqual(rpc.call_count, 5)
-        self.assertEqual(rpc.call_args_list[3].args[3], {"refreshToken": True})
+        self.assertEqual(rpc.call_args_list[3].args[4], {"refreshToken": True})
         self.assertEqual(result["limits"][0]["percent"], 1.0)
         self.assertEqual(result["usageStatusText"], "")
 
@@ -117,6 +135,35 @@ class CodexCreditsTest(unittest.TestCase):
         ):
             with self.subTest(credits=credits):
                 self.assertEqual(self.fetch(credits), "")
+
+
+# The app-server writes a notification and the reply in a single chunk.
+SAME_CHUNK_SERVER = r"""
+import sys
+sys.stdin.readline()
+sys.stdout.write('{"method":"account/updated","params":{}}\n{"id":2,"result":{"ok":true}}\n')
+sys.stdout.flush()
+sys.stdin.readline()
+"""
+
+
+class CodexRpcReadTest(unittest.TestCase):
+    def test_reply_sharing_a_chunk_with_a_notification(self):
+        read_lines, rpc_request = load_rpc_request()
+        proc = subprocess.Popen(
+            [sys.executable, "-I", "-c", SAME_CHUNK_SERVER],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        try:
+            message = rpc_request(
+                proc, read_lines(proc.stdout), 2, "account/read", timeout=2
+            )
+        finally:
+            proc.kill()
+            proc.wait()
+        self.assertEqual(message["result"], {"ok": True})
 
 
 unittest.main()

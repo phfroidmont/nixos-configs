@@ -460,6 +460,7 @@ let
         python3 ${./tests/opencode-usage.test.py} "$out/bin/fos_opencode_usage.py"
         patch -d "$out" -p1 < ${./omarchy/agent-usage-all-provider-alarm.patch}
         patch -d "$out" -p1 < ${./omarchy/agent-usage-pace.patch}
+        patch -d "$out" -p1 < ${./omarchy/agent-usage-codex-rpc-buffering.patch}
         rm -f "$out/bin/"*.orig
         patchShebangs "$out/bin"
 
