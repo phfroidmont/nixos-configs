@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   modulesPath,
   pkgs,
@@ -76,7 +77,13 @@ in
   networking.hostName = "aegis-installer";
 
   user.name = "nixos";
-  user.initialPassword = lib.mkForce null;
+  users.users.${config.user.name} = {
+    initialPassword = lib.mkForce null;
+    openssh.authorizedKeys.keyFiles = [
+      ../../ssh_keys/phfroidmont-desktop.pub
+      ../../ssh_keys/phfroidmont-stellaris.pub
+    ];
+  };
   users.users.root.initialPassword = lib.mkForce null;
 
   home-manager.useUserPackages = lib.mkForce false;
@@ -86,11 +93,6 @@ in
     enable = true;
     settings.PasswordAuthentication = false;
   };
-
-  users.users.nixos.openssh.authorizedKeys.keyFiles = [
-    ../../ssh_keys/phfroidmont-desktop.pub
-    ../../ssh_keys/phfroidmont-stellaris.pub
-  ];
 
   environment.etc."nixos-configs".source = ../../.;
 

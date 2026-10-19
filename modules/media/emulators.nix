@@ -14,7 +14,7 @@ in
   };
 
   config = {
-    user.packages = [
+    users.users.${config.user.name}.packages = [
       (lib.mkIf cfg.gc.enable pkgs.dolphin-emu)
     ];
   };

@@ -16,14 +16,15 @@
     config.user.name
   ];
 
-  user.description = lib.mkForce "Router administrator";
-  user.extraGroups = [ "wheel" ];
-  user.hashedPassword = "!";
-  user.initialPassword = lib.mkForce null;
-  user.openssh.authorizedKeys.keyFiles = [
-    ../../ssh_keys/phfroidmont-desktop.pub
-    ../../ssh_keys/phfroidmont-stellaris.pub
-  ];
+  users.users.${config.user.name} = {
+    description = "Router administrator";
+    hashedPassword = "!";
+    initialPassword = lib.mkForce null;
+    openssh.authorizedKeys.keyFiles = [
+      ../../ssh_keys/phfroidmont-desktop.pub
+      ../../ssh_keys/phfroidmont-stellaris.pub
+    ];
+  };
 
   users.users.root.hashedPassword = "!";
   users.users.root.initialPassword = lib.mkForce null;

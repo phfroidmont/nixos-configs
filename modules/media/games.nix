@@ -16,7 +16,7 @@ in
 
   config = lib.mkMerge [
     {
-      user.packages = [
+      users.users.${config.user.name}.packages = [
         (lib.mkIf cfg.lutris.enable pkgs.lutris)
         (lib.mkIf cfg.lutris.enable pkgs.wine)
         (lib.mkIf (cfg.steam.enable || cfg.lutris.enable) pkgs.protontricks)

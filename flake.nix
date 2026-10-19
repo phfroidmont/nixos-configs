@@ -282,6 +282,21 @@
           in
           assert lib.all pinsOwnNixpkgs installedHosts;
           pkgs.emptyFile;
+        user-groups =
+          let
+            joinsOnlyExistingGroups =
+              name:
+              let
+                config = self.nixosConfigurations.${name}.config;
+                groups = config.users.users.${config.user.name}.extraGroups;
+                missingGroups = lib.filter (group: !(config.users.groups ? ${group})) groups;
+              in
+              lib.assertMsg (
+                missingGroups == [ ]
+              ) "${name}: ${config.user.name} joins missing groups: ${toString missingGroups}";
+          in
+          assert lib.all joinsOnlyExistingGroups (builtins.attrNames self.nixosConfigurations);
+          pkgs.emptyFile;
         voyager-firmware = pkgs.voyager-firmware;
         voyager-flash = pkgs.voyager-flash;
       };

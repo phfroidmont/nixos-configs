@@ -63,7 +63,7 @@
   boot.kernelModules = [ "tcp_bbr" ];
 
   # Change me later!
-  user.initialPassword = "nixos";
+  users.users.${config.user.name}.initialPassword = "nixos";
   users.users.root.initialPassword = "nixos";
 
   # So we don't have to do this later...
