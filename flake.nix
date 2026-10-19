@@ -262,6 +262,26 @@
               bash ${./tests/pangolin-fallback-routing.test.sh} ${./modules/services/pangolin-fallback-routing.sh}
               touch "$out"
             '';
+        nix-path =
+          let
+            pinsOwnNixpkgs =
+              name:
+              let
+                host = self.nixosConfigurations.${name};
+                source = toString host.pkgs.path;
+                nixPath = host.config.nix.nixPath;
+              in
+              lib.assertMsg (
+                host.config.nix.registry.nixpkgs.to.path == source
+              ) "${name}: the nixpkgs registry entry is not the host's nixpkgs"
+              && lib.assertMsg (
+                builtins.elem "nixpkgs=flake:nixpkgs" nixPath || builtins.elem "nixpkgs=${source}" nixPath
+              ) "${name}: NIX_PATH nixpkgs is not the host's nixpkgs";
+            # Installation media pin the registry to the channel copy on the image instead.
+            installedHosts = lib.remove "aegis-installer" (builtins.attrNames self.nixosConfigurations);
+          in
+          assert lib.all pinsOwnNixpkgs installedHosts;
+          pkgs.emptyFile;
         voyager-firmware = pkgs.voyager-firmware;
         voyager-flash = pkgs.voyager-flash;
       };
