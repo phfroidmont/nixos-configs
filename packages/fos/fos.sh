@@ -102,6 +102,11 @@ capture record start region|capture record start region [--audio]|Record a regio
 capture record start screen|capture record start screen [--audio]|Record the focused monitor
 capture record status|capture record status|Show recording status
 capture record stop|capture record stop|Stop the FOS recording
+capture meeting start|capture meeting start|Record meeting audio
+capture meeting stop|capture meeting stop|Stop and transcribe the meeting recording
+capture meeting toggle|capture meeting toggle|Start or stop the meeting recording
+capture meeting status|capture meeting status|Show whether a meeting is recording or transcribing
+capture meeting transcribe|capture meeting transcribe FILE|Transcribe a meeting recording again
 vpn status|vpn status|Show VPN status
 vpn list|vpn list|List VPN servers
 vpn refresh|vpn refresh|Refresh the VPN connection
@@ -151,6 +156,8 @@ LSPCI=${FOS_LSPCI:-lspci}; LSUSB=${FOS_LSUSB:-lsusb}; LSBLK=${FOS_LSBLK:-lsblk};
 FWUPDMGR=${FOS_FWUPDMGR:-fwupdmgr}; SMARTCTL=${FOS_SMARTCTL:-smartctl}; IP=${FOS_IP:-ip}
 UPTIME=${FOS_UPTIME:-@fos-uptime@}
 UNAME=${FOS_UNAME:-uname}
+SYSTEMD_ESCAPE=${FOS_SYSTEMD_ESCAPE:-systemd-escape}
+MEETINGS_DIR=${FOS_MEETINGS_DIR:-$HOME/Recordings/meetings}
 JQ=${FOS_JQ:-jq}
 KILL=${FOS_KILL:-kill}
 FLOCK=${FOS_FLOCK:-flock}
@@ -282,6 +289,7 @@ completion() {
     'network wifi disconnect'|'network wifi share') dynamic=$($NMCLI --terse --fields DEVICE,TYPE device status 2>/dev/null | sed -n 's/:wifi$//p' || true) ;;
     'hardware disk') dynamic=$($LSBLK --paths --noheadings --raw --output NAME,TYPE 2>/dev/null | while read -r candidate _usage; do [[ $_usage == disk ]] && printf '%s\n' "$candidate"; done || true) ;;
     'power profile ac'|'power profile battery') dynamic=$($POWERPROFILES_LIST 2>/dev/null || true) ;;
+    'capture meeting transcribe') dynamic=$(shopt -s nullglob; printf '%s\n' "$MEETINGS_DIR"/*.opus) ;;
     'service status'|'service restart'|'service logs'|'service status --user'|'service restart --user'|'service logs --user')
       [[ $context == *' --user' ]] && completion_scope=(--user)
       dynamic=$($SYSTEMCTL "${completion_scope[@]}" list-unit-files --no-legend --plain 2>/dev/null | sed -E 's/[[:space:]].*//' || true)
@@ -844,7 +852,42 @@ capture_command() {
         *) fail 'record requires start, status, or stop' ;;
       esac
       ;;
+    meeting) meeting_command "$@" ;;
     *) fail 'invalid capture command' ;;
+  esac
+}
+
+# Meeting recording and transcription run as systemd user units declared in
+# modules/hardware/audio.nix, so systemd tracks their processes and state.
+meeting_command() {
+  local action=${1:-} recording unit
+  shift || true
+  case $action in
+    start|stop) no_args "$@"; exec_command "$SYSTEMCTL" --user "$action" meeting-recording.service ;;
+    toggle)
+      no_args "$@"
+      if "$SYSTEMCTL" --user --quiet is-active meeting-recording.service; then action=stop; else action=start; fi
+      exec_command "$SYSTEMCTL" --user "$action" meeting-recording.service
+      ;;
+    status)
+      no_args "$@"
+      if "$SYSTEMCTL" --user --quiet is-active meeting-recording.service; then
+        printf '%s\n' recording
+      elif [[ -n $("$SYSTEMCTL" --user list-units --plain --no-legend --state=activating 'meeting-transcription@*.service') ]]; then
+        printf '%s\n' transcribing
+      else
+        printf '%s\n' idle
+      fi
+      ;;
+    transcribe)
+      (($# == 1)) || fail 'meeting transcribe requires FILE'
+      recording=$(realpath -e -- "$1" 2>/dev/null) || fail "recording not found: $1"
+      [[ -f $recording ]] || fail "recording is not a file: $1"
+      need "$SYSTEMD_ESCAPE"
+      unit="meeting-transcription@$("$SYSTEMD_ESCAPE" --path -- "$recording").service"
+      exec_command "$SYSTEMCTL" --user start --no-block "$unit"
+      ;;
+    *) fail 'meeting requires start, stop, toggle, status, or transcribe' ;;
   esac
 }
 recording_process_active() { local _pid=$1 _comm _state=''; [[ -r /proc/$_pid/stat ]] || return 1; read -r _pid _comm _state _ <"/proc/$_pid/stat" 2>/dev/null || return 1; [[ $_state != Z ]]; }

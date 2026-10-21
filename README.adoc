@@ -113,7 +113,8 @@ declarative Nix configuration:
 * `power` covers batteries and profiles; `system` covers statistics, locking,
   session actions, and power actions.
 * `notifications` and `clipboard` expose desktop history and controls.
-* `capture` provides screenshots, OCR, and screen or region recording.
+* `capture` provides screenshots, OCR, screen or region recording, and meeting
+  recording with transcription.
 * `vpn` controls the Aegis VPN gateway, while `tailscale` controls Tailscale.
 * `service` inspects, logs, and restarts system or user units; `vm` manages
   libvirt virtual machines; `hardware` provides read-only hardware and disk
@@ -159,7 +160,7 @@ it refuses stale or unowned state rather than stopping another recorder.
 
 === Dictation behavior
 
-Press `Super+X` to start recording and press it again to transcribe into the
+Press `Super+R` to start recording and press it again to transcribe into the
 focused application. The same operations are available through `fos dictation
 start`, `stop`, `toggle`, and
 `status`, and the status bar shows recording and transcription activity.
@@ -168,6 +169,33 @@ Voxtype performs transcription locally with the multilingual Whisper base model
 and automatic language detection. Its configuration and model are managed by
 Nix; typed output falls back to the clipboard when direct Wayland input is not
 available.
+
+=== Meeting recording behavior
+
+Press `Super+Alt+R` to start recording a meeting, for example one held in Teams
+or Webex in the browser, and press it again to stop. The same operations are
+available through `fos capture meeting toggle`, `start`, `stop`, and `status`,
+and through the Capture menu. The status bar shows whether a
+meeting is recording or being transcribed, and clicking it toggles the
+recording.
+
+The recording captures the default microphone on the left channel and the
+default output on the right one, so select the devices before starting. It is
+written as Opus to `~/Recordings/meetings/meeting-DATE_TIME.opus`, about 20 MB
+per hour.
+
+Stopping the recording queues its transcription in the background. whisper.cpp
+runs the multilingual large-v3-turbo model locally on the GPU, detects the
+language, skips silences, and labels each paragraph `Me` or `Others` from the
+channel it was heard on. The transcript is written next to the recording as a
+`.txt` file with timestamps, and a notification reports when it is ready.
+`fos capture meeting transcribe FILE` transcribes a recording again.
+
+Recording and transcription are the `meeting-recording` and
+`meeting-transcription@` systemd user units, so their logs are available with
+`journalctl --user -u meeting-recording -u 'meeting-transcription@*'`. Set
+`modules.hardware.audio.meetingTranscriptionDevice` to choose the Vulkan device
+used for transcription.
 
 == Bootstrap or manage without FOS
 

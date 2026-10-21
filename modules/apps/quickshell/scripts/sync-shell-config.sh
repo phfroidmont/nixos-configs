@@ -42,6 +42,8 @@ migrate() {
     and (.[0].nixosConfigMigrations.claudeAgent // 0) >= 1
     and (.[0].nixosConfigMigrations.pangolinStatus | type) == "number"
     and (.[0].nixosConfigMigrations.pangolinStatus // 0) >= 1
+    and (.[0].nixosConfigMigrations.meetingRecording | type) == "number"
+    and (.[0].nixosConfigMigrations.meetingRecording // 0) >= 1
     and (if $tailscale_enabled then true else
       ((.[0].disabledPlugins // []) | index("omarchy.tailscale")) != null
       and ([.[0].bar.layout.left[], .[0].bar.layout.center[], .[0].bar.layout.right[]]
@@ -109,6 +111,15 @@ migrate() {
       | del(.indicators);
     def add_dictation:
       .items = [.items[] | ., if selected_id == "ScreenRecording" then "Dictation" else empty end];
+    def add_meeting_recording:
+      if widget_id == "omarchy.indicators"
+        and type == "object"
+        and (.items | type) == "array"
+        and indicator_shows("ScreenRecording")
+        and (indicator_shows("MeetingRecording") | not)
+      then .items = [.items[] | ., if selected_id == "ScreenRecording" then "MeetingRecording" else empty end]
+      else .
+      end;
     def insert_before($before; $entry):
       (map(widget_id) | index($before)) as $index
       | if $index == null then . + [$entry]
@@ -286,6 +297,13 @@ migrate() {
           # On enabled hosts, an absent Tailscale widget is deliberate user layout intent.
           else . end
         | .nixosConfigMigrations.pangolinStatus = 1
+      end
+    | if ((.nixosConfigMigrations.meetingRecording | type) == "number"
+        and (.nixosConfigMigrations.meetingRecording // 0) >= 1) then . else
+        .bar.layout.left = [(.bar.layout.left // [])[] | add_meeting_recording]
+        | .bar.layout.center = [(.bar.layout.center // [])[] | add_meeting_recording]
+        | .bar.layout.right = [(.bar.layout.right // [])[] | add_meeting_recording]
+        | .nixosConfigMigrations.meetingRecording = 1
       end
     | if $tailscale_enabled then . else
         .disabledPlugins = if ((.disabledPlugins // []) | index("omarchy.tailscale")) == null then

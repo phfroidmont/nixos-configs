@@ -40,10 +40,53 @@ let
     };
     osd.enabled = false;
   };
+
+  whisperPackage = pkgs.whisper-cpp.override { vulkanSupport = true; };
+  meetingWhisperModel = pkgs.fetchurl {
+    name = "ggml-large-v3-turbo-q8_0.bin";
+    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q8_0.bin";
+    hash = "sha256-MX62nBFnPJ3h4fDUWbJTmZgE7HGsTCPBfs9fviTiWaE=";
+  };
+  meetingVadModel = pkgs.fetchurl {
+    name = "ggml-silero-v5.1.2.bin";
+    url = "https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v5.1.2.bin";
+    hash = "sha256-KZQNmNQrkfvQXOSJ8+z3xy8KQvAn5IdZGaKPtMBOos8=";
+  };
+  meetingRecord = pkgs.writeShellApplication {
+    name = "meeting-record";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.ffmpeg
+      pkgs.libnotify
+      pkgs.systemd
+    ];
+    text = builtins.readFile ./meeting-record.sh;
+  };
+  meetingTranscribe = pkgs.writeShellApplication {
+    name = "meeting-transcribe";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.ffmpeg
+      pkgs.jq
+      pkgs.libnotify
+      whisperPackage
+    ];
+    text = ''
+      whisper_model=${meetingWhisperModel}
+      vad_model=${meetingVadModel}
+      whisper_device=${toString cfg.meetingTranscriptionDevice}
+    ''
+    + builtins.readFile ./meeting-transcribe.sh;
+  };
 in
 {
   options.modules.hardware.audio = {
     enable = lib.mkEnableOption "audio";
+    meetingTranscriptionDevice = lib.mkOption {
+      type = lib.types.ints.unsigned;
+      default = 0;
+      description = "Vulkan device index whisper.cpp uses to transcribe meetings.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -84,6 +127,29 @@ in
           RestartSec = 5;
         };
         Install.WantedBy = [ "graphical-session.target" ];
+      };
+
+      systemd.user.services.meeting-recording = {
+        Unit = {
+          Description = "Meeting audio recording";
+          After = [ "pipewire-pulse.service" ];
+        };
+        Service = {
+          ExecStart = lib.getExe meetingRecord;
+          # Signal only the script, which stops ffmpeg cleanly and then queues
+          # the transcription.
+          KillMode = "mixed";
+          TimeoutStopSec = 30;
+        };
+      };
+
+      systemd.user.services."meeting-transcription@" = {
+        Unit.Description = "Meeting transcription of %f";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${lib.getExe meetingTranscribe} %f";
+          Nice = 10;
+        };
       };
     };
   };

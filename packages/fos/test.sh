@@ -34,7 +34,14 @@ case $name in
     elif [[ $* == *'fields DEVICE,TYPE device status'* ]]; then printf '%s\n' 'wlan0:wifi' 'eth0:ethernet'
     fi
     ;;
-  systemctl) if [[ $* == *'list-unit-files'* ]]; then printf '%s\n' 'test.service enabled'; fi ;;
+  systemctl)
+    if [[ $* == *'list-unit-files'* ]]; then printf '%s\n' 'test.service enabled'
+    elif [[ $* == *'is-active meeting-recording.service' ]]; then [[ ${FOS_TEST_MEETING:-idle} == recording ]]
+    elif [[ $* == *'list-units'* && ${FOS_TEST_MEETING:-idle} == transcribing ]]; then
+      printf '%s\n' 'meeting-transcription@x.service loaded activating start start Meeting transcription'
+    fi
+    ;;
+  systemd-escape) printf '%s\n' escaped-path ;;
   lsblk) if [[ $* == *'NAME,TYPE'* ]]; then printf '%s\n' '/dev/nvme0n1 disk' '/dev/nvme0n1p1 part'; fi ;;
   vpn) if [[ ${1:-} == list ]]; then printf '%s\n' '  nl-ams-001' '* be-bru-001'; fi ;;
   virsh) if [[ $* == *'--name'* ]]; then printf '%s\n' test-vm; fi ;;
@@ -70,7 +77,7 @@ esac
 EOF
 chmod +x "$bin/backend"
 
-backends=(nh nix hostname glab auth qs wpctl pulsemixer playerctl voxtype hyprctl hyprlock hyprpicker wdisplays nmcli bluetoothctl powerprofilesctl upower systemctl notify-send btop grim slurp satty tesseract wl-copy wf-recorder kill pkill vpn tailscale virsh lshw lscpu free lspci lsusb lsblk sensors fwupdmgr smartctl ip launch-browser launch-terminal launch-editor launch-file-manager show-keybindings uptime uname journalctl fos-internal-audio-output-set-default fos-internal-audio-input-set-default fos-internal-monitor-state fos-internal-brightness-display fos-internal-hyprland-monitor-scaling fos-internal-network-status fos-internal-network-speedtest fos-internal-network-band fos-internal-network-qr fos-internal-battery-status fos-internal-powerprofiles-list fos-internal-powerprofiles-set fos-internal-system-stats fos-internal-capture-region fos-internal-notification-send)
+backends=(nh nix hostname glab auth qs wpctl pulsemixer playerctl voxtype hyprctl hyprlock hyprpicker wdisplays nmcli bluetoothctl powerprofilesctl upower systemctl systemd-escape notify-send btop grim slurp satty tesseract wl-copy wf-recorder kill pkill vpn tailscale virsh lshw lscpu free lspci lsusb lsblk sensors fwupdmgr smartctl ip launch-browser launch-terminal launch-editor launch-file-manager show-keybindings uptime uname journalctl fos-internal-audio-output-set-default fos-internal-audio-input-set-default fos-internal-monitor-state fos-internal-brightness-display fos-internal-hyprland-monitor-scaling fos-internal-network-status fos-internal-network-speedtest fos-internal-network-band fos-internal-network-qr fos-internal-battery-status fos-internal-powerprofiles-list fos-internal-powerprofiles-set fos-internal-system-stats fos-internal-capture-region fos-internal-notification-send)
 for backend in "${backends[@]}"; do ln -s backend "$bin/$backend"; done
 
 export FOS_TEST_LOG=$log NH_FLAKE=$flake XDG_RUNTIME_DIR=$runtime XDG_VIDEOS_DIR=$root/Videos
@@ -80,7 +87,7 @@ export FOS_PLAYERCTL=$bin/playerctl FOS_VOXTYPE=$bin/voxtype FOS_HYPRCTL=$bin/hy
 export FOS_NMCLI=$bin/nmcli FOS_BLUETOOTHCTL=$bin/bluetoothctl
 export FOS_POWERPROFILESCTL=$bin/powerprofilesctl
 export FOS_UPOWER=$bin/upower FOS_SYSTEMCTL=$bin/systemctl FOS_NOTIFY_SEND=$bin/notify-send
-export FOS_JOURNALCTL=$bin/journalctl
+export FOS_JOURNALCTL=$bin/journalctl FOS_SYSTEMD_ESCAPE=$bin/systemd-escape
 export FOS_BTOP=$bin/btop FOS_GRIM=$bin/grim FOS_SLURP=$bin/slurp FOS_SATTY=$bin/satty FOS_TESSERACT=$bin/tesseract
 export FOS_WL_COPY=$bin/wl-copy FOS_WF_RECORDER=$bin/wf-recorder FOS_VPN_COMMAND=$bin/vpn FOS_TAILSCALE=$bin/tailscale
 export FOS_HYPRPICKER=$bin/hyprpicker FOS_PKILL=$bin/pkill FOS_CAPTURE_REGION=$bin/fos-internal-capture-region
@@ -177,6 +184,29 @@ reset_log; $FOS_BIN dictation status >/dev/null 2>&1; assert_log 'voxtype|status
 for action in start stop toggle; do reset_log; $FOS_BIN dictation "$action" >/dev/null 2>&1; assert_log "voxtype|record $action"; done
 reset_log; assert_failure dictation start extra; assert_log ''
 reset_log; assert_failure dictation invalid; assert_log ''
+
+# Meeting recording and transcription delegate to systemd user units.
+for action in start stop; do
+  reset_log; $FOS_BIN capture meeting "$action" >/dev/null 2>&1; assert_log "systemctl|--user $action meeting-recording.service"
+done
+reset_log; $FOS_BIN capture meeting toggle >/dev/null 2>&1
+assert_log 'systemctl|--user --quiet is-active meeting-recording.service
+systemctl|--user start meeting-recording.service'
+reset_log; FOS_TEST_MEETING=recording $FOS_BIN capture meeting toggle >/dev/null 2>&1
+assert_log 'systemctl|--user --quiet is-active meeting-recording.service
+systemctl|--user stop meeting-recording.service'
+[[ $($FOS_BIN capture meeting status) == idle ]]
+[[ $(FOS_TEST_MEETING=recording $FOS_BIN capture meeting status) == recording ]]
+[[ $(FOS_TEST_MEETING=transcribing $FOS_BIN capture meeting status) == transcribing ]]
+mkdir -p "$HOME/Recordings/meetings"; touch "$HOME/Recordings/meetings/meeting-1.opus"
+meeting=$(realpath "$HOME/Recordings/meetings/meeting-1.opus")
+reset_log; $FOS_BIN capture meeting transcribe "$HOME/Recordings/meetings/meeting-1.opus" >/dev/null 2>&1
+assert_log "systemd-escape|--path -- $meeting
+systemctl|--user start --no-block meeting-transcription@escaped-path.service"
+reset_log; assert_failure capture meeting transcribe "$root/missing.opus"; assert_log ''
+reset_log; assert_failure capture meeting transcribe "$HOME/Recordings"; assert_log ''
+reset_log; assert_failure capture meeting start extra; assert_log ''
+reset_log; assert_failure capture meeting invalid; assert_log ''
 reset_log; assert_failure display scale nope; $FOS_BIN display status >/dev/null 2>&1; assert_log 'fos-internal-monitor-state|'
 reset_log; $FOS_BIN display brightness -5 >/dev/null 2>&1; assert_log 'fos-internal-brightness-display|5%-'
 reset_log; $FOS_BIN display scale up >/dev/null 2>&1; assert_log 'fos-internal-hyprland-monitor-scaling|up'
@@ -362,6 +392,8 @@ completion=$($FOS_BIN __complete power profile ac ''); grep -Fq $'performance\t'
 completion=$($FOS_BIN __complete help network ''); grep -Fq $'wifi\t' <<<"$completion"
 completion=$($FOS_BIN __complete notifications dnd ''); grep -Fq $'on\t' <<<"$completion"
 completion=$($FOS_BIN __complete capture record start screen -); grep -Fq -- $'--audio\t' <<<"$completion"
+completion=$($FOS_BIN __complete capture meeting ''); grep -Fq $'toggle\t' <<<"$completion"; grep -Fq $'transcribe\t' <<<"$completion"
+completion=$($FOS_BIN __complete capture meeting transcribe "$HOME/"); grep -Fq "$HOME/Recordings/meetings/meeting-1.opus"$'\tdynamic value' <<<"$completion"
 completion=$($FOS_BIN __complete network wifi share -); grep -Fq -- $'--reveal\t' <<<"$completion"
 completion=$($FOS_BIN __complete network wifi connect C); grep -Fq $'Cafe\t' <<<"$completion"
 grep -Fxq $'Cafe [guest] $pecial\tdynamic value' < <($FOS_BIN __complete network wifi connect 'Cafe ')

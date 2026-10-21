@@ -347,6 +347,8 @@ let
         cp ${clipboardQml} "$out/shell/Clipboard.qml"
         cp ${./config/ClipboardHistory.js} "$out/shell/ClipboardHistory.js"
 
+        cp ${./omarchy/indicators/MeetingRecording.qml} "$out/shell/plugins/bar/indicators/MeetingRecording.qml"
+
         mkdir -p "$out/shell/plugins/panels/nextcloud"
         cp -R ${./omarchy/plugins/nextcloud}/. "$out/shell/plugins/panels/nextcloud/"
 

@@ -19,6 +19,8 @@
     editor = {
       vim.enable = true;
     };
+    # Vulkan device 0 is the integrated Radeon; the RTX transcribes ~9x faster.
+    hardware.audio.meetingTranscriptionDevice = 1;
     services = {
       nix-auth.enable = true;
       flatpak.enable = true;

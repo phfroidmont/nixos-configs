@@ -12,7 +12,7 @@
         { "id": "omarchy.media" },
         {
           "id": "omarchy.indicators",
-          "items": ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"]
+          "items": ["ScreenRecording", "MeetingRecording", "Dictation", "Reminder", "Dnd", "StayAwake"]
         },
         {
           "id": "omarchy.clock",

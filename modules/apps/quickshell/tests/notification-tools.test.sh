@@ -47,7 +47,7 @@ jq -e '
   and (.disabledPlugins | index("phfroidmont.pangolin") | not)
   and any(.bar.layout.center[];
     .id == "omarchy.indicators"
-    and .items == ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
+    and .items == ["ScreenRecording", "MeetingRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
   and any(.bar.layout.center[]; .id == "omarchy.media")
   and any(.bar.layout.right[]; .id == "phfroidmont.pangolin")
   and any(.bar.layout.right[]; .id == "omarchy.microphone")
@@ -100,7 +100,7 @@ jq -e '
   .bar.layout.center[0] == {"id": "omarchy.media"}
   and .bar.layout.center[1] == {
     "id": "omarchy.indicators",
-    "items": ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"],
+    "items": ["ScreenRecording", "MeetingRecording", "Dictation", "Reminder", "Dnd", "StayAwake"],
     "alwaysShow": true
   }
   and .bar.layout.center[1].alwaysShow
@@ -159,7 +159,8 @@ jq -e '
     "menuWidget": 1,
     "statusFeatures": 2,
     "claudeAgent": 1,
-    "pangolinStatus": 1
+    "pangolinStatus": 1,
+    "meetingRecording": 1
   }
 ' "$tailscale_disabled_config" >/dev/null
 cp "$tailscale_disabled_config" "$temporary/tailscale-disabled-after-sync.json"
@@ -352,10 +353,50 @@ HOME="$version_one_home" bash "$root/scripts/sync-shell-config.sh"
 jq -e '
   any(.bar.layout.center[];
     .id == "omarchy.indicators"
-    and .items == ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
+    and .items == ["ScreenRecording", "MeetingRecording", "Dictation", "Reminder", "Dnd", "StayAwake"])
   and ([.bar.layout.center[] | select(.id == "omarchy.indicators")] | length) == 1
   and .nixosConfigMigrations.statusFeatures == 2
 ' "$version_one_config" >/dev/null
+
+meeting_home="$temporary/meeting-home"
+meeting_config="$meeting_home/.config/omarchy/shell.json"
+mkdir -p "$(dirname "$meeting_config")"
+cat >"$meeting_config" <<'EOF'
+{
+  "version": 1,
+  "bar": {
+    "layout": {
+      "left": ["omarchy.indicators"],
+      "center": [
+        {"id": "omarchy.indicators", "items": ["ScreenRecording", "Dictation", "Dnd"]},
+        {"id": "omarchy.clock"}
+      ],
+      "right": [{"id": "omarchy.indicators", "items": ["NightLight"]}]
+    }
+  },
+  "disabledPlugins": [],
+  "nixosConfigMigrations": {
+    "notifications": 1,
+    "menuWidget": 1,
+    "statusFeatures": 2,
+    "claudeAgent": 1,
+    "pangolinStatus": 1
+  }
+}
+EOF
+HOME="$meeting_home" bash "$root/scripts/sync-shell-config.sh"
+jq -e '
+  .bar.layout.left == ["omarchy.indicators"]
+  and .bar.layout.center[0].items == ["ScreenRecording", "MeetingRecording", "Dictation", "Dnd"]
+  and .bar.layout.right == [{"id": "omarchy.indicators", "items": ["NightLight"]}]
+  and .nixosConfigMigrations.meetingRecording == 1
+' "$meeting_config" >/dev/null
+# A user who later removes the indicator keeps that choice.
+jq '.bar.layout.center[0].items = ["ScreenRecording", "Dnd"]' "$meeting_config" >"$temporary/meeting-edited.json"
+mv "$temporary/meeting-edited.json" "$meeting_config"
+cp "$meeting_config" "$temporary/meeting-after-edit.json"
+HOME="$meeting_home" bash "$root/scripts/sync-shell-config.sh"
+cmp "$temporary/meeting-after-edit.json" "$meeting_config"
 
 legacy_home="$temporary/legacy-home"
 legacy_config="$legacy_home/.config/omarchy/shell.json"
@@ -380,7 +421,7 @@ jq -e '
   and .bar.layout.center[0] == {"id": "omarchy.media"}
   and .bar.layout.center[1] == {
     "id": "omarchy.indicators",
-    "items": ["ScreenRecording", "Dictation", "Reminder", "Dnd", "StayAwake"]
+    "items": ["ScreenRecording", "MeetingRecording", "Dictation", "Reminder", "Dnd", "StayAwake"]
   }
   and (.bar.layout.center[1] | has("alwaysShow") | not)
   and .bar.layout.center[2].id == "omarchy.clock"
