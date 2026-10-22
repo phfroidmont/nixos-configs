@@ -186,8 +186,9 @@ per hour.
 
 Stopping the recording queues its transcription in the background. whisper.cpp
 runs the multilingual large-v3-turbo model locally on the GPU, detects the
-language, skips silences, and labels each paragraph `Me` or `Others` from the
-channel it was heard on. The transcript is written next to the recording as a
+language, and skips silences. sherpa-onnx then tells the voices on each channel
+apart, so each paragraph is labeled `Speaker 1`, `Speaker 2`, and so on, also
+when several people share the room's microphone. The transcript is written next to the recording as a
 `.txt` file with timestamps, and a notification reports when it is ready.
 `fos capture meeting transcribe FILE` transcribes a recording again.
 

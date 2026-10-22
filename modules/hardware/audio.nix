@@ -52,6 +52,16 @@ let
     url = "https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v5.1.2.bin";
     hash = "sha256-KZQNmNQrkfvQXOSJ8+z3xy8KQvAn5IdZGaKPtMBOos8=";
   };
+  meetingSegmentationModel = pkgs.fetchzip {
+    name = "sherpa-onnx-pyannote-segmentation-3-0";
+    url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2";
+    hash = "sha256-hqaCTZJKZp6IHxYzgVBd9Bss6wC1qg+edB/v10BT1tA=";
+  };
+  meetingEmbeddingModel = pkgs.fetchurl {
+    name = "wespeaker_en_voxceleb_resnet34_LM.onnx";
+    url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/wespeaker_en_voxceleb_resnet34_LM.onnx";
+    hash = "sha256-6YSFY9qG8mMRcTTf161jySNVs33kkrVeMlQAydnDkBI=";
+  };
   meetingRecord = pkgs.writeShellApplication {
     name = "meeting-record";
     runtimeInputs = [
@@ -69,12 +79,15 @@ let
       pkgs.ffmpeg
       pkgs.jq
       pkgs.libnotify
+      pkgs.sherpa-onnx
       whisperPackage
     ];
     text = ''
       whisper_model=${meetingWhisperModel}
       vad_model=${meetingVadModel}
       whisper_device=${toString cfg.meetingTranscriptionDevice}
+      segmentation_model=${meetingSegmentationModel}/model.onnx
+      embedding_model=${meetingEmbeddingModel}
     ''
     + builtins.readFile ./meeting-transcribe.sh;
   };

@@ -1,7 +1,8 @@
 # Records a meeting until stopped, then queues its transcription.
 #
 # The default microphone goes to the left channel and the default output's
-# monitor to the right one, so the transcription can tell "Me" from "Others".
+# monitor to the right one, so the transcription can tell which side a voice
+# came from.
 
 output_dir=$HOME/Recordings/meetings
 mkdir -p -- "$output_dir"
