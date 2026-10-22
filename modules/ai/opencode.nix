@@ -818,6 +818,10 @@ in
           source = ./skills/scalive;
           recursive = true;
         };
+        xdg.configFile."opencode/skills/memory" = {
+          source = ./skills/memory;
+          recursive = true;
+        };
         xdg.configFile."opencode/oc-profiles/index.js".source = ./oc-profiles.mjs;
         xdg.configFile."opencode/oc-profiles/package.json".text = builtins.toJSON {
           name = "oc-profiles";

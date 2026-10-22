@@ -210,6 +210,10 @@ in
           source = ./skills/scalive;
           recursive = true;
         };
+        ".pi/agent/skills/memory" = {
+          source = ./skills/memory;
+          recursive = true;
+        };
       };
     };
   };
