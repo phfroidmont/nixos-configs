@@ -25,7 +25,7 @@
       nix-auth.enable = true;
       flatpak.enable = true;
       belgian-eid.enable = true;
-      docker.enable = true;
+      podman.enable = true;
       libvirt.enable = true;
       languagetool.enable = true;
       pangolin.enable = true;

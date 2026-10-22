@@ -107,6 +107,7 @@
   };
 
   modules.desktop.zsh.enable = true;
+  modules.services.podman.enable = true;
 
   # Local Redis for foyer-pms (Tomcat and workers expect localhost:6379)
   services.redis.servers."".enable = true;
